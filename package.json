@@ -31,7 +31,10 @@
     "prettier": "^2.4.1"
   },
   "dependencies": {
+    "@elastic-dao/sdk": "^0.10.3",
+    "@pie-dao/utils": "^1.0.0",
     "bignumber.js": "^9.0.1",
+    "bnc-notify": "^1.9.1",
     "ethers": "^5.5.1",
     "rxjs": "^7.4.0"
   }
