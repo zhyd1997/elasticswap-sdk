@@ -4,7 +4,7 @@
   "description": "SDK for ElasticSwap",
   "main": "dist/index.js",
   "repository": "https://github.com/elasticdao/elasticswap-sdk",
-  "author": "0xean",
+  "author": "ElasticDAO Core",
   "license": "GPL-3.0",
   "private": false,
   "engines": {
@@ -20,9 +20,14 @@
     "prettier": "npx prettier --write src/*.js --write src/**/*.js --write src/**/**/*.js --write src/**/**/**/*.js",
     "release": "npm publish --access=public",
     "stats": "npx webpack -c ./webpack.config.js --json > stats.json",
-    "test": "mocha './**/*test.js"
+    "test": "mocha ./test/*test.js"
   },
   "devDependencies": {
+    "@babel/cli": "^7.15.7",
+    "@babel/core": "^7.15.8",
+    "@babel/preset-env": "^7.15.8",
+    "@babel/register": "^7.15.3",
+    "babel-loader": "^8.2.3",
     "chai": "^4.3.4",
     "eslint": "^8.1.0",
     "eslint-config-airbnb-base": "^14.2.1",
