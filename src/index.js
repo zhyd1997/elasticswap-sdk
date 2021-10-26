@@ -3,16 +3,18 @@
 import { ethers } from 'ethers';
 import { shortenAddress, validateIsAddress } from '@pie-dao/utils';
 import Notify from 'bnc-notify';
-import { Subscribable, toBigNumber, erc20 } from '@elastic-dao/sdk';
+import { toBigNumber, erc20 } from '@elastic-dao/sdk';
+import Subscribable from './Subscribable';
 
 // const prefix = '@elastic-dao/elasticswap-sdk';
 
 export class SDK extends Subscribable {
-  constructor({ account, customFetch, provider, signer }) {
+  constructor({ account, customFetch, env, provider, signer }) {
     super();
     this.provider = provider || ethers.getDefaultProvider();
     this.signer = signer;
     this.account = account;
+    this.env = env;
 
     if (this.account) {
       this.balanceOf(this.account);
@@ -32,7 +34,7 @@ export class SDK extends Subscribable {
 
     if (customFetch) {
       this._fetch = customFetch;
-    } else if (window && window.fetch) {
+    } else if (typeof window !== 'undefined' && window && window.fetch) {
       this._fetch = window.fetch.bind(window);
     } else {
       throw new Error(

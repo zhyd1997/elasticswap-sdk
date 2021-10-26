@@ -20,7 +20,7 @@
     "prettier": "npx prettier --write src/*.js --write src/**/*.js --write src/**/**/*.js --write src/**/**/**/*.js",
     "release": "npm publish --access=public",
     "stats": "npx webpack -c ./webpack.config.js --json > stats.json",
-    "test:only": "mocha  -r esm './**/*.test.mjs'",
+    "test:only": "mocha --exit -r esm './**/*.test.mjs'",
     "test": "yarn build && yarn test:only"
   },
   "devDependencies": {
@@ -36,6 +36,7 @@
     "eslint-plugin-import": "^2.25.2",
     "esm": "^3.2.25",
     "mocha": "^9.1.3",
+    "node-fetch": "^3.0.0",
     "prettier": "^2.4.1",
     "terser-webpack-plugin": "^5.2.4",
     "webpack": "^5.60.0",
