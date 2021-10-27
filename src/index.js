@@ -131,13 +131,19 @@ export class SDK extends Subscribable {
     if (!address) {
       return false;
     }
+
     if (ethers.utils.isAddress(address)) {
       return true;
     }
+
     // attempt to to resolve address from ENS
-    const ensResolvedAddress = await this.provider.resolveName(address);
-    if (!ensResolvedAddress) {
-      // resolving address failed.
+    try {
+      const ensResolvedAddress = await this.provider.resolveName(address);
+      if (!ensResolvedAddress) {
+        // resolving address failed.
+        return false;
+      }
+    } catch (error) {
       return false;
     }
     return true;
