@@ -10,14 +10,13 @@ const RPC_URL = 'https://mainnet.infura.io/v3/48f877fa4aa4490bb0c988368dc8e373';
 
 describe('ExchangeFactory', () => {
   it('Does something', async () => {
-    // accounts = await ethers.getSigners();
-    // [, , , , deployer] = accounts;
+    const accounts = await ethers.getSigners();
     await deployments.fixture();
-    // const ExchangeFactory = await deployments.get("ExchangeFactory");
-    // exchangeFactory = new ethers.Contract(
-    //   ExchangeFactory.address,
-    //   ExchangeFactory.abi,
-    //   accounts[0]
-    // );
+    const ExchangeFactory = await deployments.get("ExchangeFactory");
+    const exchangeFactory = new ethers.Contract(
+      ExchangeFactory.address,
+      ExchangeFactory.abi,
+      accounts[0]
+    );
   });
 });
