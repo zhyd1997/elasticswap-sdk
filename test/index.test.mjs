@@ -29,6 +29,12 @@ describe('SDK', () => {
       assert.isNumber(sdk.blockNumber);
       assert.isFalse(sdk.blockNumber === 0);
     });
+
+    it('Creates the ExchangeFactory', async () => {
+      const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
+      const sdk = new elasticSwapSDK.SDK({ env, customFetch: fetch, provider });
+      assert.isNotNull(sdk.exchangeFactory);
+    });
   });
 
   describe('setName', () => {
