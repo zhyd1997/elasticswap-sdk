@@ -7,7 +7,7 @@ import { toBigNumber, erc20 } from '@elastic-dao/sdk';
 import Subscribable from './Subscribable';
 import ExchangeFactoryClass from './exchange/ExchangeFactory';
 
-// const prefix = '@elastic-dao/elasticswap-sdk';
+const prefix = '@elastic-dao/elasticswap-sdk';
 
 export const ExchangeFactory = ExchangeFactoryClass;
 
@@ -54,6 +54,9 @@ export class SDK extends Subscribable {
         darkMode: true,
       });
     }
+    
+    validateIsAddress(this.env.exchangeFactoryAddress, { prefix });
+    this._exchangeFactory = new ExchangeFactory(this, this.env.exchangeFactoryAddress);
   }
 
   get balances() {
@@ -64,10 +67,9 @@ export class SDK extends Subscribable {
     return this._blockNumber;
   }
 
-  // get exchangeFactory() {
-  //   validateIsAddress(this.env.exchangeFactoryAddress, { prefix });
-  //   return new ExchangeFactory(this);
-  // }
+  get exchangeFactory() {
+    return this._exchangeFactory;
+  }
 
   get fetch() {
     return this._fetch;
