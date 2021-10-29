@@ -5,16 +5,21 @@ import { shortenAddress, validateIsAddress } from '@pie-dao/utils';
 import Notify from 'bnc-notify';
 import { toBigNumber, erc20 } from '@elastic-dao/sdk';
 import Subscribable from './Subscribable';
+import ExchangeFactoryClass from './exchange/ExchangeFactory';
 
 // const prefix = '@elastic-dao/elasticswap-sdk';
+
+export const ExchangeFactory = ExchangeFactoryClass;
 
 export class SDK extends Subscribable {
   constructor({ account, customFetch, env, provider, signer }) {
     super();
     this.provider = provider || ethers.getDefaultProvider();
+    this._contract = ({ address, abi }) => new ethers.Contract(address, abi);
     this.signer = signer;
     this.account = account;
     this.env = env;
+    this.setName();
 
     if (this.account) {
       this.balanceOf(this.account);

@@ -1,33 +1,17 @@
 import Base from '../Base';
 
 export default class ExchangeFactory extends Base {
+  get baseTokenAddress() {}
 
-  get baseTokenAddress() {
+  get quoteTokenAddress() {}
 
-  }
+  get liquidityFee() {}
 
-  get quoteTokenAddress() {
+  async addLiquidity() {}
 
-  }
+  async removeLiquidity() {}
 
-  get liquidityFee() {
+  async swapBaseTokenForQuoteToken() {}
 
-  }
-
-  async addLiquidity() {
-
-  }
-
-  async removeLiquidity() {
-
-  }
-
-  async swapBaseTokenForQuoteToken() {
-
-  }
-
-  async swapQuoteTokenForBaseToken() {
-    
-  }
-
+  async swapQuoteTokenForBaseToken() {}
 }

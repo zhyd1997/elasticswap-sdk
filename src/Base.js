@@ -1,4 +1,3 @@
-
 import utils from '@elastic-dao/sdk';
 import Subscribable from './Subscribable';
 

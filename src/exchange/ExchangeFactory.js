@@ -1,35 +1,30 @@
+import ExchangeFactorySolidity from '@elastic-dao/elasticswap/artifacts/src/contracts/ExchangeFactory.sol/ExchangeFactory.json';
 import Base from '../Base';
-import ExchangeFactory from '@elastic-dao/elasticswap/artifacts/src/contracts/ExchangeFactory.sol/ExchangeFactory.json';
 
 export default class ExchangeFactory extends Base {
-  
-  static contract(sdk, address, readonly = false) {
-    return sdk.contract({
-      abi: ExchangeFactory.abi,
+  constructor(sdk, address) {
+    super(sdk);
+    this._address = address;
+    this._contract = sdk.contract({
+      abi: ExchangeFactorySolidity.abi,
       address,
-      readonly,
+      readonly: false,
     });
   }
 
   get address() {
-    return this.sdk.env.factoryAddress;
+    return this._address;
   }
 
   get contract() {
-    return this.constructor.contract(this.sdk, this.address);
+    return this._contract;
   }
 
-  get readonlyContract() {
-    return this.constructor.contract(this.sdk, this.address, true);
+  async getFeeAddress() {
+    return this._contract.feeAddress();
   }
 
-  get feeAddress() {
-    // TODO
-  }
-
-  getExchangeAddress(baseTokenAddress, quoteTokenAddress) {
-
-  }
+  getExchangeAddress(baseTokenAddress, quoteTokenAddress) {}
 
   async createNewExchange() {
     // TODO
