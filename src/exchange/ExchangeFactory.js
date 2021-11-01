@@ -34,7 +34,4 @@ export default class ExchangeFactory extends Base {
     this.sdk.notify(tx);
     return tx;
   }
-
-  // TODO: subscribe to events
-  // NewExchange()
 }

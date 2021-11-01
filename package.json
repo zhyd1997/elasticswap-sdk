@@ -20,7 +20,7 @@
     "prettier": "npx prettier --write src/*.js --write src/**/*.js --write src/**/**/*.js --write src/**/**/**/*.js",
     "release": "npm publish --access=public",
     "stats": "npx webpack -c ./webpack.config.js --json > stats.json",
-    "test:only": "mocha --timeout 5000 --exit -r esm './**/*.test.mjs'",
+    "test:only": "mocha --timeout 10000 --exit -r esm './**/*.test.mjs'",
     "test": "yarn build && yarn test:only"
   },
   "devDependencies": {
