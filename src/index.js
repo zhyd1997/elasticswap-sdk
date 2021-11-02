@@ -54,9 +54,12 @@ export class SDK extends Subscribable {
         darkMode: true,
       });
     }
-    
+
     validateIsAddress(this.env.exchangeFactoryAddress, { prefix });
-    this._exchangeFactory = new ExchangeFactory(this, this.env.exchangeFactoryAddress);
+    this._exchangeFactory = new ExchangeFactory(
+      this,
+      this.env.exchangeFactoryAddress,
+    );
   }
 
   get balances() {

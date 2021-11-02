@@ -1,6 +1,6 @@
 import Base from '../Base';
 
-export default class ExchangeFactory extends Base {
+export default class Exchange extends Base {
   get baseTokenAddress() {}
 
   get quoteTokenAddress() {}
