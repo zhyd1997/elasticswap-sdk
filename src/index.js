@@ -5,16 +5,21 @@ import { shortenAddress, validateIsAddress } from '@pie-dao/utils';
 import Notify from 'bnc-notify';
 import { toBigNumber, erc20 } from '@elastic-dao/sdk';
 import Subscribable from './Subscribable';
+import ExchangeFactoryClass from './exchange/ExchangeFactory';
 
-// const prefix = '@elastic-dao/elasticswap-sdk';
+const prefix = '@elastic-dao/elasticswap-sdk';
+
+export const ExchangeFactory = ExchangeFactoryClass;
 
 export class SDK extends Subscribable {
   constructor({ account, customFetch, env, provider, signer }) {
     super();
     this.provider = provider || ethers.getDefaultProvider();
+    this._contract = ({ address, abi }) => new ethers.Contract(address, abi);
     this.signer = signer;
     this.account = account;
     this.env = env;
+    this.setName();
 
     if (this.account) {
       this.balanceOf(this.account);
@@ -49,6 +54,12 @@ export class SDK extends Subscribable {
         darkMode: true,
       });
     }
+
+    validateIsAddress(this.env.exchangeFactoryAddress, { prefix });
+    this._exchangeFactory = new ExchangeFactory(
+      this,
+      this.env.exchangeFactoryAddress,
+    );
   }
 
   get balances() {
@@ -59,10 +70,9 @@ export class SDK extends Subscribable {
     return this._blockNumber;
   }
 
-  // get exchangeFactory() {
-  //   validateIsAddress(this.env.exchangeFactoryAddress, { prefix });
-  //   return new ExchangeFactory(this);
-  // }
+  get exchangeFactory() {
+    return this._exchangeFactory;
+  }
 
   get fetch() {
     return this._fetch;
