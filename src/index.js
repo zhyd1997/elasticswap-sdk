@@ -6,10 +6,12 @@ import Notify from 'bnc-notify';
 import { toBigNumber, erc20 } from '@elastic-dao/sdk';
 import Subscribable from './Subscribable';
 import ExchangeFactoryClass from './exchange/ExchangeFactory';
+import ERC20Class from './tokens/ERC20';
 
 const prefix = '@elastic-dao/elasticswap-sdk';
 
 export const ExchangeFactory = ExchangeFactoryClass;
+export const ERC20 = ERC20Class;
 
 export class SDK extends Subscribable {
   constructor({ account, customFetch, env, provider, signer }) {
@@ -56,9 +58,15 @@ export class SDK extends Subscribable {
     }
 
     validateIsAddress(this.env.exchangeFactoryAddress, { prefix });
+
     this._exchangeFactory = new ExchangeFactory(
       this,
       this.env.exchangeFactoryAddress,
+    );
+
+    this.erc20 = new ERC20(
+      this,
+      this.account,
     );
   }
 
@@ -72,6 +80,10 @@ export class SDK extends Subscribable {
 
   get exchangeFactory() {
     return this._exchangeFactory;
+  }
+
+  get erc20() {
+    return this.erc20;
   }
 
   get fetch() {
