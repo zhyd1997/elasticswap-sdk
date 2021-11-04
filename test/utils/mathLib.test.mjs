@@ -1,39 +1,30 @@
 /* eslint import/extensions: 0 */
-import chai from 'chai';
+import chai, { expect } from 'chai';
 import mathLib from '../../src/utils/MathLib.js'
 import BigNumber from 'bignumber.js'
-const { ethers, deployments } = hardhat;
+
 const { assert } = chai;
 const { calculateOutputAmount } = mathLib;
 
 
 
 describe('MathLib', () => {
-  let sdk;
-
-  before(async () => {
-    const env = {
-      networkId: 99999,
-      exchangeFactoryAddress: '0x8C2251e028043e38f58Ac64c00E1F940D305Aa62'
-    };
-    sdk = new elasticSwapSDK.SDK({ env, customFetch: fetch, provider: hardhat.ethers.provider });
-  });
 
 
-  it('calculateOutputAmount', async() => {
+  it.only('calculates using calculateOutputAmount correctly', async() => {
     
+    // no slippage
     const answer = calculateOutputAmount(1, 100, 100, 0);
-
-    console.log(answer.toString());
-    console.log(BigNumber("10000").toString());
-
-    console.log(answer);
-    console.log(BigNumber("10000"));
-    
-    console.log(answer instanceof BigNumber);
-    console.log(BigNumber("10000") instanceof BigNumber);
-    
     assert.isTrue(answer.isEqualTo(BigNumber("10000")));
+
+    // 5 percent slippage
+    const slipageAnswer = calculateOutputAmount(1, 100, 100, 5);
+    assert.isTrue(slipageAnswer.isEqualTo(BigNumber("9500")))
+
+    // empty reserves should return sane error
+    assert.throws(() => calculateOutputAmount(1, 0, 100, 5), "Error:Empty pool")
+    assert.throws(() => calculateOutputAmount(1, 100, 0, 5), "Error:Empty pool")
+    assert.throws(() => calculateOutputAmount(0, 100, 100, 5), "Divide by zero")
 
   });
 
