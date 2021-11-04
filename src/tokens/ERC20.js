@@ -1,4 +1,4 @@
-import ERC20Contract from '../abis/ERC20.json';
+import ERC20Contract from '@elastic-dao/elasticswap/artifacts/@openzeppelin/contracts/token/ERC20/ERC20.sol/ERC20.json';
 import Base from '../Base';
 
 export default class ERC20 extends Base {
@@ -6,7 +6,7 @@ export default class ERC20 extends Base {
     super(sdk);
     this._address = address;
     this._contract = sdk.contract({
-      abi: ERC20Contract,
+      abi: ERC20Contract.abi,
       address,
       readonly: false,
     });
@@ -30,8 +30,8 @@ export default class ERC20 extends Base {
   }
 
   async balanceOf(accountAddress) {
-    const ERC20Token = await this.readonlyContract;
-    const balance = await ERC20Token.balanceOf(
+    //const ERC20Token = await this.readonlyContract;
+    const balance = await this._contract.balanceOf(
       accountAddress,
     );
 

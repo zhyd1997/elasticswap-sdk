@@ -1,5 +1,11 @@
-import utils from '@elastic-dao/sdk';
+import {
+  sanitizeOverrides,
+  toBigNumber,
+  toEthersBigNumber,
+  toNumber,
+} from './utils/utils';
 import Subscribable from './Subscribable';
+
 
 export default class Base extends Subscribable {
   constructor(sdk) {
@@ -36,18 +42,18 @@ export default class Base extends Subscribable {
   }
 
   sanitizeOverrides(requested = {}) {
-    return utils.sanitizeOverrides(requested);
+    return sanitizeOverrides(requested);
   }
 
   toBigNumber(value, decimalShift = 0) {
-    return utils.toBigNumber(value, decimalShift);
+    return toBigNumber(value, decimalShift);
   }
 
   toEthersBigNumber(value, decimalShift = 0) {
-    return utils.toEthersBigNumber(value, decimalShift);
+    return toEthersBigNumber(value, decimalShift);
   }
 
   toNumber(value, decimalShift = 0) {
-    return utils.toNumber(value, decimalShift);
+    return toNumber(value, decimalShift);
   }
 }

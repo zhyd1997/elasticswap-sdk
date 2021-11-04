@@ -63,11 +63,6 @@ export class SDK extends Subscribable {
       this,
       this.env.exchangeFactoryAddress,
     );
-
-    this.erc20 = new ERC20(
-      this,
-      this.account,
-    );
   }
 
   get balances() {
@@ -80,10 +75,6 @@ export class SDK extends Subscribable {
 
   get exchangeFactory() {
     return this._exchangeFactory;
-  }
-
-  get erc20() {
-    return this.erc20;
   }
 
   get fetch() {
