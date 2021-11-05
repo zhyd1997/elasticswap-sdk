@@ -3,10 +3,41 @@
 import { ethers } from 'ethers';
 import { shortenAddress, validateIsAddress } from '@pie-dao/utils';
 import Notify from 'bnc-notify';
-import { toBigNumber, erc20 } from '@elastic-dao/sdk';
 import Subscribable from './Subscribable';
 import ExchangeFactoryClass from './exchange/ExchangeFactory';
 import ERC20Class from './tokens/ERC20';
+
+import {
+  amountFormatter,
+  domain,
+  buildError,
+  isValidTypedDataOrMessageSignature,
+  swapBigNumber,
+  toBigNumber,
+  toEthersBigNumber,
+  toKey,
+  toNumber,
+  upTo,
+  validate,
+  truncate,
+  round,
+} from './utils/utils';
+
+export const utils = {
+  amountFormatter,
+  buildError,
+  domain,
+  isValidTypedDataOrMessageSignature,
+  swapBigNumber,
+  toBigNumber,
+  toEthersBigNumber,
+  toKey,
+  toNumber,
+  upTo,
+  validate,
+  truncate,
+  round,
+};
 
 const prefix = '@elastic-dao/elasticswap-sdk';
 
