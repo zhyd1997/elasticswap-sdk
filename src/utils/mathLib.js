@@ -4,6 +4,38 @@ const {utils} = sdk;
 
 // TODO: add support for negative scenarios
 
+// calculates the decay (if any) - and returns the type and value of the decay
+const calculateDecay = () => {};
+
+// calculates the current exchange rate (x/y)
+const calculateExchangeRate = (inputTokenReserveQty, outputTokenReserveQty) => {
+  // cleanse input to BN
+  inputTokenReserveQtyBN = BigNumber(inputTokenReserveQty);
+  outputTokenReserveQtyBN = BigNumber(outputTokenReserveQty);
+
+  // if any one of them are zero return cause empty pool
+  if(inputTokenReserveQtyBN.isEqualTo(0) || outputTokenReserveQtyBN.isEqualTo(0)){
+    throw new Error("Error:Empty pool");
+  }
+
+  return inputTokenReserveQtyBN.dividedBy(outputTokenReserveQtyBN);
+
+}
+
+// calculates expected Ro amount based on inputs
+calculateLPTokenAmount(inputQuoteTokenAmount, inputBaseTokenAmount, quoteTokenReserveQty, baseTokenReserveQty, lpTokenReserveQty, decay , slippage) {
+  // 3-LP situations: 
+  // initial pool setup: deltaRo = sqrt(inputQuoteTokenAmount, inputBaseTokenAmount) 
+  // non decay - Double Asset Entry: deltaRo = (ΔY/Y) * Ro = (inputBaseTokenAmount/baseTokenReserveQty) * lpTokenReserveQty
+
+  // Presence of decay - 
+  // call calculate and get back decay value and type
+  // based on which gamma gets calculated
+
+
+} 
+
+
 // calculates the min amount of output tokens given the slippage percent supplied
 const calculateOutputAmount = (inputTokenAmount, inputTokenReserveQty, outputTokenReserveQty, slippagePercent) => {
 
@@ -57,21 +89,6 @@ const calculatePriceImpact = (inputTokenAmount, inputTokenReserveQty, outputToke
   const difference = priceOfXDashInYDash.minus(priceOfXinY);
   const priceImpact = (difference).dividedBy(priceOfXinY).absoluteValue();
   return priceImpact;
-
-}
-
-// calculates the current exchange rate (x/y)
-const calculateExchangeRate = (inputTokenReserveQty, outputTokenReserveQty) => {
-  // cleanse input to BN
-  inputTokenReserveQtyBN = BigNumber(inputTokenReserveQty);
-  outputTokenReserveQtyBN = BigNumber(outputTokenReserveQty);
-
-  // if any one of them are zero return cause empty pool
-  if(inputTokenReserveQtyBN.isEqualTo(0) || outputTokenReserveQtyBN.isEqualTo(0)){
-    throw new Error("Error:Empty pool");
-  }
-
-  return inputTokenReserveQtyBN.dividedBy(outputTokenReserveQtyBN);
 
 }
 
