@@ -32,9 +32,6 @@ describe('ERC20', () => {
       const erc20 = new elasticSwap.ERC20(sdk, quoteToken.address);
       assert.equal(quoteToken.address, erc20.address);
       assert.isNotNull(erc20.contract);
-
-      // test that the address is correct
-      // test that contract is not null 
     });
   });
 
@@ -69,10 +66,9 @@ describe('ERC20', () => {
         abi: quoteToken.abi,
       });
       const erc20Contract = new elasticSwap.ERC20(sdk, quoteToken.address);
-
-      let expectedBalance = await quoteTokenContract.balanceOf(accounts[0].address);
+      let expectedBalance = await quoteTokenContract.balanceOf(accounts[1].address);
       expectedBalance = toBigNumber(expectedBalance.toString());
-      const balance = await erc20Contract.balanceOf(accounts[0].address);
+      const balance = await erc20Contract.balanceOf(accounts[1].address);
 
       assert.isTrue(expectedBalance.eq(balance));
     });
@@ -96,10 +92,10 @@ describe('ERC20', () => {
       // checking initial approvals
       const startingApproval = await quoteToken.allowance(accounts[0].address, approvalAddress);
       const approvalAmount = 50000;
-      await erc20.approve(approvalAddress, approvalAmount); // need to fix this to attach signer
-      // confirm the approval went through
+      await erc20.approve(approvalAddress, approvalAmount);
       const endingApproval = await quoteToken.allowance(accounts[0].address, approvalAddress);
       assert.isTrue(endingApproval.eq(approvalAmount));
+      assert.isTrue(endingApproval.gt(startingApproval));
     });
   });
 });

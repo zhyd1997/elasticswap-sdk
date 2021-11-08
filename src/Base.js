@@ -6,7 +6,6 @@ import {
 } from './utils/utils';
 import Subscribable from './Subscribable';
 
-
 export default class Base extends Subscribable {
   constructor(sdk) {
     super();
