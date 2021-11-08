@@ -16,7 +16,7 @@ const calculateOutputAmount = (inputTokenAmount, inputTokenReserveQty, outputTok
   const inputTokenReserveQtyBN = BigNumber(inputTokenReserveQty);
   const outputTokenReserveQtyBN = BigNumber(outputTokenReserveQty);
   const slippagePercentBN = BigNumber(slippagePercent);
-  console.log("calcOutputAmount inputs:",inputTokenAmountBN.toString(), inputTokenReserveQtyBN.toString(), outputTokenReserveQtyBN.toString());
+  
 
   if(inputTokenReserveQtyBN.isEqualTo(BigNumber(0)) || outputTokenReserveQtyBN.isEqualTo(BigNumber(0)) ) {
     throw new Error("Error:Empty pool");
@@ -32,7 +32,7 @@ const calculateOutputAmount = (inputTokenAmount, inputTokenReserveQty, outputTok
   const deltaY = YDash.minus(outputTokenReserveQtyBN);
   const outputTokenAmountBN = deltaY.absoluteValue();
   
-  console.log("calcoutput: outputBN: ", outputTokenAmountBN.toString())                              
+                                
   return outputTokenAmountBN;                                
 
 
@@ -48,20 +48,13 @@ const calculatePriceImpact = (inputTokenAmount, inputTokenReserveQty, outputToke
   const inputTokenReserveQtyBN = BigNumber(inputTokenReserveQty);
   const outputTokenReserveQtyBN = BigNumber(outputTokenReserveQty);
   const slippagePercentBN = BigNumber(slippagePercent);
-  console.log("priceImpactfunc: ", inputTokenAmountBN.toString(), inputTokenReserveQtyBN.toString(), outputTokenReserveQtyBN.toString());
 
   const priceOfXinY = calculateExchangeRate(inputTokenReserveQtyBN, outputTokenReserveQtyBN);
-  console.log("priceOfXinY:", priceOfXinY.toString());
   const YRecieved = calculateOutputAmount(inputTokenAmountBN, inputTokenReserveQtyBN, outputTokenReserveQtyBN, slippagePercentBN);
-  console.log("Yreceived:", YRecieved.toString());
   const YDash = YRecieved.minus(outputTokenReserveQtyBN).absoluteValue();
   const XDash = inputTokenReserveQtyBN.plus(inputTokenAmount);
-  console.log("XDash:", XDash.toString());
-  console.log("YDash:", YDash.toString());
   const priceOfXDashInYDash = calculateExchangeRate(XDash, YDash);
-  console.log("priceOfXDashInYDash:", priceOfXDashInYDash.toString());
   const difference = priceOfXDashInYDash.minus(priceOfXinY);
-  console.log("diffrence:", difference.toString());
   const priceImpact = (difference).dividedBy(priceOfXinY).absoluteValue();
   return priceImpact;
 

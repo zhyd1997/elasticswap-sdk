@@ -15,13 +15,10 @@ describe('MathLib', () => {
     
     // no slippage
     const answer = calculateOutputAmount(10, 500, 100, 0);
-    console.log('answer', answer.toString());
-    console.log('bn', BigNumber("1.96078431372549019608").toString());
     assert.isTrue(answer.isEqualTo(BigNumber("1.96078431372549019608")));
 
     // 5 percent slippage
     const slippageAnswer = calculateOutputAmount(10, 500, 100, 5);
-    console.log(slippageAnswer.toString());
     assert.isTrue(slippageAnswer.isEqualTo(BigNumber("6.862745098039215686276")));
 
     // empty reserves should return sane error
@@ -46,14 +43,19 @@ describe('MathLib', () => {
     assert.throws(() => calculateExchangeRate(100, 0), "Error:Empty pool");
   });
 
-  it.only('calculates priceImpact correctly', async () => {
+  it('calculates priceImpact correctly', async () => {
     const priceImpact1 = calculatePriceImpact(10, 500, 100, 0);
-    console.log(priceImpact1.toString());
     assert.isTrue(priceImpact1.isEqualTo(BigNumber(0.0404)));
 
     const priceImpact2 = calculatePriceImpact(10, 500, 100, 5);
-    console.log(priceImpact2.toString());
     assert.isTrue(priceImpact2.isEqualTo(BigNumber("0.09515789473684210526")));
+
+    // empty reserves should return sane error
+    assert.throws(() => calculatePriceImpact(1, 0, 100, 5), "Error:Empty pool");
+    assert.throws(() => calculatePriceImpact(1, 100, 0, 5), "Error:Empty pool");
+
+    // incorrect trade amount
+    assert.throws(() => calculatePriceImpact(0, 100, 100, 5), "Error: Divide by zero");
 
   });
 
