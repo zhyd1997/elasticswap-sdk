@@ -72,58 +72,6 @@ export const amountFormatter = ({
   return base;
 };
 
-export const buildError = ({ message, localPrefix }) =>
-  `${localPrefix || prefix}: ${message}`;
-
-export const chunkArray = (arr, chunkSize) => {
-  const chunks = [];
-  for (let i = 0; i < arr.length; i += chunkSize) {
-    chunks.push(arr.slice(i, i + chunkSize));
-  }
-  return chunks;
-};
-
-/**
- * Used for EIP 721 signatures
- */
-export const domain = { name: 'ElasticDAO', chainId: 1 };
-
-/**
- * Validates that the provided signature was created by the signerAddress passed in.
- * First attempt tries to use EIP 712 and if it fails will then attempt to use EIP191
- * on the hashed JSON of the value object passed in.
- * @param {*} types
- * @param {*} value
- * @param {*} signature
- * @param {*} signerAddress address that created the signature
- * @returns true if the signerAddress matches the address that created the signature
- */
-export const isValidTypedDataOrMessageSignature = (
-  types,
-  value,
-  signature,
-  signerAddress,
-) => {
-  let verifiedAddress = ethers.utils.verifyTypedData(
-    domain,
-    types,
-    value,
-    signature,
-  );
-
-  if (signerAddress === verifiedAddress) {
-    return true;
-  }
-
-  // attempt to validate with EIP 191
-  verifiedAddress = ethers.utils.verifyMessage(
-    JSON.stringify(value),
-    signature,
-  );
-
-  return signerAddress === verifiedAddress;
-};
-
 export const sanitizeOverrides = (requested = {}, readonlyMethod = false) => {
   const overrides = {};
   let validKeys = [];
@@ -261,23 +209,6 @@ export const upTo = (n) => {
   return arr;
 };
 
-export const validate = (result, options) => {
-  const { level = 'error', message, throwError = true } = options;
-
-  if (result) {
-    return true;
-  }
-
-  const error = buildError({ message, prefix: options.prefix });
-
-  if (throwError) {
-    throw new TypeError(error);
-  }
-
-  console[level](error);
-  return false;
-};
-
 export const truncate = (str, opts = {}) => {
   if (!str) {
     return '';
@@ -333,9 +264,6 @@ export const round = (value, type = 1, decimalPlaces) => {
 
 export default {
   amountFormatter,
-  buildError,
-  domain,
-  isValidTypedDataOrMessageSignature,
   swapBigNumber,
   toBigNumber,
   toEthersBigNumber,
@@ -343,6 +271,5 @@ export default {
   toNumber,
   truncate,
   upTo,
-  validate,
   round,
 };

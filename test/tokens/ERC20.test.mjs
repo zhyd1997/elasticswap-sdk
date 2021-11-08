@@ -94,6 +94,7 @@ describe('ERC20', () => {
       const approvalAmount = 50000;
       await erc20.approve(approvalAddress, approvalAmount);
       const endingApproval = await quoteToken.allowance(accounts[0].address, approvalAddress);
+      assert.isTrue(startingApproval.eq(0));
       assert.isTrue(endingApproval.eq(approvalAmount));
       assert.isTrue(endingApproval.gt(startingApproval));
     });
