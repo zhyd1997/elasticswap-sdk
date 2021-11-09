@@ -4,7 +4,11 @@ import mathLib from '../../src/utils/MathLib.js'
 import BigNumber from 'bignumber.js'
 
 const { assert } = chai;
-const { calculateOutputAmount, calculateExchangeRate, calculatePriceImpact } = mathLib;
+const { 
+  calculateOutputAmount, 
+  calculateExchangeRate, 
+  calculatePriceImpact,
+  calculateDecay } = mathLib;
 
 
 
@@ -57,6 +61,31 @@ describe('MathLib', () => {
     // incorrect trade amount
     assert.throws(() => calculatePriceImpact(0, 100, 100, 5), "Error: Divide by zero");
 
+  });
+
+  it.only('calculates Decay correctly', async () => {
+    // alpha decay
+    const positiveAlphaDecay = calculateDecay(100, 125, 100, 100);
+    assert.isTrue(positiveAlphaDecay.type === "alphaDecay");
+    assert.isTrue(positiveAlphaDecay.value.isEqualTo(BigNumber("25")));
+
+    const negativeAlphaDecay = calculateDecay(100, 75, 100 , 100);
+    assert.isTrue(negativeAlphaDecay.type === "alphaDecay");
+    assert.isTrue(negativeAlphaDecay.value.isEqualTo(BigNumber("-25")));
+
+    // beta decay
+    const positiveBetaDecay = calculateDecay(100, 100, 100, 125);
+    assert.isTrue(positiveBetaDecay.type === "betaDecay");
+    assert.isTrue(positiveBetaDecay.value.isEqualTo(BigNumber("25")));
+
+    const negativeBetaDecay = calculateDecay(100, 100, 125 , 100);
+    assert.isTrue(negativeBetaDecay.type === "betaDecay");
+    assert.isTrue(negativeBetaDecay.value.isEqualTo(BigNumber("-25")));
+
+    // no decay
+    const noDecay = calculateDecay(1000, 1000, 1000, 1000);
+    assert.isTrue(noDecay.type === "noDecay");
+    assert.isTrue(noDecay.value.isZero());
   });
 
   
