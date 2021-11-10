@@ -1,3 +1,4 @@
+import ExchangeSolidity from '@elastic-dao/elasticswap/artifacts/src/contracts/Exchange.sol/Exchange.json';
 import Base from '../Base';
 
 export default class Exchange extends Base {
