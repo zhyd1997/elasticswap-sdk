@@ -86,6 +86,7 @@ describe('MathLib', () => {
     const noDecay = calculateDecay(1000, 1000, 1000, 1000);
     assert.isTrue(noDecay.type === "noDecay");
     assert.isTrue(noDecay.value.isZero());
+    // test
   });
 
   
