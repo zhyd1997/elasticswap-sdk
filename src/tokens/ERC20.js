@@ -5,10 +5,13 @@ export default class ERC20 extends Base {
   constructor(sdk, address) {
     super(sdk);
     this._address = address;
-    this._contract = sdk.contract({
+  }
+
+  static contract(sdk, address, readonly = false) {
+    return sdk.contract({
       abi: ERC20Contract.abi,
       address,
-      readonly: false,
+      readonly,
     });
   }
 
@@ -17,7 +20,11 @@ export default class ERC20 extends Base {
   }
 
   get contract() {
-    return this._contract;
+    return this.constructor.contract(this.sdk, this.address, false);
+  }
+
+  get readonlyContract() {
+    return this.constructor.contract(this.sdk, this.address, true);
   }
 
   async approve(spenderAddress, amount, overrides = {}) {
@@ -38,5 +45,16 @@ export default class ERC20 extends Base {
     );
 
     return this.toBigNumber(balance.toString());
+  }
+
+  async allowance(ownerAddress, spenderAddress, overrides = {}) {
+    const ERC20Token = await this.readonlyContract;
+    const allowance = await ERC20Token.allowance(
+      ownerAddress,
+      spenderAddress,
+      this.sanitizeOverrides(overrides, true),
+    );
+
+    return allowance;
   }
 }
