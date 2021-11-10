@@ -66,13 +66,14 @@ const calculateLPTokenAmount = (inputQuoteTokenAmount, inputBaseTokenAmount, quo
   const inputQuoteTokenAmountBN = BigNumber(inputQuoteTokenAmount);
   const inputBaseTokenAmountBN = BigNumber(inputBaseTokenAmount);
   const quoteTokenReserveQtyBN = BigNumber(quoteTokenReserveQty);
+  const alphaBN = BigNumber(alpha);
   const baseTokenReserveQtyBN = BigNumber(baseTokenReserveQty);
+  const betaBN = Bignumber(beta);
   const lpTokenReserveQtyBN = BigNumber(lpTokenReserveQty);
   //decay will be object need to clean its value key
   
   const slippageBN = BigNumber(slippage);
 
-  const ZERO = BigNumber(0);
 
 
   // 3-LP situations: 
@@ -83,7 +84,16 @@ const calculateLPTokenAmount = (inputQuoteTokenAmount, inputBaseTokenAmount, quo
     return deltaRo;
   }
   
-  // non decay - Double Asset Entry: deltaRo = (ΔY/Y) * Ro = (inputBaseTokenAmount/baseTokenReserveQty) * lpTokenReserveQty
+  // non decay - Double Asset Entry: deltaRo = (ΔY/Y) * Ro = (inputQuoteTokenAmount/quoteTokenReserveQty) * lpTokenReserveQty
+  const decay = calculateDecay(quoteTokenReserveQtyBN, alphaBN, baseTokenReserveQtyBN, betaBN);
+  if(decay.value.isZero()){
+    const deltaRo = (inputQuoteTokenAmountBN.dividedBy(quoteTokenReserveQtyBN)).multipliedBy(lpTokenReserveQtyBN);
+    return deltaRo; 
+  }
+  else 
+    if( !(decay.value.isZero()) && decay.type === "betaDecay" ){
+      // calculate gamma
+    }
   
 
   // Presence of decay - 
@@ -93,6 +103,9 @@ const calculateLPTokenAmount = (inputQuoteTokenAmount, inputBaseTokenAmount, quo
   // calculate gamma based on type of decay 
 
 
+};
+const calculateGamma = (decay, inputQuoteTokenAmount, inputBaseTokenAmount, quoteTokenReserveQty, baseTokenReserveQty) => {
+  const decayType = decay.type;
 };
 
 

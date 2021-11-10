@@ -63,7 +63,7 @@ describe('MathLib', () => {
 
   });
 
-  it.only('calculates Decay correctly', async () => {
+  it('calculates Decay correctly', async () => {
     // alpha decay
     const positiveAlphaDecay = calculateDecay(100, 125, 100, 100);
     assert.isTrue(positiveAlphaDecay.type === "alphaDecay");
