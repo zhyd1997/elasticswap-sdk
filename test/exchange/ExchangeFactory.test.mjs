@@ -13,7 +13,7 @@ describe('ExchangeFactory', () => {
   before(async () => {
     const env = {
       networkId: 99999,
-      exchangeFactoryAddress: '0x8C2251e028043e38f58Ac64c00E1F940D305Aa62'
+      exchangeFactoryAddress: '0x8C2251e028043e38f58Ac64c00E1F940D305Aa62',
     };
     sdk = new elasticSwapSDK.SDK({ env, customFetch: fetch, provider: hardhat.ethers.provider });
   });
