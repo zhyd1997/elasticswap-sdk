@@ -5,10 +5,12 @@ import hardhat from 'hardhat';
 import elasticSwapSDK from '../../dist/index.js';
 
 const { ethers, deployments } = hardhat;
-const { expect } = chai;
+const { expect, assert } = chai;
 const WAD = ethers.BigNumber.from('1000000000000000000');
+
 let sdk;
 let exchange;
+let exchangeClass;
 let quoteToken;
 let baseToken;
 let accounts;
@@ -31,7 +33,9 @@ describe('Exchange', () => {
       account: accounts[0],
       signer: accounts[0],
     });
+
     await deployments.fixture();
+
     const BaseToken = await deployments.get('BaseToken');
     baseToken = new ethers.Contract(
       BaseToken.address,
@@ -47,7 +51,11 @@ describe('Exchange', () => {
     );
 
     const Exchange = await deployments.get('Exchange');
-    exchange = new ethers.Contract(Exchange.address, Exchange.abi, accounts[0]);
+    exchange = new ethers.Contract(
+      Exchange.address,
+      Exchange.abi,
+      accounts[0],
+    );
 
     liquidityFeeInBasisPoints = await exchange.TOTAL_LIQUIDITY_FEE();
     liquidityFee = liquidityFeeInBasisPoints / 10000;
@@ -55,49 +63,14 @@ describe('Exchange', () => {
 
     const MathLib = await deployments.get('MathLib');
     mathLib = new ethers.Contract(MathLib.address, MathLib.abi, accounts[0]);
-  });
 
-  /* describe('Constructor', () => {
-    it('can be created via constructor', async () => {
-      await deployments.fixture();
-      const quoteToken = await deployments.get('QuoteToken');
-      const baseToken = await deployments.get('BaseToken');
-      const exchangeDeployment = await deployments.get('Exchange');
-      const exchangeClass = new elasticSwapSDK.Exchange(
-        sdk,
-        exchangeDeployment.address,
-        baseToken.address,
-        quoteToken.address,
-      );
-      assert.isNotNull(exchangeClass);
-      assert.equal(exchangeDeployment.address, exchangeClass.exchangeAddress);
-    });
+    exchangeClass = new elasticSwapSDK.Exchange(
+      sdk,
+      exchange.address,
+      baseToken.address,
+      quoteToken.address,
+    );
   });
-
-     describe('Add Liquidity', () => {
-    it('add liquidity when both base and quote are approved and > 0', async () => {
-      await deployments.fixture();
-      const quoteToken = await deployments.get('QuoteToken');
-      const baseToken = await deployments.get('BaseToken');
-      const exchangeDeployment = await deployments.get('Exchange');
-      const exchangeClass = new elasticSwapSDK.Exchange(
-        sdk,
-        exchangeDeployment.address,
-        baseToken.address,
-        quoteToken.address,
-      );
-      const exchangeAddLiquidityResult = await exchangeClass.addLiquidity(
-        1,
-        1,
-        1,
-        1,
-        sdk.account,
-        Date.now() + 900000,
-      );
-      console.log('exchangeAddLiquidityResult', exchangeAddLiquidityResult);
-      // assert.isTrue(exchangeAddLiquidityResult);
-    });
-  }); */
 
   describe('constructor', () => {
     it('Should deploy with correct name, symbol and addresses', async () => {
@@ -105,6 +78,11 @@ describe('Exchange', () => {
       expect(await exchange.symbol()).to.equal('ETMFUSD');
       expect(await exchange.quoteToken()).to.equal(quoteToken.address);
       expect(await exchange.baseToken()).to.equal(baseToken.address);
+    });
+
+    it('Can be created via constructor', async () => {
+      assert.isNotNull(exchangeClass);
+      assert.equal(exchange.address, exchangeClass.address);
     });
   });
 
@@ -1746,14 +1724,17 @@ describe('Exchange', () => {
 
       // send users (liquidity provider) base and quote tokens for easy accounting.
       const liquidityProviderInitialBalances = 1000000;
+
       await baseToken.transfer(
         liquidityProvider.address,
         liquidityProviderInitialBalances,
       );
+
       await quoteToken.transfer(
         liquidityProvider.address,
         liquidityProviderInitialBalances,
       );
+
       // lp2 only needs quote tokens for single asset entry.
       await quoteToken.transfer(
         liquidityProvider2.address,
@@ -1761,50 +1742,68 @@ describe('Exchange', () => {
       );
 
       // add approvals
-      await quoteToken
-        .connect(liquidityProvider)
-        .approve(exchange.address, liquidityProviderInitialBalances);
-      await baseToken
-        .connect(liquidityProvider)
-        .approve(exchange.address, liquidityProviderInitialBalances);
-      await quoteToken
-        .connect(liquidityProvider2)
-        .approve(exchange.address, liquidityProviderInitialBalances);
+      await sdk.changeSigner(liquidityProvider);
+      const QuoteTokenERC20 = new elasticSwapSDK.ERC20(sdk, quoteToken.address);
+      const BaseTokenERC20 = new elasticSwapSDK.ERC20(sdk, baseToken.address);
+
+      await QuoteTokenERC20
+        .approve(
+          exchangeClass.address,
+          liquidityProviderInitialBalances,
+        );
+
+      await BaseTokenERC20
+        .approve(
+          exchangeClass.address,
+          liquidityProviderInitialBalances,
+        );
+
+      await sdk.changeSigner(liquidityProvider2);
+      const QuoteToken2ERC20 = new elasticSwapSDK.ERC20(sdk, quoteToken.address);
+
+      await QuoteToken2ERC20
+        .approve(
+          exchangeClass.address,
+          liquidityProviderInitialBalances,
+        );
 
       const baseTokenQtyToAdd = 10000;
       const quoteTokenQtyToAdd = 50000;
 
-      await exchange.connect(liquidityProvider).addLiquidity(
-        baseTokenQtyToAdd, // base token
-        quoteTokenQtyToAdd, // quote token
-        1,
-        1,
-        liquidityProvider.address,
-        expiration,
-      );
+      const classReturn = await exchangeClass
+        .addLiquidity(
+          baseTokenQtyToAdd, // base token
+          quoteTokenQtyToAdd, // quote token
+          1,
+          1,
+          liquidityProvider.address,
+          expiration,
+        );
 
       // simulate a rebase by sending more tokens to our exchange contract.
       const rebaseAmount = 40000;
-      await baseToken.transfer(exchange.address, rebaseAmount);
+      await baseToken.transfer(exchangeClass.address, rebaseAmount);
+      console.log('Retorno', classReturn);
 
       // confirm the exchange now has the expected balance after rebase
-      expect((await baseToken.balanceOf(exchange.address)).toNumber()).to.equal(
+      expect((await baseToken.balanceOf(exchangeClass.address)).toNumber()).to.equal(
         baseTokenQtyToAdd + rebaseAmount,
       );
 
       // confirm that the exchange internal accounting of reserves is the amount
       // added by the first liquidity provider.
-      expect(((await exchange.internalBalances()).baseTokenReserveQty).toNumber()).to.equal(
+      expect(((await exchangeClass.internalBalances()).baseTokenReserveQty).toNumber()).to.equal(
         baseTokenQtyToAdd,
       );
-      expect(((await exchange.internalBalances()).quoteTokenReserveQty).toNumber()).to.equal(
+
+      expect(((await exchangeClass.internalBalances()).quoteTokenReserveQty).toNumber()).to.equal(
         quoteTokenQtyToAdd,
       );
 
       // confirm the 'decay' is equal to the rebase amount. (this is alphaDecay)
       const baseTokenDecay =
-        ((await baseToken.balanceOf(exchange.address)).toNumber()) -
-        (await exchange.internalBalances()).baseTokenReserveQty;
+        ((await baseToken.balanceOf(exchangeClass.address)).toNumber()) -
+        (await exchangeClass.internalBalances()).baseTokenReserveQty;
       expect(baseTokenDecay).to.equal(rebaseAmount);
 
       // we should be able to now add quote tokens in order to offset the base tokens
@@ -1814,19 +1813,20 @@ describe('Exchange', () => {
       const quoteTokensToRemoveDecay = Math.floor(
         baseTokenDecay / (baseTokenQtyToAdd / quoteTokenQtyToAdd),
       );
-      await exchange.connect(liquidityProvider2).addLiquidity(
-        0, // no base tokens
-        quoteTokensToRemoveDecay,
-        0, // no base tokens
-        1, // quote token min
-        liquidityProvider2.address,
-        expiration,
-      );
+      await exchangeClass
+        .addLiquidity(
+          0, // no base tokens
+          quoteTokensToRemoveDecay,
+          0, // no base tokens
+          1, // quote token min
+          liquidityProvider2.address,
+          expiration,
+        );
 
       // confirm that the decay has been mitigated completely.
       const baseTokenDecayAfterSingleAssetEntry =
-        ((await baseToken.balanceOf(exchange.address)).toNumber()) -
-        (await exchange.internalBalances()).baseTokenReserveQty;
+        ((await baseToken.balanceOf(exchangeClass.address)).toNumber()) -
+        (await exchangeClass.internalBalances()).baseTokenReserveQty;
       expect(baseTokenDecayAfterSingleAssetEntry).to.equal(0);
 
       // confirm original LP can get correct amounts back.
@@ -1845,10 +1845,9 @@ describe('Exchange', () => {
       // this should distribute 30000 base tokens and 150000
       // quote tokens back to our liquidity provider
       // we send to cleanAddress1 for easier accounting
-      await exchange
-        .connect(liquidityProvider)
+      await exchangeClass
         .removeLiquidity(
-          await exchange.balanceOf(liquidityProvider.address),
+          await exchangeClass.balanceOf(liquidityProvider.address),
           1,
           1,
           cleanAddress1,
@@ -1872,7 +1871,6 @@ describe('Exchange', () => {
 
       // this should issue 50000 base and 250000 quote tokens
       await exchange
-        .connect(liquidityProvider2)
         .removeLiquidity(
           await exchange.balanceOf(liquidityProvider2.address),
           1,

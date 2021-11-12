@@ -3,15 +3,15 @@ import ERC20 from '../tokens/ERC20';
 import Base from '../Base';
 
 export default class Exchange extends Base {
-  constructor(sdk, exchangeAddress, baseTokenAddress, quoteTokenAddress) {
+  constructor(sdk, address, baseTokenAddress, quoteTokenAddress) {
     super(sdk);
     this._contract = sdk.contract({
       abi: ExchangeSolidity.abi,
-      address: exchangeAddress,
+      address,
       readonly: false,
     });
     this._ownerAddress = sdk.account;
-    this._exchangeAddress = exchangeAddress;
+    this._exchangeAddress = address;
     this._baseTokenAddress = baseTokenAddress;
     this._quoteTokenAddress = quoteTokenAddress;
     this._baseToken = new ERC20(sdk, baseTokenAddress);
@@ -26,7 +26,7 @@ export default class Exchange extends Base {
     return this._ownerAddress;
   }
 
-  get exchangeAddress() {
+  get address() {
     return this._exchangeAddress;
   }
 
@@ -47,11 +47,11 @@ export default class Exchange extends Base {
   }
 
   get baseTokenAllowance() {
-    return this._baseToken.allowance(this.ownerAddress, this.exchangeAddress);
+    return this._baseToken.allowance(this.ownerAddress, this.address);
   }
 
   get quoteTokenAllowance() {
-    return this._quoteToken.allowance(this.ownerAddress, this.exchangeAddress);
+    return this._quoteToken.allowance(this.ownerAddress, this.address);
   }
 
   get liquidityFee() {
@@ -66,12 +66,12 @@ export default class Exchange extends Base {
     liquidityTokenRecipient,
     expirationTimestamp,
     overrides = {}) {
-    if (!(this.baseTokenBalance > 0) && !(this.quoteTokenBalance > 0)) {
+/*     if (!(this.baseTokenBalance > 0) && !(this.quoteTokenBalance > 0)) {
       return false;
     }
     if (!(this.baseTokenAllowance > 0) && !(this.quoteTokenAllowance > 0)) {
       return false;
-    }
+    } */
     const exchange = await this.contract;
     const addLiquidityStatus = await exchange.addLiquidity(
       baseTokenQtyDesired,
