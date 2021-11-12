@@ -7,6 +7,7 @@ const {utils} = sdk;
 // recommend passing in all numbers as string or BN instances so that BN constructor works properly
 
 // calculates the decay (if any) - and returns the type and value of the decay
+//                        Y                    α            X               β
 const calculateDecay = (quoteTokenReserveQty, alpha, baseTokenReserveQty, beta) => {
    // cleanse input:
    const quoteTokenReserveQtyBN = BigNumber(quoteTokenReserveQty);
@@ -23,16 +24,17 @@ const calculateDecay = (quoteTokenReserveQty, alpha, baseTokenReserveQty, beta) 
    if(quoteTokenReserveQtyBN.isZero() || baseTokenReserveQtyBN.isZero()|| alphaBN.isZero() || betaBN.isZero() ) {
     throw new Error("Error:Empty pool");
   }
-
-   if( !(betaBN.minus(baseTokenReserveQtyBN).isZero()) ){
-     const betaDecayValue = betaBN.minus(baseTokenReserveQtyBN);
+   // BetaDecay (β^) = β-Y => beta - quoteTokenReserveQty
+   if( !(betaBN.minus(quoteTokenReserveQtyBN).isZero()) ){
+     const betaDecayValue = betaBN.minus(quoteTokenReserveQtyBN);
      decay.type = "betaDecay";
      decay.value = betaDecayValue;
 
    }
    else
-    if(!(alphaBN.minus(quoteTokenReserveQtyBN).isZero())){
-      const alphaDecayValue = alphaBN.minus(quoteTokenReserveQtyBN);
+    // AlphaDecay (α^) = α-X => alpha - baseTokenReserveQty
+    if(!(alphaBN.minus(baseTokenReserveQtyBN).isZero())){
+      const alphaDecayValue = alphaBN.minus(baseTokenReserveQtyBN);
       decay.type = "alphaDecay";
       decay.value = alphaDecayValue;
 
@@ -104,8 +106,62 @@ const calculateLPTokenAmount = (inputQuoteTokenAmount, inputBaseTokenAmount, quo
 
 
 };
-const calculateGamma = (decay, inputQuoteTokenAmount, inputBaseTokenAmount, quoteTokenReserveQty, baseTokenReserveQty) => {
+
+
+// gamma is different based on the type of decay prsent in the system
+//                                   
+const calculateGamma = (alpha, baseTokenReserveQty, beta, decay, inputBaseTokenAmount, inputQuoteTokenAmount, quoteTokenReserveQty) => {
+  // cleanse input 
+  const quoteTokenReserveQtyBN = BigNumber(quoteTokenReserveQty);
+  const alphaBN = BigNumber(alpha);
+  const baseTokenReserveQtyBN = BigNumber(baseTokenReserveQty);
+  const betaBN = BigNumber(beta);
+  const inputQuoteTokenAmountBN = BigNumber(inputQuoteTokenAmount);
+  const inputBaseTokenAmountBN = BigNumber(inputBaseTokenAmount);
+
+  // omega = X/Y => baseTokenReserve/ quoteTokenReserve
+  const omega =  baseTokenReserveQtyBN.dividedBy(quoteTokenReserveQtyBN);
+
+  let gamma;
   const decayType = decay.type;
+  if(decayType === "betaDecay"){
+    /* 
+    When there is betaDecay
+    # γ = ΔX / X / 2 * ( ΔX / β^ )
+    # ΔX = α - X   - The max amount of baseTokens required to completely offset betaDecay(and by extension alphaDecay).
+      (Provided by the user)
+    # β^ = ΔX  / ω
+    # Omega (ω) - X/Y - The ratio of the internal balance of baseToken to the internal balance of quoteToken
+    */
+   const deltaX =  alphaBN.minus(baseTokenReserveQtyBN);
+   
+   /*
+   BetaDecay (β^) = β-Y -> The amount of Beta(β) not contributing to the liquidity,
+   Due to an imbalance in the tokens caused by elastic supply (a rebase).
+   */
+   const betaDecay = decay.value;
+   gamma = (deltaX.dividedBy(baseTokenReserveQtyBN.dividedBy(BigNumber(2)))).multipliedBy(deltaX.dividedBy(betaDecay))
+   return gamma;
+  }
+  else
+    if(decayType == "alphaDecay") {
+      /* 
+      When there is alphaDecay
+      # γ= ΔY / Y / 2 * ( ΔX / α^ )
+      # ΔY = α^ / ω   = The amount of quoteTokens required to completely offset alphaDecay.
+      # AlphaDecay (α^) = α-X -> The amount of Alpha(α) not contributing to the liquidity, 
+      # Due to an imbalance in the tokens caused by elastic supply (a rebase).
+      # Omega (ω) - X/Y - The ratio of the internal balance of baseToken to the internal balance of quoteToken
+      */
+      const alphaDecay = decay.value;
+      const deltaY = alphaDecay.dividedBy(omega);
+      // deltaX - is this correct tho
+      const deltaX = inputQuoteTokenAmountBN;
+      gamma = (deltaY.dividedBy(quoteTokenReserveQtyBN.dividedBy(BigNumber(2)))).multipliedBy(deltaX.dividedBy(alphaDecay));
+      return gamma;
+
+
+    }
 };
 
 
