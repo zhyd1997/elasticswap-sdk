@@ -90,12 +90,12 @@ export default class Exchange extends Base {
     liquidityTokenRecipient,
     expirationTimestamp,
     overrides = {}) {
-/*     if (!(this.baseTokenBalance > 0) && !(this.quoteTokenBalance > 0)) {
+    if (!(this.baseTokenBalance) || !(this.quoteTokenBalance)) {
       return false;
     }
-    if (!(this.baseTokenAllowance > 0) && !(this.quoteTokenAllowance > 0)) {
+    if (!(this.baseTokenAllowance) || !(this.quoteTokenAllowance)) {
       return false;
-    } */
+    }
     const exchange = await this.contract;
     const addLiquidityStatus = await exchange.addLiquidity(
       baseTokenQtyDesired,
@@ -116,9 +116,9 @@ export default class Exchange extends Base {
     tokenRecipient,
     expirationTimestamp,
     overrides = {}) {
-/*     if (!(this.baseTokenAllowance > 0) && !(this.quoteTokenAllowance > 0)) {
+    if (!(this.baseTokenAllowance) || !(this.quoteTokenAllowance)) {
       return false;
-    } */
+    }
     const exchange = await this.contract;
     const removeLiquidityStatus = await exchange.removeLiquidity(
       liquidityTokenQty,
@@ -136,12 +136,12 @@ export default class Exchange extends Base {
     quoteTokenQntyMin,
     expirationTimestamp,
     overrides = {}) {
-/*     if (!(this.baseTokenBalance > 0)) {
+    if (!(this.baseTokenBalance)) {
       return false;
     }
-    if (!(this.baseTokenAllowance > 0)) {
+    if (!(this.baseTokenAllowance)) {
       return false;
-    } */
+    }
     const exchange = await this.contract;
     const swapBaseTokenForQuoteTokenStatus = await exchange.swapBaseTokenForQuoteToken(
       baseTokenQnty,
@@ -157,12 +157,12 @@ export default class Exchange extends Base {
     baseTokenQntyMin,
     expirationTimestamp,
     overrides = {}) {
-/*     if (!(this.quoteTokenBalance > 0)) {
+    if (!(this.quoteTokenBalance)) {
       return false;
     }
-    if (!(this.quoteTokenAllowance > 0)) {
+    if (!(this.quoteTokenAllowance)) {
       return false;
-    } */
+    }
     const exchange = await this.contract;
     const swapQuoteTokenForBaseTokenStatus = await exchange.swapQuoteTokenForBaseToken(
       quoteTokenQnty,
