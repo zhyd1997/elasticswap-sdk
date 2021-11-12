@@ -1,0 +1,58 @@
+{
+  "name": "@elastic-swap/sdk",
+  "version": "0.0.1",
+  "description": "Official SDK for ElasticSwap",
+  "main": "dist/index.js",
+  "repository": "https://github.com/elasticswap/elasticswap-sdk",
+  "author": "ElasticSwap",
+  "license": "GPL-3.0",
+  "private": false,
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
+  "scripts": {
+    "analyzer": "yarn stats && yarn webpack-bundle-analyzer stats.json",
+    "build": "npx webpack -c ./webpack.config.production.js",
+    "dev": "yarn lint && npx webpack -c ./webpack.config.js --watch",
+    "lint": "yarn prettier && npx eslint src/*.js src/**/*.js src/**/**/*.js src/**/**/**/*.js test/**/*.mjs",
+    "prerelease": "yarn build",
+    "prettier": "npx prettier --write src/*.js --write src/**/*.js --write src/**/**/*.js --write src/**/**/**/*.js",
+    "release": "npm publish --access=public",
+    "stats": "npx webpack -c ./webpack.config.js --json > stats.json",
+    "test:only": "mocha --timeout 10000 --exit -r esm './**/*.test.mjs'",
+    "test": "yarn build && yarn test:only"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.15.7",
+    "@babel/core": "^7.15.8",
+    "@babel/preset-env": "^7.15.8",
+    "@babel/register": "^7.15.3",
+    "@nomiclabs/hardhat-ethers": "^2.0.2",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "babel-loader": "^8.2.3",
+    "babel-polyfill": "^6.26.0",
+    "chai": "^4.3.4",
+    "eslint": "^8.1.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.25.2",
+    "esm": "^3.2.25",
+    "hardhat": "^2.6.7",
+    "hardhat-deploy": "^0.9.4",
+    "mocha": "^9.1.3",
+    "node-fetch": "^3.0.0",
+    "prettier": "^2.4.1",
+    "terser-webpack-plugin": "^5.2.4",
+    "webpack": "^5.60.0",
+    "webpack-cli": "^4.9.1"
+  },
+  "dependencies": {
+    "@elastic-dao/elasticswap": "0.0.4",
+    "@elastic-dao/sdk": "^0.10.3",
+    "@pie-dao/utils": "^1.0.0",
+    "bignumber.js": "^9.0.1",
+    "bnc-notify": "^1.9.1",
+    "ethers": "^5.5.1",
+    "rxjs": "^7.4.0"
+  }
+}
