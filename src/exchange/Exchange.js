@@ -5,21 +5,29 @@ import Base from '../Base';
 export default class Exchange extends Base {
   constructor(sdk, address, baseTokenAddress, quoteTokenAddress) {
     super(sdk);
-    this._contract = sdk.contract({
-      abi: ExchangeSolidity.abi,
-      address,
-      readonly: false,
-    });
     this._ownerAddress = sdk.account;
     this._exchangeAddress = address;
     this._baseTokenAddress = baseTokenAddress;
     this._quoteTokenAddress = quoteTokenAddress;
     this._baseToken = new ERC20(sdk, baseTokenAddress);
     this._quoteToken = new ERC20(sdk, quoteTokenAddress);
+    this._lpToken = new ERC20(sdk, address);
+  }
+
+  static contract(sdk, address, readonly = false) {
+    return sdk.contract({
+      abi: ExchangeSolidity.abi,
+      address,
+      readonly,
+    });
   }
 
   get contract() {
-    return this._contract;
+    return this.constructor.contract(this.sdk, this.address, false);
+  }
+
+  get readonlyContract() {
+    return this.constructor.contract(this.sdk, this.address, true);
   }
 
   get ownerAddress() {
@@ -38,24 +46,40 @@ export default class Exchange extends Base {
     return this._quoteTokenAddress;
   }
 
+  get baseToken() {
+    return this._baseToken;
+  }
+
+  get quoteToken() {
+    return this._quoteToken;
+  }
+
+  get lpToken() {
+    return this._lpToken;
+  }
+
   get baseTokenBalance() {
-    return this._baseToken.balanceOf(this.ownerAddress);
+    return this.baseToken.balanceOf(this.ownerAddress);
   }
 
   get quoteTokenBalance() {
-    return this._quoteToken.balanceOf(this.ownerAddress);
+    return this.quoteToken.balanceOf(this.ownerAddress);
+  }
+
+  get lpTokenBalance() {
+    return this.lpToken.balanceOf(this.ownerAddress);
   }
 
   get baseTokenAllowance() {
-    return this._baseToken.allowance(this.ownerAddress, this.address);
+    return this.baseToken.allowance(this.ownerAddress, this.address);
   }
 
   get quoteTokenAllowance() {
-    return this._quoteToken.allowance(this.ownerAddress, this.address);
+    return this.quoteToken.allowance(this.ownerAddress, this.address);
   }
 
   get liquidityFee() {
-    return this.contract.TOTAL_LIQUIDITY_FEE;
+    return this.contract.TOTAL_LIQUIDITY_FEE();
   }
 
   async addLiquidity(
@@ -92,9 +116,9 @@ export default class Exchange extends Base {
     tokenRecipient,
     expirationTimestamp,
     overrides = {}) {
-    if (!(this.baseTokenAllowance > 0) && !(this.quoteTokenAllowance > 0)) {
+/*     if (!(this.baseTokenAllowance > 0) && !(this.quoteTokenAllowance > 0)) {
       return false;
-    }
+    } */
     const exchange = await this.contract;
     const removeLiquidityStatus = await exchange.removeLiquidity(
       liquidityTokenQty,
@@ -112,12 +136,12 @@ export default class Exchange extends Base {
     quoteTokenQntyMin,
     expirationTimestamp,
     overrides = {}) {
-    if (!(this.baseTokenBalance > 0)) {
+/*     if (!(this.baseTokenBalance > 0)) {
       return false;
     }
     if (!(this.baseTokenAllowance > 0)) {
       return false;
-    }
+    } */
     const exchange = await this.contract;
     const swapBaseTokenForQuoteTokenStatus = await exchange.swapBaseTokenForQuoteToken(
       baseTokenQnty,
@@ -130,19 +154,19 @@ export default class Exchange extends Base {
 
   async swapQuoteTokenForBaseToken(
     quoteTokenQnty,
-    BaseTokenQntyMin,
+    baseTokenQntyMin,
     expirationTimestamp,
     overrides = {}) {
-    if (!(this.quoteTokenBalance > 0)) {
+/*     if (!(this.quoteTokenBalance > 0)) {
       return false;
     }
     if (!(this.quoteTokenAllowance > 0)) {
       return false;
-    }
+    } */
     const exchange = await this.contract;
     const swapQuoteTokenForBaseTokenStatus = await exchange.swapQuoteTokenForBaseToken(
       quoteTokenQnty,
-      BaseTokenQntyMin,
+      baseTokenQntyMin,
       expirationTimestamp,
       this.sanitizeOverrides(overrides),
     );
