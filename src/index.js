@@ -135,9 +135,10 @@ export class SDK extends Subscribable {
     const { provider, signer } = this;
 
     const connection = readonly ? provider : signer || provider;
-    const contract = this._contract({ abi: abi || ERC20Contract, address }).connect(
-      connection,
-    );
+    const contract = this._contract({
+      abi: abi || ERC20Contract,
+      address,
+    }).connect(connection);
 
     return contract;
   }

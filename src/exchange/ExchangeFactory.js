@@ -1,3 +1,5 @@
+/* eslint class-methods-use-this: 0 */
+
 import ExchangeFactorySolidity from '@elastic-dao/elasticswap/artifacts/src/contracts/ExchangeFactory.sol/ExchangeFactory.json';
 import Base from '../Base';
 
@@ -24,11 +26,11 @@ export default class ExchangeFactory extends Base {
     return this._contract.feeAddress();
   }
 
-  getExchangeAddress(baseTokenAddress, quoteTokenAddress) {}
+  // getExchangeAddress(baseTokenAddress, quoteTokenAddress) {}
 
-  async createNewExchange() {
+  /*   async createNewExchange() {
     // TODO
-  }
+  } */
 
   _handleTransaction(tx) {
     this.sdk.notify(tx);

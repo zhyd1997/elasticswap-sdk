@@ -1,3 +1,5 @@
+/* eslint class-methods-use-this: 0 */
+
 import {
   sanitizeOverrides,
   toBigNumber,
