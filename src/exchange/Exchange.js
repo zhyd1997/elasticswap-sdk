@@ -11,6 +11,11 @@ export default class Exchange extends Base {
     this._baseToken = new ERC20(sdk, baseTokenAddress);
     this._quoteToken = new ERC20(sdk, quoteTokenAddress);
     this._lpToken = new ERC20(sdk, exchangeAddress);
+    this._contract = sdk.contract({
+      abi: ExchangeSolidity.abi,
+      address: exchangeAddress,
+      readonly: false,
+    });
   }
 
   static contract(sdk, address, readonly = false) {
@@ -22,7 +27,7 @@ export default class Exchange extends Base {
   }
 
   get contract() {
-    return this.constructor.contract(this.sdk, this.address, false);
+    return this._contract;
   }
 
   get readonlyContract() {
@@ -77,6 +82,10 @@ export default class Exchange extends Base {
     return this.quoteToken.allowance(this.sdk.account, this.address);
   }
 
+  get lpTokenAllowance() {
+    return this.lpToken.allowance(this.sdk.account, this.address);
+  }
+
   get liquidityFee() {
     return this.contract.TOTAL_LIQUIDITY_FEE();
   }
@@ -89,14 +98,22 @@ export default class Exchange extends Base {
     liquidityTokenRecipient,
     expirationTimestamp,
     overrides = {}) {
-    if (!(this.baseTokenBalance) || !(this.quoteTokenBalance)) {
+    if (expirationTimestamp < new Date().getTime() / 1000) {
       return false;
     }
-    if (!(this.baseTokenAllowance) || !(this.quoteTokenAllowance)) {
+    if (baseTokenQtyDesired <= baseTokenQtyMin ||
+      quoteTokenQtyDesired <= quoteTokenQtyMin) {
       return false;
     }
-    const exchange = await this.contract;
-    const addLiquidityStatus = await exchange.addLiquidity(
+    if (this.baseTokenBalance < baseTokenQtyDesired ||
+      this.quoteTokenBalance < quoteTokenQtyDesired) {
+      return false;
+    }
+    if (this.baseTokenAllowance < baseTokenQtyDesired ||
+      this.quoteTokenAllowance < quoteTokenQtyDesired) {
+      return false;
+    }
+    const txStatus = await this.contract.addLiquidity(
       baseTokenQtyDesired,
       quoteTokenQtyDesired,
       baseTokenQtyMin,
@@ -105,7 +122,7 @@ export default class Exchange extends Base {
       expirationTimestamp,
       this.sanitizeOverrides(overrides),
     );
-    return addLiquidityStatus;
+    return txStatus;
   }
 
   async removeLiquidity(
@@ -115,11 +132,13 @@ export default class Exchange extends Base {
     tokenRecipient,
     expirationTimestamp,
     overrides = {}) {
-    if (!(this.baseTokenAllowance) || !(this.quoteTokenAllowance)) {
+    if (expirationTimestamp < new Date().getTime() / 1000) {
       return false;
     }
-    const exchange = await this.contract;
-    const removeLiquidityStatus = await exchange.removeLiquidity(
+    if (this.lpTokenAllowance < liquidityTokenQty) {
+      return false;
+    }
+    const txStatus = await this.contract.removeLiquidity(
       liquidityTokenQty,
       baseTokenQtyMin,
       quoteTokenQtyMin,
@@ -127,48 +146,48 @@ export default class Exchange extends Base {
       expirationTimestamp,
       this.sanitizeOverrides(overrides),
     );
-    return removeLiquidityStatus;
+    return txStatus;
   }
 
   async swapBaseTokenForQuoteToken(
-    baseTokenQnty,
-    quoteTokenQntyMin,
+    baseTokenQty,
+    quoteTokenQtyMin,
     expirationTimestamp,
     overrides = {}) {
-    if (!(this.baseTokenBalance)) {
+    if (expirationTimestamp < new Date().getTime() / 1000) {
       return false;
     }
-    if (!(this.baseTokenAllowance)) {
+    if (this.baseTokenBalance < baseTokenQty ||
+      this.baseTokenAllowance < baseTokenQty) {
       return false;
     }
-    const exchange = await this.contract;
-    const swapBaseTokenForQuoteTokenStatus = await exchange.swapBaseTokenForQuoteToken(
-      baseTokenQnty,
-      quoteTokenQntyMin,
+    const txStatus = await this.contract.swapBaseTokenForQuoteToken(
+      baseTokenQty,
+      quoteTokenQtyMin,
       expirationTimestamp,
       this.sanitizeOverrides(overrides),
     );
-    return swapBaseTokenForQuoteTokenStatus;
+    return txStatus;
   }
 
   async swapQuoteTokenForBaseToken(
-    quoteTokenQnty,
-    baseTokenQntyMin,
+    quoteTokenQty,
+    baseTokenQtyMin,
     expirationTimestamp,
     overrides = {}) {
-    if (!(this.quoteTokenBalance)) {
+    if (expirationTimestamp < new Date().getTime() / 1000) {
       return false;
     }
-    if (!(this.quoteTokenAllowance)) {
+    if (this.quoteTokenBalance < quoteTokenQty ||
+      this.quoteTokenAllowance < quoteTokenQty) {
       return false;
     }
-    const exchange = await this.contract;
-    const swapQuoteTokenForBaseTokenStatus = await exchange.swapQuoteTokenForBaseToken(
-      quoteTokenQnty,
-      baseTokenQntyMin,
+    const txStatus = await this.contract.swapQuoteTokenForBaseToken(
+      quoteTokenQty,
+      baseTokenQtyMin,
       expirationTimestamp,
       this.sanitizeOverrides(overrides),
     );
-    return swapQuoteTokenForBaseTokenStatus;
+    return txStatus;
   }
 }

@@ -68,13 +68,6 @@ describe('Exchange', () => {
   });
 
   describe('constructor', () => {
-    it('Should deploy with correct name, symbol and addresses', async () => {
-      expect(await exchange.name()).to.equal('ETMFUSD LP Token');
-      expect(await exchange.symbol()).to.equal('ETMFUSD');
-      expect(await exchange.quoteToken()).to.equal(quoteToken.address);
-      expect(await exchange.baseToken()).to.equal(baseToken.address);
-    });
-
     it('Can be created via constructor', async () => {
       assert.isNotNull(exchangeClass);
       assert.equal(exchange.address, exchangeClass.address);
