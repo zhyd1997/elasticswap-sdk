@@ -49,6 +49,9 @@ export class SDK extends Subscribable {
     this.env = env;
     this.setName();
 
+    this._balances = {};
+    this._balancesToTrack = [];
+
     if (this.account) {
       this.balanceOf(this.account);
     }
@@ -110,6 +113,7 @@ export class SDK extends Subscribable {
   async balanceOf(address) {
     validateIsAddress(address);
     const key = address.toLowerCase();
+
     if (this._balances[key]) {
       return this._balances[key];
     }
