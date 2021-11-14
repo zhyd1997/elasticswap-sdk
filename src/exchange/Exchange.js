@@ -3,15 +3,14 @@ import ERC20 from '../tokens/ERC20';
 import Base from '../Base';
 
 export default class Exchange extends Base {
-  constructor(sdk, address, baseTokenAddress, quoteTokenAddress) {
+  constructor(sdk, exchangeAddress, baseTokenAddress, quoteTokenAddress) {
     super(sdk);
-    this._ownerAddress = sdk.account;
-    this._exchangeAddress = address;
+    this._exchangeAddress = exchangeAddress;
     this._baseTokenAddress = baseTokenAddress;
     this._quoteTokenAddress = quoteTokenAddress;
     this._baseToken = new ERC20(sdk, baseTokenAddress);
     this._quoteToken = new ERC20(sdk, quoteTokenAddress);
-    this._lpToken = new ERC20(sdk, address);
+    this._lpToken = new ERC20(sdk, exchangeAddress);
   }
 
   static contract(sdk, address, readonly = false) {
@@ -59,23 +58,23 @@ export default class Exchange extends Base {
   }
 
   get baseTokenBalance() {
-    return this.baseToken.balanceOf(this.ownerAddress);
+    return this.baseToken.balanceOf(this.sdk.account);
   }
 
   get quoteTokenBalance() {
-    return this.quoteToken.balanceOf(this.ownerAddress);
+    return this.quoteToken.balanceOf(this.sdk.account);
   }
 
   get lpTokenBalance() {
-    return this.lpToken.balanceOf(this.ownerAddress);
+    return this.lpToken.balanceOf(this.sdk.account);
   }
 
   get baseTokenAllowance() {
-    return this.baseToken.allowance(this.ownerAddress, this.address);
+    return this.baseToken.allowance(this.sdk.account, this.address);
   }
 
   get quoteTokenAllowance() {
-    return this.quoteToken.allowance(this.ownerAddress, this.address);
+    return this.quoteToken.allowance(this.sdk.account, this.address);
   }
 
   get liquidityFee() {
