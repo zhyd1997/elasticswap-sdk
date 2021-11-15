@@ -29,12 +29,22 @@ export default class ERC20 extends Base {
 
   async approve(spenderAddress, amount, overrides = {}) {
     const ERC20Token = await this.contract;
-    const approveStatus = await ERC20Token.approve(
+    const txStatus = await ERC20Token.approve(
       spenderAddress,
       this.toEthersBigNumber(amount),
       this.sanitizeOverrides(overrides),
     );
-    return approveStatus;
+    return txStatus;
+  }
+
+  async transfer(recipient, amount, overrides = {}) {
+    const ERC20Token = await this.contract;
+    const txStatus = await ERC20Token.transfer(
+      recipient,
+      this.toEthersBigNumber(amount),
+      this.sanitizeOverrides(overrides),
+    );
+    return txStatus;
   }
 
   async balanceOf(accountAddress, overrides = {}) {

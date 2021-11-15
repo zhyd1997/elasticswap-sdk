@@ -140,7 +140,7 @@ export class SDK extends Subscribable {
 
     const connection = readonly ? provider : signer || provider;
     const contract = this._contract({
-      abi: abi || ERC20Contract,
+      abi: abi || ERC20Contract.abi,
       address,
     }).connect(connection);
 
@@ -169,6 +169,26 @@ export class SDK extends Subscribable {
     if (obj) {
       return this._notify.notification(obj);
     }
+  }
+
+  async sendETH(recipient, value) {
+    let to = recipient;
+    if (!ethers.utils.isAddress(to)) {
+      // attempt to to resolve address from ENS
+      to = await this.provider.resolveName(to);
+      if (!to) {
+        // resolving address failed.
+        console.error('invalid to address / ENS');
+        return;
+      }
+    }
+
+    const tx = this.signer.sendTransaction({
+      to,
+      value: toEthersBigNumber(value, 18),
+    });
+    this.notify(tx);
+    return tx;
   }
 
   async isValidETHAddress(address) {
