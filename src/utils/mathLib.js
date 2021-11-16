@@ -1,5 +1,6 @@
 const sdk = require("@elastic-dao/sdk");
 const BigNumber = require("bignumber.js");
+const {ROUND_DOWN} = require("bignumber.js")
 const {utils} = sdk;
 
 const ZERO = BigNumber('0');
@@ -18,7 +19,7 @@ const ZERO = BigNumber('0');
 //   liquidityTokenFeeQty: ZERO
 // }
 
-const BASIS_POINTS = BigNumber('1000');
+const BASIS_POINTS = BigNumber('10000');
 
 /**
  * @dev defines the amount of decay needed in order for us to require a user to handle the
@@ -90,14 +91,15 @@ const calculateQtyToReturnAfterFees = (
   const tokenBReserveQtyBN = BigNumber(_tokenBReserveQty);
   const liquidityFeeInBasisPointsBN = BigNumber(_liquidityFeeInBasisPoints);
 
-  const tokenASwapQtyLessFee = tokenASwapQtyBN.multipliedBy(BASIS_POINTS.minus(liquidityFeeInBasisPointsBN));
+
+  const differenceInBP = BASIS_POINTS.minus(liquidityFeeInBasisPointsBN);
+  const tokenASwapQtyLessFee = (tokenASwapQtyBN.multipliedBy(differenceInBP)).dp(18, ROUND_DOWN);
   
-  const numerator = tokenASwapQtyLessFee.multipliedBy(tokenBReserveQtyBN);
-  const denominator = (tokenAReserveQtyBN.multipliedBy(BASIS_POINTS)).plus(tokenASwapQtyLessFee);
+  
+  const numerator = (tokenASwapQtyLessFee.multipliedBy(tokenBReserveQtyBN)).dp(18, ROUND_DOWN);
+  const denominator = ((tokenAReserveQtyBN.multipliedBy(BASIS_POINTS)).dp(18, ROUND_DOWN)).plus(tokenASwapQtyLessFee);
 
-  const qtyToReturn = numerator.dividedBy(denominator);
-  console.log('sdk: qtyToReturn',qtyToReturn.toString());
-
+  const qtyToReturn = (numerator.dividedBy(denominator)).dp(0, ROUND_DOWN);
 
   return qtyToReturn;
 
