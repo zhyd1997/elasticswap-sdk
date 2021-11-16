@@ -21,6 +21,9 @@ const {
 
 
 describe('MathLib', () => {
+  it('hello world', async () => {
+    assert.isTrue( true);
+  });
 
 
   // it('calculates using calculateOutputAmount correctly', async() => {

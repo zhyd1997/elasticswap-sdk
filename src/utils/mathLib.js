@@ -18,7 +18,7 @@ const ZERO = BigNumber('0');
 //   liquidityTokenFeeQty: ZERO
 // }
 
-const BASIS_POINTS = Bignumber('1000');
+const BASIS_POINTS = BigNumber('1000');
 
 /**
  * @dev defines the amount of decay needed in order for us to require a user to handle the
@@ -415,25 +415,32 @@ const calculateAddLiquidityQuantities = (
         // we have more base token than expected (base token decay) due to rebase up
         // we first need to handle this situation by requiring this user
         // to add quote tokens
-        ({quoteTokenQtyFromDecay , liquidityTokenQtyFromDecay}) = calculateAddQuoteTokenLiquidityQuantities(
+        const fetchCalculateAddQuoteTokenLiquidityQuantities = calculateAddQuoteTokenLiquidityQuantities(
           quoteTokenQtyDesiredBN,
           ZERO,
           baseTokenReserveQtyBN,
           totalSupplyOfLiquidityTokensBN,
           internalBalances
         );
+        
+        quoteTokenQtyFromDecay = fetchCalculateAddQuoteTokenLiquidityQuantities.quoteTokenQty;
+        liquidityTokenQtyFromDecay = fetchCalculateAddQuoteTokenLiquidityQuantities. liquidityTokenQty;
+
       } else {
         // we have less base token than expected (quote token decay) due to a rebase down
         // we first need to handle this by adding base tokens to offset this.
 
-        ({baseTokenQtyFromDecay, liquidityTokenQtyFromDecay}) = calculateAddBaseTokenLiquidityQuantities(
+        const fetchCalculateAddBaseTokenLiquidityQuantities = calculateAddBaseTokenLiquidityQuantities(
           baseTokenQtyDesiredBN,
           ZERO,
           baseTokenReserveQtyBN,
           totalSupplyOfLiquidityTokensBN,
           internalBalances
         );
-
+        
+        // {baseTokenQty, liquidityTokenQty}
+        baseTokenQtyFromDecay = fetchCalculateAddBaseTokenLiquidityQuantities.baseTokenQty;
+        liquidityTokenQtyFromDecay = fetchCalculateAddBaseTokenLiquidityQuantities.liquidityTokenQty;
       }
 
       if( quoteTokenQtyFromDecay.isLessThan(quoteTokenQtyDesiredBN) && baseTokenQtyFromDecay.isLessThan(baseTokenQtyDesiredBN) ){
