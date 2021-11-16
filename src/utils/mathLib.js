@@ -92,10 +92,12 @@ const calculateQtyToReturnAfterFees = (
 
   const tokenASwapQtyLessFee = tokenASwapQtyBN.multipliedBy(BASIS_POINTS.minus(liquidityFeeInBasisPointsBN));
   
-  const numerator = tokenASwapQtyBN.multipliedBy(tokenBReserveQtyBN);
+  const numerator = tokenASwapQtyLessFee.multipliedBy(tokenBReserveQtyBN);
   const denominator = (tokenAReserveQtyBN.multipliedBy(BASIS_POINTS)).plus(tokenASwapQtyLessFee);
 
-  const qtyToReturn = (numerator).dividedBy(denominator);
+  const qtyToReturn = numerator.dividedBy(denominator);
+  console.log('sdk: qtyToReturn',qtyToReturn.toString());
+
 
   return qtyToReturn;
 

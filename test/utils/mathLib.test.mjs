@@ -21,6 +21,7 @@ const {
 
 
 describe("calculateQty", () => {
+
   it("Should return the correct calculateQty", async () => {
     assert.isTrue(calculateQty(500, 100, 5000).isEqualTo(BigNumber(25000)));
     assert.isTrue(calculateQty(100, 500, 5000).isEqualTo(BigNumber(1000)));
@@ -31,7 +32,46 @@ describe("calculateQty", () => {
     assert.throws(() => calculateQty(500, 0, 1000), "MathLib: INSUFFICIENT_LIQUIDITY");
     assert.throws(() => calculateQty(500, 100, 0), "MathLib: INSUFFICIENT_LIQUIDITY");
   });
-}  
+
+});
+
+describe("calculateQtyToReturnAfterFees", () => {
+
+  it.only("Should return the correct values", async () => {
+    const tokenSwapQty = BigNumber(50);
+    const feeInBasisPoints = BigNumber(30);
+    const expectedFeeAmount =   (tokenSwapQty.multipliedBy(feeInBasisPoints)).dividedBy(BigNumber(10000));
+    const tokenAReserveQtyBeforeTrade = BigNumber(100);
+    const tokenAReserveQtyAfterTrade = (tokenAReserveQtyBeforeTrade.plus(tokenSwapQty)).minus(expectedFeeAmount);
+    const tokenBReserveQtyBeforeTrade = BigNumber(5000);
+
+    const pricingConstantK = tokenAReserveQtyBeforeTrade.multipliedBy(tokenBReserveQtyBeforeTrade);
+
+    const tokenBReserveQtyBeforeTradeAfterTrade = pricingConstantK.dividedBy(tokenAReserveQtyAfterTrade);
+
+    const tokenBQtyExpected = tokenBReserveQtyBeforeTrade.minus(tokenBReserveQtyBeforeTradeAfterTrade);
+
+    const fetchedCalculateQtyToReturnAfterFees = calculateQtyToReturnAfterFees(
+      tokenSwapQty,
+      tokenAReserveQtyBeforeTrade,
+      tokenBReserveQtyBeforeTrade,
+      feeInBasisPoints
+    );
+
+    console.log(fetchedCalculateQtyToReturnAfterFees.toString());
+    console.log(tokenBQtyExpected.toString());
+    // for reference the tests in solidity result in 1663 which is floor of tokenBQtyExpected
+    // further pointing to an error in the sdk implmentation
+
+    assert.isTrue(fetchedCalculateQtyToReturnAfterFees.isEqualTo(tokenBQtyExpected));
+
+  });
+
+});
+
+
+
+
 
 
   // it('calculates using calculateOutputAmount correctly', async() => {
@@ -112,4 +152,3 @@ describe("calculateQty", () => {
 
 
 
-);
