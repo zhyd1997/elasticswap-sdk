@@ -20,10 +20,18 @@ const {
 
 
 
-describe('MathLib', () => {
-  it('hello world', async () => {
-    assert.isTrue( true);
+describe("calculateQty", () => {
+  it("Should return the correct calculateQty", async () => {
+    assert.isTrue(calculateQty(500, 100, 5000).isEqualTo(BigNumber(25000)));
+    assert.isTrue(calculateQty(100, 500, 5000).isEqualTo(BigNumber(1000)));
   });
+
+  it.only("Should revert if any value is 0", async () => {
+    assert.throws(() => calculateQty(0, 100, 500), "MathLib: INSUFFICIENT_QTY");
+    assert.throws(() => calculateQty(500, 0, 1000), "MathLib: INSUFFICIENT_LIQUIDITY");
+    assert.throws(() => calculateQty(500, 100, 0), "MathLib: INSUFFICIENT_LIQUIDITY");
+  });
+}  
 
 
   // it('calculates using calculateOutputAmount correctly', async() => {
@@ -104,4 +112,4 @@ describe('MathLib', () => {
 
 
 
-});
+);
