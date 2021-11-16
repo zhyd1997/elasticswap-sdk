@@ -190,7 +190,8 @@ const calculateLiquidityTokenQtyForDoubleAssetEntry = (
                   _quoteTokenReserveBalance
 
   */
-  const liquidityTokenQty = (quoteTokenQtyBN.multipliedBy(totalSupplyOfLiquidityTokensBN)).dividedBy(quoteTokenReserveBalanceBN);
+  const numerator = quoteTokenQtyBN.multipliedBy(totalSupplyOfLiquidityTokensBN);
+  const liquidityTokenQty = (numerator).dividedBy(quoteTokenReserveBalanceBN);
   return liquidityTokenQty;
 
 }

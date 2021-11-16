@@ -27,7 +27,7 @@ describe("calculateQty", () => {
     assert.isTrue(calculateQty(100, 500, 5000).isEqualTo(BigNumber(1000)));
   });
 
-  it.only("Should revert if any value is 0", async () => {
+  it("Should revert if any value is 0", async () => {
     assert.throws(() => calculateQty(0, 100, 500), "MathLib: INSUFFICIENT_QTY");
     assert.throws(() => calculateQty(500, 0, 1000), "MathLib: INSUFFICIENT_LIQUIDITY");
     assert.throws(() => calculateQty(500, 100, 0), "MathLib: INSUFFICIENT_LIQUIDITY");
@@ -36,7 +36,7 @@ describe("calculateQty", () => {
 });
 
 describe("calculateQtyToReturnAfterFees", () => {
-
+  // NOTE: this is the test with the issue currently
   it.only("Should return the correct values", async () => {
     const tokenSwapQty = BigNumber(50);
     const feeInBasisPoints = BigNumber(30);
@@ -70,7 +70,21 @@ describe("calculateQtyToReturnAfterFees", () => {
 });
 
 
+describe("calculateLiquiditytokenQtyForDoubleAssetEntry", () => {
+  it("Should return the correct qty of liquidity tokens", async () => {
+    const totalSupplyOfLiquidityTokens = BigNumber(50);
+    const quoteTokenBalance = BigNumber(50);
+    const quoteTokenQtyToAdd = BigNumber(15);
+    const calculatedLiquidityTokenQtyForDoubleAssetEntry = calculateLiquidityTokenQtyForDoubleAssetEntry(
+      totalSupplyOfLiquidityTokens, // 50
+      quoteTokenQtyToAdd, // 15
+      quoteTokenBalance, // 50
+       
+    );
 
+    assert.isTrue(calculatedLiquidityTokenQtyForDoubleAssetEntry.isEqualTo(BigNumber(15)));
+  });
+});
 
 
 
