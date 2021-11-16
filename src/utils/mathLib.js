@@ -34,10 +34,10 @@ const BASIS_POINTS = Bignumber('1000');
 // todo: logic check on _internalbalances
 const isSufficientDecayPresent = (_baseTokenReserveQty, _internalBalances) => {
   const baseTokenReserveQtyBN = BigNumber(_baseTokenReserveQty);
-  const cleansedInternalBalances = internalBalancesBNCleaner(_internalBalances);
+  const internalBalances = internalBalancesBNCleaner(_internalBalances);
   
-  const baseTokenReserveDifference = baseTokenReserveQtyBN.minus(cleansedInternalBalances.baseTokenReserveQty);
-  const internalBalanceRatio = (cleansedInternalBalances.baseTokenReserveQty).dividedBy(cleansedInternalBalances.quoteTokenReserveQty);
+  const baseTokenReserveDifference = baseTokenReserveQtyBN.minus(internalBalances.baseTokenReserveQty);
+  const internalBalanceRatio = (internalBalances.baseTokenReserveQty).dividedBy(internalBalances.quoteTokenReserveQty);
 
   const decayPresentComparison = (baseTokenReserveDifference).dividedBy(internalBalanceRatio).isGreaterThan(BigNumber('1'));
 
@@ -57,10 +57,10 @@ const calculateQty = (_tokenAQty, _tokenAReserveQty, _tokenBReserveQty) => {
   const tokenAReserveQtyBN = BigNumber(_tokenAReserveQty);
   const tokenBReserveQtyBN = BigNumber(_tokenBReserveQty);
 
-  if(tokenAQtyBN.isLessThanOrEqualTo(BigNumber(0)) ){
+  if(tokenAQtyBN.isLessThanOrEqualTo(ZERO) ){
   throw new Error( "MathLib: INSUFFICIENT_QTY");
   }
-  if(tokenAReserveQtyBN.isLessThanOrEqualTo(BigNumber(0)) || tokenBReserveQtyBN.isLessThanOrEqualTo(BigNumber(0))){
+  if(tokenAReserveQtyBN.isLessThanOrEqualTo(ZERO) || tokenBReserveQtyBN.isLessThanOrEqualTo(ZERO)){
   throw new Error( "MathLib: INSUFFICIENT_LIQUIDITY");
   }
   const qty = tokenAQtyBN.multipliedBy(tokenBReserveQtyBN).dividedBy(tokenAReserveQtyBN);
@@ -68,7 +68,7 @@ const calculateQty = (_tokenAQty, _tokenAReserveQty, _tokenBReserveQty) => {
 
 };
 
- /**
+/**
  * @dev used to calculate the qty of token a trader will receive (less fees)
  * given the qty of token A they are providing
  * @param _tokenASwapQty base or quote token qty to be swapped by the trader
@@ -216,12 +216,12 @@ const calculateAddQuoteTokenLiquidityQuantities = (
   const quoteTokenQtyMinBN = BigNumber(_quoteTokenQtyMin);
   const baseTokenReserveQtyBN = BigNumber(_baseTokenReserveQty);
   const totalSupplyOfLiquidityTokensBN = BigNumber(_totalSupplyOfLiquidityTokens);
-  const cleansedInternalBalances = internalBalancesBNCleaner(_internalBalances);
+  const internalBalances = internalBalancesBNCleaner(_internalBalances);
 
-  const baseTokenDecay = baseTokenReserveQtyBN.minus(cleansedInternalBalances.baseTokenReserveQty);
+  const baseTokenDecay = baseTokenReserveQtyBN.minus(internalBalances.baseTokenReserveQty);
 
   // omega
-  const internalBaseTokenToQuoteTokenRatio = cleansedInternalBalances.baseTokenReserveQty.dividedBy(quoteTokenReserveQty);
+  const internalBaseTokenToQuoteTokenRatio = internalBalances.baseTokenReserveQty.dividedBy(quoteTokenReserveQty);
 
   // alphaDecay / omega (A/B)
   const maxQuoteTokenQty = baseTokenDecay.dividedBy(internalBaseTokenToQuoteTokenRatio);
@@ -240,24 +240,30 @@ const calculateAddQuoteTokenLiquidityQuantities = (
 
   const baseTokenQtyDecayChange = quoteTokenQty.multipliedBy(internalBaseTokenToQuoteTokenRatio);
 
-  if(baseTokenQtyDecayChange.isLessThanOrEqualTo(BigNumber(0))){
+  if(baseTokenQtyDecayChange.isLessThanOrEqualTo(ZERO)){
       throw new Error("MathLib: INSUFFICIENT_DECAY");
   }
   // x += alphaDecayChange
   // y += deltaBeta
 
   // doubt: not required as this is a lib?
-  cleansedInternalBalances.baseTokenReserveQty = cleansedInternalBalances.baseTokenReserveQty.plus(baseTokenQtyDecayChange);
-  cleansedInternalBalances.quoteTokenReserveQty = cleansedInternalBalances.quoteTokenReserveQty.plus(quoteTokenQty);
+  internalBalances.baseTokenReserveQty = internalBalances.baseTokenReserveQty.plus(baseTokenQtyDecayChange);
+  internalBalances.quoteTokenReserveQty = internalBalances.quoteTokenReserveQty.plus(quoteTokenQty);
 
   const liquidityTokenQty = calculateLiquidityTokenQtyForSingleAssetEntry(
     totalSupplyOfLiquidityTokensBN, 
     quoteTokenQty, 
-    cleansedInternalBalances.quoteTokenReserveQty, 
+    internalBalances.quoteTokenReserveQty, 
     baseTokenQtyDecayChange, 
     baseTokenDecay );
 
-  return {quoteTokenQty, liquidityTokenQty};
+  const quoteAndLiquidityTokenQty  = {
+    quoteTokenQty: quoteTokenQty, 
+    liquidityTokenQty : liquidityTokenQty
+  };
+    
+
+  return quoteAndLiquidityTokenQty;
 
 
     
@@ -315,13 +321,13 @@ const calculateAddBaseTokenLiquidityQuantities = (
 
   const quoteTokenQtyDecayChange = baseTokenQty.multipliedBy(internalQuoteToBaseTokenRatio);
 
-  if(quoteTokenQtyDecayChange.isLessThanOrEqualTo(BigNumber(0))){
+  if(quoteTokenQtyDecayChange.isLessThanOrEqualTo(ZERO)){
     throw new Error( "MathLib: INSUFFICIENT_CHANGE_IN_DECAY");
   }
 
   const quoteTokenDecay = maxBaseTokenQty.multipliedBy(internalQuoteToBaseTokenRatio);
 
-  if(quoteTokenDecay.isLessThanOrEqualTo(BigNumber(0))){
+  if(quoteTokenDecay.isLessThanOrEqualTo(ZERO)){
     throw new Error( "MathLib: NO_QUOTE_DECAY");
   }
   // we are not changing anything about our internal accounting here. We are simply adding tokens
@@ -336,12 +342,13 @@ const calculateAddBaseTokenLiquidityQuantities = (
     quoteTokenQtyDecayChange,
     quoteTokenQtyDecayChange
   );
-  
-  return {
-    baseTokenQty,
-    liquidityTokenQty
-  }
 
+  const baseAndLiquidityTokenQty = {
+    baseTokenQty : baseTokenQty, 
+    liquidityTokenQty : liquidityTokenQty
+  };
+  
+  return baseAndLiquidityTokenQty;
 };  
 
 /**
@@ -357,8 +364,353 @@ const calculateAddBaseTokenLiquidityQuantities = (
  *
  * @return tokenQtys qty of tokens needed to complete transaction 
  */
-  // calculateAddLiquidityQuantities
- 
+const calculateAddLiquidityQuantities = (
+  _baseTokenQtyDesired,
+  _quoteTokenQtyDesired,
+  _baseTokenQtyMin,
+  _quoteTokenQtyMin,
+  _baseTokenReserveQty,
+  _quoteTokenReserveQty,
+  _totalSupplyOfLiquidityTokens,
+  _internalBalances
+) => {
+
+  // cleanse input
+  const baseTokenQtyDesiredBN = BigNumber(_baseTokenQtyDesired);
+  const quoteTokenQtyDesiredBN = BigNumber(_quoteTokenQtyDesired);
+  const baseTokenQtyMinBN = BigNumber(_baseTokenQtyMin);
+  const quoteTokenQtyMinBN = BigNumber(_quoteTokenQtyMin);
+  const baseTokenReserveQtyBN = BigNumber(_baseTokenReserveQty);
+  const quoteTokenReserveQtyBN = BigNumber(_quoteTokenReserveQty);
+  const totalSupplyOfLiquidityTokensBN = BigNumber(_totalSupplyOfLiquidityTokens);
+  const internalBalances = internalBalancesBNCleaner(_internalBalances);
+
+  if(totalSupplyOfLiquidityTokensBN.isGreaterThanOrEqualTo(ZERO)){
+    let tokenQtys = {
+      baseTokenQty: ZERO,
+      quoteTokenQty: ZERO,
+      liquidityTokenQty: ZERO
+    };
+
+    // we have outstanding liquidity tokens present and an existing price curve
+    tokenQtys.liquidityTokenFeeQty = calculateLiquidityTokenFees(
+      totalSupplyOfLiquidityTokensBN,
+      internalBalances
+    );
+
+    // we need to take this amount (that will be minted) into account for below calculations
+    totalSupplyOfLiquidityTokensBN = tokenQtys.liquidityTokenFeeQty.plus(totalSupplyOfLiquidityTokensBN);
+    
+    // confirm that we have no beta or alpha decay present
+    // if we do, we need to resolve that first
+    if( isSufficientDecayPresent( baseTokenReserveQtyBN, internalBalances) ) {
+      // decay is present and needs to be dealt with by the caller.
+
+      let baseTokenQtyFromDecay;
+      let quoteTokenQtyFromDecay;
+      let liquidityTokenQtyFromDecay;
+      
+      if( baseTokenReserveQtyBN.isGreaterThan(internalBalances.baseTokenReserveQty)){
+        // we have more base token than expected (base token decay) due to rebase up
+        // we first need to handle this situation by requiring this user
+        // to add quote tokens
+        ({quoteTokenQtyFromDecay , liquidityTokenQtyFromDecay}) = calculateAddQuoteTokenLiquidityQuantities(
+          quoteTokenQtyDesiredBN,
+          ZERO,
+          baseTokenReserveQtyBN,
+          totalSupplyOfLiquidityTokensBN,
+          internalBalances
+        );
+      } else {
+        // we have less base token than expected (quote token decay) due to a rebase down
+        // we first need to handle this by adding base tokens to offset this.
+
+        ({baseTokenQtyFromDecay, liquidityTokenQtyFromDecay}) = calculateAddBaseTokenLiquidityQuantities(
+          baseTokenQtyDesiredBN,
+          ZERO,
+          baseTokenReserveQtyBN,
+          totalSupplyOfLiquidityTokensBN,
+          internalBalances
+        );
+
+      }
+
+      if( quoteTokenQtyFromDecay.isLessThan(quoteTokenQtyDesiredBN) && baseTokenQtyFromDecay.isLessThan(baseTokenQtyDesiredBN) ){
+        // the user still has qty that they desire to contribute to the exchange for liquidity
+
+        const fetchTokenQty = calculateAddTokenPairLiquidityQuantities(
+          baseTokenQtyDesiredBN.minus(baseTokenQtyFromDecay),
+          quoteTokenQtyDesiredBN.minus(quoteTokenQtyFromDecay),
+          ZERO,
+          ZERO,
+          quoteTokenReserveQtyBN.plus(quoteTokenQtyFromDecay),
+          totalSupplyOfLiquidityTokensBN.plus(liquidityTokenQtyFromDecay),
+          internalBalances
+        );
+
+        tokenQtys.baseTokenQty = fetchTokenQty.baseTokenQty;
+        tokenQtys.quoteTokenQty = fetchTokenQty.quoteTokenQty;
+        tokenQtys.liquidityTokenQty = fetchTokenQty.liquidityTokenQty;
+
+        tokenQtys.baseTokenQty = (tokenQtys.baseTokenQty).plus(baseTokenQtyFromDecay);
+        tokenQtys.quoteTokenQty = (tokenQtys.quoteTokenQty).plus(quoteTokenQtyFromDecay);
+        tokenQtys.liquidityTokenQty = (tokenQtys.liquidityTokenQty).plus(liquidityTokenQtyFromDecay);
+
+        if((tokenQtys.baseTokenQty).isLessThanOrEqualTo(baseTokenQtyMinBN)){
+          throw new Error("MathLib: INSUFFICIENT_BASE_QTY");
+        }
+        if((tokenQtys.quoteTokenQty).isLessThanOrEqualTo(quoteTokenQtyMinBN)){
+          throw new Error("MathLib: INSUFFICIENT_QUOTE_QTY");
+        }
+        
+
+      }
+       
+
+    } else {
+      const fetchTokenQtys = calculateAddTokenPairLiquidityQuantities(
+        baseTokenQtyDesiredBN,
+        quoteTokenQtyDesiredBN,
+        baseTokenQtyMinBN,
+        quoteTokenQtyMinBN,
+        quoteTokenReserveQtyBN,
+        totalSupplyOfLiquidityTokensBN,
+        internalBalances
+      );
+      tokenQtys.baseTokenQty = fetchTokenQtys.baseTokenQty;
+      tokenQtys.quoteTokenQty = fetchTokenQtys.quoteTokenQty;
+      tokenQtys.liquidityTokenQty = fetchTokenQtys.liquidityTokenQty;
+    }
+
+  } else {
+    // this user will set the initial pricing curve
+    if(baseTokenQtyDesiredBN.isLessThan(ZERO)){
+      throw new Error("MathLib: INSUFFICIENT_BASE_QTY_DESIRED");
+    }
+    if(quoteTokenQtyDesiredBN.isLessThan(ZERO)){
+      throw new Error( "MathLib: INSUFFICIENT_QUOTE_QTY_DESIRED");
+    }
+
+    tokenQtys.baseTokenQty = baseTokenQtyDesiredBN;
+    tokenQtys.quoteTokenQty = quoteTokenQtyDesiredBN;
+    tokenQtys.liquidityTokenQty = (baseTokenQtyDesiredBN.multipliedBy(quoteTokenQtyDesiredBN)).sqrt();
+
+    internalBalances.baseTokenReserveQty = internalBalances.baseTokenReserveQty.plus(tokenQtys.baseTokenQty);
+    internalBalances.quoteTokenReserveQty = internalBalances.quoteTokenReserveQty.plus(tokenQtys.quoteTokenQty);
+  }
+
+ };
+
+/**
+ * @dev calculates the qty of base and quote tokens required and liquidity tokens (deltaRo) to be issued
+ * in order to add liquidity when no decay is present.
+ * @param _baseTokenQtyDesired the amount of base token the user wants to contribute
+ * @param _quoteTokenQtyDesired the amount of quote token the user wants to contribute
+ * @param _baseTokenQtyMin the minimum amount of base token the user wants to contribute (allows for slippage)
+ * @param _quoteTokenQtyMin the minimum amount of quote token the user wants to contribute (allows for slippage)
+ * @param _quoteTokenReserveQty the external quote token reserve qty prior to this transaction
+ * @param _totalSupplyOfLiquidityTokens the total supply of our exchange's liquidity tokens (aka Ro)
+ * @param _internalBalances internal balances struct from our exchange's internal accounting
+ *
+ * @return baseTokenQty qty of base token the user must supply
+ * @return quoteTokenQty qty of quote token the user must supply
+ * @return liquidityTokenQty qty of liquidity tokens to be issued in exchange
+ */
+const calculateAddTokenPairLiquidityQuantities = (
+  _baseTokenQtyDesired,
+  _quoteTokenQtyDesired,
+  _baseTokenQtyMin,
+  _quoteTokenQtyMin,
+  _quoteTokenReserveQty,
+  _totalSupplyOfLiquidityTokens,
+  _internalBalances
+) => {
+  // cleanse input
+  const baseTokenQtyDesiredBN = BigNumber(_baseTokenQtyDesired);
+  const quoteTokenQtyDesiredBN = BigNumber(_quoteTokenQtyDesired);
+  const baseTokenQtyMinBN = BigNumber(_baseTokenQtyMin);
+  const quoteTokenQtyMinBN = BigNumber(_quoteTokenQtyMin);
+  const quoteTokenReserveQtyBN = BigNumber(_quoteTokenReserveQty);
+  const totalSupplyOfLiquidityTokensBN = BigNumber(_totalSupplyOfLiquidityTokens);
+  const internalBalances = internalBalancesBNCleaner(_internalBalances);
+
+  let baseTokenQty;
+  let quoteTokenQty;
+  let liquidityTokenQty;
+
+  const requiredQuoteTokenQty = calculateQty(baseTokenQtyDesiredBN, internalBalances.baseTokenReserveQty, internalBalances.quoteTokenReserveQty);
+
+  if(requiredQuoteTokenQty.isLessThanOrEqualTo(quoteTokenQtyDesiredBN)){
+    // user has to provide less than their desired amount
+    if(requiredQuoteTokenQty.isLessThanOrEqualTo(quoteTokenQtyMinBN)){
+      throw new Error("MathLib: INSUFFICIENT_QUOTE_QTY");
+    }
+    baseTokenQty = baseTokenQtyDesiredBN;
+    quoteTokenQty = requiredQuoteTokenQty;
+
+  } else {
+
+    // we need to check the opposite way.
+    const requiredBaseTokenQty = calculateQty(quoteTokenQtyDesiredBN, internalBalances.quoteTokenReserveQty, internalBalances.baseTokenReserveQty);
+    if(requiredBaseTokenQty.isLessThanOrEqualTo(baseTokenQtyMinBN)){
+      throw new Error("MathLib: INSUFFICIENT_BASE_QTY");
+      baseTokenQty = requiredBaseTokenQty;
+      quoteTokenQty = quoteTokenQtyDesiredBN;
+    }
+
+  }
+
+  liquidityTokenQty = calculateLiquidityTokenQtyForDoubleAssetEntry(totalSupplyOfLiquidityTokensBN, quoteTokenQty, quoteTokenReserveQtyBN);
+
+  internalBalances.baseTokenReserveQty = baseTokenQty.plus(internalBalances.baseTokenReserveQty);
+  internalBalances.quoteTokenReserveQty = quoteTokenQty.plus(internalBalances.quoteTokenReserveQty);
+
+  const baseQuoteLiquidityTokenQty = {
+    baseTokenQty: baseTokenQty,
+    quoteTokenQty: quoteTokenQty,
+    liquidityTokenQty: liquidityTokenQty
+  }
+
+  return baseQuoteLiquidityTokenQty;
+};
+
+  /**
+   * @dev calculates the qty of base tokens a user will receive for swapping their quote tokens (less fees)
+   * @param _quoteTokenQty the amount of quote tokens the user wants to swap
+   * @param _baseTokenQtyMin the minimum about of base tokens they are willing to receive in return (slippage)
+   * @param _baseTokenReserveQty the external base token reserve qty prior to this transaction
+   * @param _liquidityFeeInBasisPoints the current total liquidity fee represented as an integer of basis points
+   * @param _internalBalances internal balances struct from our exchange's internal accounting
+   *
+   * @return baseTokenQty qty of base token the user will receive back
+   */
+  const calculateBaseTokenQty = (
+    _quoteTokenQty,
+    _baseTokenQtyMin,
+    _baseTokenReserveQty,
+    _liquidityFeeInBasisPoints,
+    _internalBalances
+  ) => {
+    // cleanse inputs
+    const quoteTokenQtyBN = BigNumber(_quoteTokenQty);
+    const baseTokenQtyMinBN = BigNumber(_baseTokenQtyMin);
+    const baseTokenReserveQtyBN = BigNumber(_baseTokenReserveQty);
+    const liquidityFeeInBasisPointsBN = BigNumber(_liquidityFeeInBasisPoints);
+    const internalBalances = internalBalancesBNCleaner(_internalBalances);
+
+    let baseTokenQty = ZERO;
+
+    if(baseTokenReserveQtyBN.isLessThan(ZERO) && (internalBalances.baseTokenReserveQty).isLessThan(ZERO)){
+      throw new Error( "MathLib: INSUFFICIENT_BASE_TOKEN_QTY");
+    }
+
+    // check to see if we have experienced quote token Decay / a rebase down event
+    if( baseTokenReserveQtyBN.isLessThan(internalBalances.baseTokenReserveQty) ) {
+      // we have less reserves than our current price curve will expect, we need to adjust the curve
+      const pricingRatio = (internalBalances.baseTokenReserveQty).dividedBy(internalBalances.quoteTokenReserveQty);
+      //    ^ is Omega
+
+      const impliedQuoteTokenQty = baseTokenReserveQtyBN.dividedBy(pricingRatio);
+      baseTokenQty = calculateQtyToReturnAfterFees(quoteTokenQtyBN, impliedQuoteTokenQty, baseTokenReserveQtyBN, liquidityFeeInBasisPointsBN);
+      
+    } else {
+      // we have the same or more reserves, no need to alter the curve.
+      baseTokenQty = calculateQtyToReturnAfterFees(
+        quoteTokenQtyBN, 
+        internalBalances.quoteTokenReserveQty,
+        internalBalances.baseTokenReserveQty,
+        liquidityFeeInBasisPointsBN 
+        );
+    };
+
+    if( baseTokenQty.isLessThan(baseTokenQtyMinBN)) {
+      throw new Error("MathLib: INSUFFICIENT_BASE_TOKEN_QTY");
+    }
+    internalBalances.baseTokenReserveQty = internalBalances.baseTokenReserveQty.minus(baseTokenQty);
+    internalBalances.quoteTokenReserveQty = internalBalances.quoteTokenReserveQty.plus(quoteTokenQtyBN);
+
+
+    return baseTokenQty;
+
+  };
+
+/**
+ * @dev calculates the qty of quote tokens a user will receive for swapping their base tokens (less fees)
+ * @param _baseTokenQty the amount of bases tokens the user wants to swap
+ * @param _quoteTokenQtyMin the minimum about of quote tokens they are willing to receive in return (slippage)
+ * @param _liquidityFeeInBasisPoints the current total liquidity fee represented as an integer of basis points
+ * @param _internalBalances internal balances struct from our exchange's internal accounting
+ *
+ * @return quoteTokenQty qty of quote token the user will receive back
+ */
+const calculateQuoteTokenQty = (
+  _baseTokenQty,
+  _quoteTokenQtyMin,
+  _liquidityFeeInBasisPoints,
+  _internalBalances
+) => {
+
+  // cleanse input
+  const baseTokenQtyBN = BigNumber(_baseTokenQtyMin);
+  const quoteTokenQtyMinBN = BigNumber(_quoteTokenQty);
+  const liquidityFeeInBasisPointsBN = BigNumber(_liquidityFeeInBasisPoints);
+  const internalBalances = internalBalancesBNCleaner(_internalBalances);
+
+  let quoteTokenQty = ZERO;
+
+  if(baseTokenQtyBN.isLessThan(ZERO) && quoteTokenQtyMinBN.isLessThan(ZERO)){
+    throw new Error("MathLib: INSUFFICIENT_TOKEN_QTY");
+  }
+
+  quoteTokenQty = calculateQtyToReturnAfterFees(
+    baseTokenQtyBN,
+    internalBalances.baseTokenReserveQty,
+    internalBalances.quoteTokenReserveQty,
+    liquidityFeeInBasisPointsBN
+  );
+
+  if(quoteTokenQty.isLessThan(quoteTokenQtyMinBN)){
+    throw new Error( "MathLib: INSUFFICIENT_QUOTE_TOKEN_QTY")
+  }
+
+  internalBalances.baseTokenReserveQty = (internalBalances.baseTokenReserveQty).plus(baseTokenQtyBN);
+  internalBalances.quoteTokenReserveQty = (internalBalances.quoteTokenReserveQty).minus(quoteTokenQty);
+
+  return quoteTokenQty;
+
+
+};  
+
+
+
+
+/**
+ * @dev calculates the qty of liquidity tokens that should be sent to the DAO due to the growth in K from trading.
+ * The DAO takes 1/6 of the total fees (30BP total fee, 25 BP to lps and 5 BP to the DAO)
+ * @param _totalSupplyOfLiquidityTokens the total supply of our exchange's liquidity tokens (aka Ro)
+ * @param _internalBalances internal balances struct from our exchange's internal accounting
+ *
+ * @return liquidityTokenFeeQty qty of tokens to be minted to the fee address for the growth in K
+ */ 
+const calculateLiquidityTokenFees = (
+  _totalSupplyOfLiquidityTokens,
+  _internalBalances
+) => {
+  // cleanse inputs
+  const totalSupplyOfLiquidityTokensBN = BigNumber(_totalSupplyOfLiquidityTokens);
+  const internalBalances = internalBalancesBNCleaner(_internalBalances);
+
+  const rootK = ((internalBalances.baseTokenReserveQty).multipliedBy(internalBalances.quoteTokenReserveQty)).sqrt();
+  const rootKLast = (internalBalances.kLast).sqrt();
+  
+  if(rootK.isGreaterThan(rootKLast)){
+    const numerator = totalSupplyOfLiquidityTokensBN.multipliedBy(rootK.minus(rootKLast));
+    const denominator = (rootK.multipliedBy(BigNumber(5))).plus(rootKLast);
+    const liquidityTokenFeeQty = numerator.dividedBy(denominator);
+    return liquidityTokenFeeQty;
+  }
+
+};   
 
 
 
@@ -386,259 +738,17 @@ const internalBalancesBNCleaner = (_internalBalances) => {
 //   })
 // }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// TODO: add support for negative scenarios
-// TODO: refactor function params to take in alphabetically
-// recommend passing in all numbers as string or BN instances so that BN constructor works properly
-
-// calculates the decay (if any) - and returns the type and value of the decay
-//                        Y                    α            X               β
-const calculateDecay = (quoteTokenReserveQty, alpha, baseTokenReserveQty, beta) => {
-   // cleanse input:
-   const quoteTokenReserveQtyBN = BigNumber(quoteTokenReserveQty);
-   const baseTokenReserveQtyBN = BigNumber(baseTokenReserveQty);
-   const alphaBN = BigNumber(alpha);
-   const betaBN = BigNumber(beta);
-
-   let decay = {
-     type: "",
-     value: "",
-   }
-
-   // handle error cases
-   if(quoteTokenReserveQtyBN.isZero() || baseTokenReserveQtyBN.isZero()|| alphaBN.isZero() || betaBN.isZero() ) {
-    throw new Error("Error:Empty pool");
-  }
-   // BetaDecay (β^) = β-Y => beta - quoteTokenReserveQty
-   if( !(betaBN.minus(quoteTokenReserveQtyBN).isZero()) ){
-     const betaDecayValue = betaBN.minus(quoteTokenReserveQtyBN);
-     decay.type = "betaDecay";
-     decay.value = betaDecayValue;
-
-   }
-   else
-    // AlphaDecay (α^) = α-X => alpha - baseTokenReserveQty
-    if(!(alphaBN.minus(baseTokenReserveQtyBN).isZero())){
-      const alphaDecayValue = alphaBN.minus(baseTokenReserveQtyBN);
-      decay.type = "alphaDecay";
-      decay.value = alphaDecayValue;
-
-    }
-    else {
-      decay.type = "noDecay"
-      decay.value = BigNumber("0");
-    }
-    return decay;
-};
-
-// calculates the current exchange rate (x/y)
-const calculateExchangeRate = (inputTokenReserveQty, outputTokenReserveQty) => {
-  // cleanse input to BN
-  inputTokenReserveQtyBN = BigNumber(inputTokenReserveQty);
-  outputTokenReserveQtyBN = BigNumber(outputTokenReserveQty);
-
-  // if any one of them are zero return cause empty pool
-  if(inputTokenReserveQtyBN.isEqualTo(0) || outputTokenReserveQtyBN.isEqualTo(0)){
-    throw new Error("Error:Empty pool");
-  }
-
-  return inputTokenReserveQtyBN.dividedBy(outputTokenReserveQtyBN);
-
-}
-
-
-// calculates expected Ro amount based on inputs
-const calculateLPTokenAmount = (inputQuoteTokenAmount, inputBaseTokenAmount, quoteTokenReserveQty, alpha, baseTokenReserveQty, beta, lpTokenReserveQty,  slippage) => {
-  // cleanse input:
-  const inputQuoteTokenAmountBN = BigNumber(inputQuoteTokenAmount);
-  const inputBaseTokenAmountBN = BigNumber(inputBaseTokenAmount);
-  const quoteTokenReserveQtyBN = BigNumber(quoteTokenReserveQty);
-  const alphaBN = BigNumber(alpha);
-  const baseTokenReserveQtyBN = BigNumber(baseTokenReserveQty);
-  const betaBN = Bignumber(beta);
-  const lpTokenReserveQtyBN = BigNumber(lpTokenReserveQty);
-  //decay will be object need to clean its value key
-  
-  const slippageBN = BigNumber(slippage);
-
-
-
-  // 3-LP situations: 
-  // initial pool setup: deltaRo = sqrt(inputQuoteTokenAmount, inputBaseTokenAmount) 
-  // open q : can we reach a state where only 1 side has liquidity - and how does that affect this
-  if(quoteTokenReserveQtyBN.isEqualTo(ZERO) && baseTokenReserveQtyBN.isEqualTo(ZERO)){
-    const deltaRo = inputQuoteTokenAmountBN.multipliedBy(baseTokenReserveQtyBN).sqrt();
-    return deltaRo;
-  }
-  
-  // non decay - Double Asset Entry: deltaRo = (ΔY/Y) * Ro = (inputQuoteTokenAmount/quoteTokenReserveQty) * lpTokenReserveQty
-  const decay = calculateDecay(quoteTokenReserveQtyBN, alphaBN, baseTokenReserveQtyBN, betaBN);
-  if(decay.value.isZero()){
-    const deltaRo = (inputQuoteTokenAmountBN.dividedBy(quoteTokenReserveQtyBN)).multipliedBy(lpTokenReserveQtyBN);
-    return deltaRo; 
-  }
-  else 
-    if( !(decay.value.isZero()) && decay.type === "betaDecay" ){
-      // calculate gamma
-    }
-  
-
-  // Presence of decay - 
-  // call calculate and get back decay value and type
-  // based on which gamma gets calculated
-
-  // calculate gamma based on type of decay 
-
-
-};
-
-
-// gamma is different based on the type of decay prsent in the system
-//                                   
-const calculateGamma = (alpha, baseTokenReserveQty, beta, decay, inputBaseTokenAmount, inputQuoteTokenAmount, quoteTokenReserveQty) => {
-  // cleanse input 
-  const quoteTokenReserveQtyBN = BigNumber(quoteTokenReserveQty);
-  const alphaBN = BigNumber(alpha);
-  const baseTokenReserveQtyBN = BigNumber(baseTokenReserveQty);
-  const betaBN = BigNumber(beta);
-  const inputQuoteTokenAmountBN = BigNumber(inputQuoteTokenAmount);
-  const inputBaseTokenAmountBN = BigNumber(inputBaseTokenAmount);
-
-  // omega = X/Y => baseTokenReserve/ quoteTokenReserve
-  const omega =  baseTokenReserveQtyBN.dividedBy(quoteTokenReserveQtyBN);
-
-  let gamma;
-  const decayType = decay.type;
-  if(decayType === "betaDecay"){
-    /* 
-    When there is betaDecay
-    # γ = ΔX / X / 2 * ( ΔX / β^ )
-    # ΔX = α - X   - The max amount of baseTokens required to completely offset betaDecay(and by extension alphaDecay).
-      (Provided by the user)
-    # β^ = ΔX  / ω
-    # Omega (ω) - X/Y - The ratio of the internal balance of baseToken to the internal balance of quoteToken
-    */
-   const deltaX =  alphaBN.minus(baseTokenReserveQtyBN);
-   
-   /*
-   BetaDecay (β^) = β-Y -> The amount of Beta(β) not contributing to the liquidity,
-   Due to an imbalance in the tokens caused by elastic supply (a rebase).
-   */
-   const betaDecay = decay.value;
-   gamma = (deltaX.dividedBy(baseTokenReserveQtyBN.dividedBy(BigNumber(2)))).multipliedBy(deltaX.dividedBy(betaDecay))
-   return gamma;
-  }
-  else
-    if(decayType == "alphaDecay") {
-      /* 
-      When there is alphaDecay
-      # γ= ΔY / Y / 2 * ( ΔX / α^ )
-      # ΔY = α^ / ω   = The amount of quoteTokens required to completely offset alphaDecay.
-      # AlphaDecay (α^) = α-X -> The amount of Alpha(α) not contributing to the liquidity, 
-      # Due to an imbalance in the tokens caused by elastic supply (a rebase).
-      # Omega (ω) - X/Y - The ratio of the internal balance of baseToken to the internal balance of quoteToken
-      */
-      const alphaDecay = decay.value;
-      const deltaY = alphaDecay.dividedBy(omega);
-      // deltaX - is this correct tho
-      const deltaX = inputQuoteTokenAmountBN;
-      gamma = (deltaY.dividedBy(quoteTokenReserveQtyBN.dividedBy(BigNumber(2)))).multipliedBy(deltaX.dividedBy(alphaDecay));
-      return gamma;
-
-
-    }
-};
-
-
-// calculates the min amount of output tokens given the slippage percent supplied
-const calculateOutputAmount = (inputTokenAmount, inputTokenReserveQty, outputTokenReserveQty, slippagePercent) => {
-
-  // inputTokenReserveQty - X
-  // logic: K = X*Y
-  // YDash = ((K)/ inputTokenAmount)* (1 - (slippagePercent/100))
-  // outputTokenAmount = Y - YDash (difference)
-  // cleanse input to BN
-  const inputTokenAmountBN = BigNumber(inputTokenAmount);
-  const inputTokenReserveQtyBN = BigNumber(inputTokenReserveQty);
-  const outputTokenReserveQtyBN = BigNumber(outputTokenReserveQty);
-  const slippagePercentBN = BigNumber(slippagePercent);
-  
-
-  if(inputTokenReserveQtyBN.isEqualTo(BigNumber(0)) || outputTokenReserveQtyBN.isEqualTo(BigNumber(0)) ) {
-    throw new Error("Error:Empty pool");
-  }
-  else
-    if(inputTokenAmountBN.isEqualTo(0)) {
-      throw new Error("Error: Divide by zero");
-    }
-
-  const k = inputTokenReserveQtyBN.multipliedBy(outputTokenReserveQtyBN);
-  const XDash = inputTokenReserveQtyBN.plus(inputTokenAmountBN)
-  const YDash = k.dividedBy(XDash).multipliedBy(BigNumber("1").minus(slippagePercentBN.dividedBy(BigNumber("100"))));
-  const deltaY = YDash.minus(outputTokenReserveQtyBN);
-  const outputTokenAmountBN = deltaY.absoluteValue();
-  
-                                
-  return outputTokenAmountBN;                                
-
-
-};
-
-// calculates the price impact (or % move in x/y)
-const calculatePriceImpact = (inputTokenAmount, inputTokenReserveQty, outputTokenReserveQty, slippagePercent) => {
-  // price impact is percentage difference in omega post trade
-  // in - x ; out - Y
-  // (X'/Y' - X/Y)/ X/Y
-  // cleanse input to BN
-  const inputTokenAmountBN = BigNumber(inputTokenAmount);
-  const inputTokenReserveQtyBN = BigNumber(inputTokenReserveQty);
-  const outputTokenReserveQtyBN = BigNumber(outputTokenReserveQty);
-  const slippagePercentBN = BigNumber(slippagePercent);
-
-  const priceOfXinY = calculateExchangeRate(inputTokenReserveQtyBN, outputTokenReserveQtyBN);
-  const YRecieved = calculateOutputAmount(inputTokenAmountBN, inputTokenReserveQtyBN, outputTokenReserveQtyBN, slippagePercentBN);
-  const YDash = YRecieved.minus(outputTokenReserveQtyBN).absoluteValue();
-  const XDash = inputTokenReserveQtyBN.plus(inputTokenAmount);
-  const priceOfXDashInYDash = calculateExchangeRate(XDash, YDash);
-  const difference = priceOfXDashInYDash.minus(priceOfXinY);
-  const priceImpact = (difference).dividedBy(priceOfXinY).absoluteValue();
-  return priceImpact;
-
-}
-
-
 module.exports = {
-  calculateOutputAmount,
-  calculateExchangeRate, 
-  calculatePriceImpact, 
-  calculateDecay,
+isSufficientDecayPresent,
+calculateQty,
+calculateQtyToReturnAfterFees,
+calculateLiquidityTokenQtyForSingleAssetEntry,
+calculateLiquidityTokenQtyForDoubleAssetEntry,
+calculateAddQuoteTokenLiquidityQuantities,
+calculateAddBaseTokenLiquidityQuantities,
+calculateAddLiquidityQuantities,
+calculateAddTokenPairLiquidityQuantities,
+calculateBaseTokenQty,
+calculateQuoteTokenQty,
+calculateLiquidityTokenFees
 }
-
