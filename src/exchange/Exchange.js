@@ -97,20 +97,27 @@ export default class Exchange extends Base {
     quoteTokenQtyMin,
     liquidityTokenRecipient,
     expirationTimestamp,
-    overrides = {}) {
+    overrides = {},
+  ) {
     if (expirationTimestamp < new Date().getTime() / 1000) {
       return false;
     }
-    if (baseTokenQtyDesired <= baseTokenQtyMin ||
-      quoteTokenQtyDesired <= quoteTokenQtyMin) {
+    if (
+      baseTokenQtyDesired <= baseTokenQtyMin ||
+      quoteTokenQtyDesired <= quoteTokenQtyMin
+    ) {
       return false;
     }
-    if (this.baseTokenBalance < baseTokenQtyDesired ||
-      this.quoteTokenBalance < quoteTokenQtyDesired) {
+    if (
+      this.baseTokenBalance < baseTokenQtyDesired ||
+      this.quoteTokenBalance < quoteTokenQtyDesired
+    ) {
       return false;
     }
-    if (this.baseTokenAllowance < baseTokenQtyDesired ||
-      this.quoteTokenAllowance < quoteTokenQtyDesired) {
+    if (
+      this.baseTokenAllowance < baseTokenQtyDesired ||
+      this.quoteTokenAllowance < quoteTokenQtyDesired
+    ) {
       return false;
     }
     const txStatus = await this.contract.addLiquidity(
@@ -131,7 +138,8 @@ export default class Exchange extends Base {
     quoteTokenQtyMin,
     tokenRecipient,
     expirationTimestamp,
-    overrides = {}) {
+    overrides = {},
+  ) {
     if (expirationTimestamp < new Date().getTime() / 1000) {
       return false;
     }
@@ -153,12 +161,15 @@ export default class Exchange extends Base {
     baseTokenQty,
     quoteTokenQtyMin,
     expirationTimestamp,
-    overrides = {}) {
+    overrides = {},
+  ) {
     if (expirationTimestamp < new Date().getTime() / 1000) {
       return false;
     }
-    if (this.baseTokenBalance < baseTokenQty ||
-      this.baseTokenAllowance < baseTokenQty) {
+    if (
+      this.baseTokenBalance < baseTokenQty ||
+      this.baseTokenAllowance < baseTokenQty
+    ) {
       return false;
     }
     const txStatus = await this.contract.swapBaseTokenForQuoteToken(
@@ -174,12 +185,15 @@ export default class Exchange extends Base {
     quoteTokenQty,
     baseTokenQtyMin,
     expirationTimestamp,
-    overrides = {}) {
+    overrides = {},
+  ) {
     if (expirationTimestamp < new Date().getTime() / 1000) {
       return false;
     }
-    if (this.quoteTokenBalance < quoteTokenQty ||
-      this.quoteTokenAllowance < quoteTokenQty) {
+    if (
+      this.quoteTokenBalance < quoteTokenQty ||
+      this.quoteTokenAllowance < quoteTokenQty
+    ) {
       return false;
     }
     const txStatus = await this.contract.swapQuoteTokenForBaseToken(
