@@ -97,7 +97,6 @@ export default class Exchange extends Base {
     quoteTokenQtyMin,
     liquidityTokenRecipient,
     expirationTimestamp,
-<<<<<<< HEAD
     overrides = {}) {
     if (expirationTimestamp < new Date().getTime() / 1000) {
       return false;
@@ -112,14 +111,6 @@ export default class Exchange extends Base {
     }
     if (this.baseTokenAllowance < baseTokenQtyDesired ||
       this.quoteTokenAllowance < quoteTokenQtyDesired) {
-=======
-    overrides = {},
-  ) {
-    if (!this.baseTokenBalance || !this.quoteTokenBalance) {
-      return false;
-    }
-    if (!this.baseTokenAllowance || !this.quoteTokenAllowance) {
->>>>>>> changes to get sdk compiling
       return false;
     }
     const txStatus = await this.contract.addLiquidity(
@@ -140,17 +131,11 @@ export default class Exchange extends Base {
     quoteTokenQtyMin,
     tokenRecipient,
     expirationTimestamp,
-<<<<<<< HEAD
     overrides = {}) {
     if (expirationTimestamp < new Date().getTime() / 1000) {
       return false;
     }
     if (this.lpTokenAllowance < liquidityTokenQty) {
-=======
-    overrides = {},
-  ) {
-    if (!this.baseTokenAllowance || !this.quoteTokenAllowance) {
->>>>>>> changes to get sdk compiling
       return false;
     }
     const txStatus = await this.contract.removeLiquidity(
@@ -168,7 +153,6 @@ export default class Exchange extends Base {
     baseTokenQty,
     quoteTokenQtyMin,
     expirationTimestamp,
-<<<<<<< HEAD
     overrides = {}) {
     if (expirationTimestamp < new Date().getTime() / 1000) {
       return false;
@@ -184,32 +168,12 @@ export default class Exchange extends Base {
       this.sanitizeOverrides(overrides),
     );
     return txStatus;
-=======
-    overrides = {},
-  ) {
-    if (!this.baseTokenBalance) {
-      return false;
-    }
-    if (!this.baseTokenAllowance) {
-      return false;
-    }
-    const exchange = await this.contract;
-    const swapBaseTokenForQuoteTokenStatus =
-      await exchange.swapBaseTokenForQuoteToken(
-        baseTokenQnty,
-        quoteTokenQntyMin,
-        expirationTimestamp,
-        this.sanitizeOverrides(overrides),
-      );
-    return swapBaseTokenForQuoteTokenStatus;
->>>>>>> changes to get sdk compiling
   }
 
   async swapQuoteTokenForBaseToken(
     quoteTokenQty,
     baseTokenQtyMin,
     expirationTimestamp,
-<<<<<<< HEAD
     overrides = {}) {
     if (expirationTimestamp < new Date().getTime() / 1000) {
       return false;
@@ -225,24 +189,5 @@ export default class Exchange extends Base {
       this.sanitizeOverrides(overrides),
     );
     return txStatus;
-=======
-    overrides = {},
-  ) {
-    if (!this.quoteTokenBalance) {
-      return false;
-    }
-    if (!this.quoteTokenAllowance) {
-      return false;
-    }
-    const exchange = await this.contract;
-    const swapQuoteTokenForBaseTokenStatus =
-      await exchange.swapQuoteTokenForBaseToken(
-        quoteTokenQnty,
-        baseTokenQntyMin,
-        expirationTimestamp,
-        this.sanitizeOverrides(overrides),
-      );
-    return swapQuoteTokenForBaseTokenStatus;
->>>>>>> changes to get sdk compiling
   }
 }
