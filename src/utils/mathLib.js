@@ -167,8 +167,6 @@ const calculateLiquidityTokenQtyForSingleAssetEntry = (
   console.log("altWGamma: ", altWGamma.toString());
 
   
-
-  // return altWGamma;
   //                                          WAD: 1000000000000000000
   // aTokenDiv                                       50000000000000000  => 0.05
   // bOtkenWADMul                                250000000000000000000  => 250
@@ -215,8 +213,8 @@ const calculateLiquidityTokenQtyForSingleAssetEntry = (
                   ( 1 - gamma )
 
   */
-  const deltaRo = (totalSupplyOfLiquidityTokensBN.multipliedBy(gamma)).dividedBy(BigNumber(1).minus(gamma)).dp(18, ROUND_DOWN);
-  console.log("deltRo: ", deltaRo.toString());
+  const liquidityTokenQty = (totalSupplyOfLiquidityTokensBN.multipliedBy(gamma)).dividedBy(BigNumber(1).minus(gamma)).dp(18, ROUND_DOWN);
+  console.log("deltRo: ", liquidityTokenQty.toString());
 
   return deltaRo;
 
