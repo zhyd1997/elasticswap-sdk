@@ -4,6 +4,19 @@ const {ROUND_DOWN} = require("bignumber.js")
 const {utils} = sdk;
 
 const ZERO = BigNumber('0');
+const WAD = BigNumber("1000000000000000000");
+const INSUFFICIENT_BASE_QTY = new Error("MathLib: INSUFFICIENT_BASE_QTY");
+const INSUFFICIENT_BASE_TOKEN_QTY = new Error( "MathLib: INSUFFICIENT_BASE_TOKEN_QTY");
+const INSUFFICIENT_BASE_QTY_DESIRED = new Error("MathLib: INSUFFICIENT_BASE_QTY_DESIRED");
+const INSUFFICIENT_CHANGE_IN_DECAY = new Error( "MathLib: INSUFFICIENT_CHANGE_IN_DECAY");
+const INSUFFICIENT_DECAY = new Error("MathLib: INSUFFICIENT_DECAY");
+const INSUFFICIENT_LIQUIDITY = new Error("MathLib: INSUFFICIENT_LIQUIDITY");
+const INSUFFICIENT_QTY = new Error("MathLib: INSUFFICIENT_QTY");
+const INSUFFICIENT_QUOTE_QTY = new Error("MathLib: INSUFFICIENT_QUOTE_QTY");
+const INSUFFICIENT_QUOTE_QTY_DESIRED = new Error("MathLib: INSUFFICIENT_QUOTE_QTY_DESIRED");
+const INSUFFICIENT_QUOTE_TOKEN_QTY = new Error( "MathLib: INSUFFICIENT_QUOTE_TOKEN_QTY");
+const INSUFFICIENT_TOKEN_QTY = new Error("MathLib: INSUFFICIENT_TOKEN_QTY");
+const NO_QUOTE_DECAY = new Error( "MathLib: NO_QUOTE_DECAY");
 
 // let internalBalances = {
 //   baseTokenReserveQty: ZERO,
@@ -60,12 +73,12 @@ const calculateQty = (_tokenAQty, _tokenAReserveQty, _tokenBReserveQty) => {
   const tokenBReserveQtyBN = BigNumber(_tokenBReserveQty);
 
   if(tokenAQtyBN.isLessThanOrEqualTo(ZERO) ){
-    throw new Error( "MathLib: INSUFFICIENT_QTY");
+    throw INSUFFICIENT_QTY;
   }
   if(tokenAReserveQtyBN.isLessThanOrEqualTo(ZERO) || tokenBReserveQtyBN.isLessThanOrEqualTo(ZERO)){
-    throw new Error( "MathLib: INSUFFICIENT_LIQUIDITY");
+    throw INSUFFICIENT_LIQUIDITY;
   }
-  const tokenBQty = tokenAQtyBN.multipliedBy(tokenBReserveQtyBN).dividedBy(tokenAReserveQtyBN);
+  const tokenBQty = tokenAQtyBN.multipliedBy(tokenBReserveQtyBN).dividedBy(tokenAReserveQtyBN).dp(18, ROUND_DOWN);
   return tokenBQty;
 
 };
@@ -130,26 +143,69 @@ const calculateLiquidityTokenQtyForSingleAssetEntry = (
   const tokenBDecayChangeBN = BigNumber(_tokenBDecayChange);
   const tokenBDecayBN = BigNumber(_tokenBDecay);
 
-  /*
-  
-  # gamma = deltaY / Y' / 2 * (deltaX / alphaDecay')
-  
-              deltaY  *   deltaX * 2
-  # gamma =  ------------------------ 
-                Y'    *   alphaDecay'
+  console.log("sdk: inputs--------");
+  console.log("_totalSupplyOfLiquidityTokensBN: ", totalSupplyOfLiquidityTokensBN.toString());
+  console.log("_tokenQtyAToAddBN: ", tokenQtyAToAddBN.toString());
+  console.log("internalTokenAReserveQtyBN: ", internalTokenAReserveQtyBN.toString());
+  console.log("tokenBDecayChangeBN: ", tokenBDecayChangeBN.toString());
+  console.log("tokenBDecayBN: ", tokenBDecayBN.toString());
+  console.log("-----------------------");
 
-  */
+  const aTokenDiv = tokenQtyAToAddBN.dividedBy(internalTokenAReserveQtyBN);
+  console.log("aTokenDiv: ", aTokenDiv.toString());
+
+  const bTokenWADMul = tokenBDecayChangeBN;
+  console.log("bTokenWADMul: ", bTokenWADMul.toString());
+
+  const aAndBDecayMul = aTokenDiv.multipliedBy(bTokenWADMul);
+  console.log("aAndBdecayMul: ", aAndBDecayMul.toString());
+
+  const AAndBDecayMulDivByTokenBDecay = aAndBDecayMul.dividedBy(tokenBDecayBN);
+  console.log("AAndBDecayMulDivByTokenBDecay: ", AAndBDecayMulDivByTokenBDecay.toString());
+
+  const altWGamma = AAndBDecayMulDivByTokenBDecay.dividedBy(BigNumber(1).dividedBy(2));
+  console.log("altWGamma: ", altWGamma.toString());
+
+  
+
+  // return altWGamma;
+  //                                          WAD: 1000000000000000000
+  // aTokenDiv                                       50000000000000000  => 0.05
+  // bOtkenWADMul                                250000000000000000000  => 250
+  // aAndBDecayMul                                12500000000000000000  => 12.5
+  //AAndBDecayMulDivByTokenBDecay: 50000000000000000000000000000000000  => 5 x 10^16
+  // WAD:                        1000000000000000000
+  // altWGamma                                       25000000000000000  => 0.025
+  // bTokenWADMUL
+
+ 
+
+  // /*
+  
+  // # gamma = deltaY / Y' / 2 * (deltaX / alphaDecay')
+  
+  //             deltaY  *   deltaX * 2
+  // # gamma =  ------------------------ 
+  //               Y'    *   alphaDecay'
+
+  // */
   const deltaY = tokenQtyAToAddBN;
   const YDash = internalTokenAReserveQtyBN;
   const deltaX = tokenBDecayChangeBN;
   const alphaDecayDash = tokenBDecayBN;
 
-  const gammaNumerator = deltaY.multipliedBy(deltaX).multipliedBy(BigNumber(2));
-  const gammaDenominator = YDash.multipliedBy(alphaDecayDash);
+  const gammaNumerator = (deltaY.multipliedBy(deltaX)).multipliedBy(BigNumber(2));
+  console.log('gammaNumerator: ', gammaNumerator.toString());
+  const gammaDenominator = (YDash.multipliedBy(alphaDecayDash));
+  console.log("gammaDenominat: ", gammaDenominator.toString());
   
+
   const gamma = gammaNumerator.dividedBy(gammaDenominator);
+  console.log("gamma: ", gamma.toString());
+
 
   /*
+  12.500000000000000000
 
   # liquidityTokens - Ro
   # ΔRo = (Ro/(1 - γ)) * γ
@@ -159,9 +215,18 @@ const calculateLiquidityTokenQtyForSingleAssetEntry = (
                   ( 1 - gamma )
 
   */
-  const deltaRo = (totalSupplyOfLiquidityTokensBN.multipliedBy(gamma)).dividedBy(BigNumber(1).minus(gamma));
+  const deltaRo = (totalSupplyOfLiquidityTokensBN.multipliedBy(gamma)).dividedBy(BigNumber(1).minus(gamma)).dp(18, ROUND_DOWN);
+  console.log("deltRo: ", deltaRo.toString());
+
   return deltaRo;
 
+  // const wNumerator = (tokenQtyAToAddBN.dividedBy(internalTokenAReserveQtyBN)).multipliedBy(tokenBDecayChangeBN.multipliedBy(WAD));
+  // const wDenominator = tokenBDecayBN.dividedBy(WAD.dividedBy(BigNumber(2)));
+  // const wGamma = wNumerator.dividedBy(wDenominator);
+
+  // const liquidityTokenQty = (((totalSupplyOfLiquidityTokensBN.multipliedBy(WAD)).multipliedBy(wGamma)).dividedBy(WAD.minus(wGamma))).dividedBy(WAD);
+  // console.log("liquidityTokenQty: ", liquidityTokenQty.toString());
+  // return liquidityTokenQty;
 }
 
 /**
@@ -192,8 +257,8 @@ const calculateLiquidityTokenQtyForDoubleAssetEntry = (
                   _quoteTokenReserveBalance
 
   */
-  const numerator = quoteTokenQtyBN.multipliedBy(totalSupplyOfLiquidityTokensBN);
-  const liquidityTokenQty = (numerator).dividedBy(quoteTokenReserveBalanceBN);
+  const numerator = quoteTokenQtyBN.multipliedBy(totalSupplyOfLiquidityTokensBN).dp(18, ROUND_DOWN);
+  const liquidityTokenQty = (numerator).dividedBy(quoteTokenReserveBalanceBN).dp(18, ROUND_DOWN);
   return liquidityTokenQty;
 
 }
@@ -235,7 +300,7 @@ const calculateAddQuoteTokenLiquidityQuantities = (
   const maxQuoteTokenQty = baseTokenDecay.dividedBy(internalBaseTokenToQuoteTokenRatio);
 
   if(quoteTokenQtyMinBN.isGreaterThanOrEqualTo(maxQuoteTokenQty)){
-      throw new Error("MathLib: INSUFFICIENT_DECAY");
+      throw INSUFFICIENT_DECAY;
   }
 
   // deltaBeta
@@ -249,7 +314,7 @@ const calculateAddQuoteTokenLiquidityQuantities = (
   const baseTokenQtyDecayChange = quoteTokenQty.multipliedBy(internalBaseTokenToQuoteTokenRatio);
 
   if(baseTokenQtyDecayChange.isLessThanOrEqualTo(ZERO)){
-      throw new Error("MathLib: INSUFFICIENT_DECAY");
+      throw INSUFFICIENT_DECAY;
   }
   // x += alphaDecayChange
   // y += deltaBeta
@@ -308,7 +373,7 @@ const calculateAddBaseTokenLiquidityQuantities = (
 
   const maxBaseTokenQty = internalBalances.baseTokenReserveQty.minus(baseTokenReserveQtyBN);
   if(baseTokenQtyMinBN.isGreaterThanOrEqualTo(maxBaseTokenQty)){
-    throw new Error("MathLib: INSUFFICIENT_DECAY");
+    throw INSUFFICIENT_DECAY;
   }
 
   let baseTokenQty;
@@ -326,14 +391,14 @@ const calculateAddBaseTokenLiquidityQuantities = (
   const quoteTokenQtyDecayChange = baseTokenQty.multipliedBy(internalQuoteToBaseTokenRatio);
 
   if(quoteTokenQtyDecayChange.isLessThanOrEqualTo(ZERO)){
-    throw new Error( "MathLib: INSUFFICIENT_CHANGE_IN_DECAY");
+    throw INSUFFICIENT_CHANGE_IN_DECAY;
   }
 
   // we can now calculate the total amount of quote token decay
   const quoteTokenDecay = maxBaseTokenQty.multipliedBy(internalQuoteToBaseTokenRatio);
 
   if(quoteTokenDecay.isLessThanOrEqualTo(ZERO)){
-    throw new Error( "MathLib: NO_QUOTE_DECAY");
+    throw NO_QUOTE_DECAY;
   }
   // we are not changing anything about our internal accounting here. We are simply adding tokens
   // to make our internal account "right"...or rather getting the external balances to match our internal
@@ -470,10 +535,10 @@ const calculateAddLiquidityQuantities = (
         tokenQtys.liquidityTokenQty = (tokenQtys.liquidityTokenQty).plus(liquidityTokenQtyFromDecay);
 
         if((tokenQtys.baseTokenQty).isLessThan(baseTokenQtyMinBN)){
-          throw new Error("MathLib: INSUFFICIENT_BASE_QTY");
+          throw INSUFFICIENT_BASE_QTY;
         }
         if((tokenQtys.quoteTokenQty).isLessThan(quoteTokenQtyMinBN)){
-          throw new Error("MathLib: INSUFFICIENT_QUOTE_QTY");
+          throw INSUFFICIENT_QUOTE_QTY;
         }
         
 
@@ -498,10 +563,10 @@ const calculateAddLiquidityQuantities = (
   } else {
     // this user will set the initial pricing curve
     if(baseTokenQtyDesiredBN.isLessThanOrEqualTo(ZERO)){
-      throw new Error("MathLib: INSUFFICIENT_BASE_QTY_DESIRED");
+      throw INSUFFICIENT_BASE_QTY_DESIRED;
     }
     if(quoteTokenQtyDesiredBN.isLessThanOrEqualTo(ZERO)){
-      throw new Error( "MathLib: INSUFFICIENT_QUOTE_QTY_DESIRED");
+      throw INSUFFICIENT_QUOTE_QTY_DESIRED;
     }
 
     tokenQtys.baseTokenQty = baseTokenQtyDesiredBN;
@@ -556,7 +621,7 @@ const calculateAddTokenPairLiquidityQuantities = (
   if(requiredQuoteTokenQty.isLessThanOrEqualTo(quoteTokenQtyDesiredBN)){
     // user has to provide less than their desired amount
     if(requiredQuoteTokenQty.isLessThan(quoteTokenQtyMinBN)){
-      throw new Error("MathLib: INSUFFICIENT_QUOTE_QTY");
+      throw INSUFFICIENT_QUOTE_QTY;
     }
     baseTokenQty = baseTokenQtyDesiredBN;
     quoteTokenQty = requiredQuoteTokenQty;
@@ -566,7 +631,7 @@ const calculateAddTokenPairLiquidityQuantities = (
     // we need to check the opposite way.
     const requiredBaseTokenQty = calculateQty(quoteTokenQtyDesiredBN, internalBalances.quoteTokenReserveQty, internalBalances.baseTokenReserveQty);
     if(requiredBaseTokenQty.isLessThan(baseTokenQtyMinBN)){
-      throw new Error("MathLib: INSUFFICIENT_BASE_QTY");
+      throw INSUFFICIENT_BASE_QTY;
     }
     baseTokenQty = requiredBaseTokenQty;
     quoteTokenQty = quoteTokenQtyDesiredBN;
@@ -614,7 +679,7 @@ const calculateAddTokenPairLiquidityQuantities = (
     let baseTokenQty = ZERO;
 
     if(baseTokenReserveQtyBN.isLessThan(ZERO) && (internalBalances.baseTokenReserveQty).isLessThan(ZERO)){
-      throw new Error( "MathLib: INSUFFICIENT_BASE_TOKEN_QTY");
+      throw INSUFFICIENT_BASE_TOKEN_QTY;
     }
 
     // check to see if we have experienced quote token Decay / a rebase down event
@@ -637,7 +702,7 @@ const calculateAddTokenPairLiquidityQuantities = (
     };
 
     if( baseTokenQty.isLessThanOrEqualTo(baseTokenQtyMinBN)) {
-      throw new Error("MathLib: INSUFFICIENT_BASE_TOKEN_QTY");
+      throw INSUFFICIENT_BASE_TOKEN_QTY;
     }
     internalBalances.baseTokenReserveQty = internalBalances.baseTokenReserveQty.minus(baseTokenQty);
     internalBalances.quoteTokenReserveQty = internalBalances.quoteTokenReserveQty.plus(quoteTokenQtyBN);
@@ -672,7 +737,7 @@ const calculateQuoteTokenQty = (
   let quoteTokenQty = ZERO;
 
   if(baseTokenQtyBN.isLessThanOrEqualTo(ZERO) && quoteTokenQtyMinBN.isLessThanOrEqualTo(ZERO)){
-    throw new Error("MathLib: INSUFFICIENT_TOKEN_QTY");
+    throw INSUFFICIENT_TOKEN_QTY;
   }
 
   quoteTokenQty = calculateQtyToReturnAfterFees(
@@ -683,7 +748,7 @@ const calculateQuoteTokenQty = (
   );
 
   if(quoteTokenQty.isLessThanOrEqualTo(quoteTokenQtyMinBN)){
-    throw new Error( "MathLib: INSUFFICIENT_QUOTE_TOKEN_QTY")
+    throw INSUFFICIENT_QUOTE_TOKEN_QTY;
   }
 
   internalBalances.baseTokenReserveQty = (internalBalances.baseTokenReserveQty).plus(baseTokenQtyBN);
@@ -743,6 +808,19 @@ const internalBalancesBNCleaner = (_internalBalances) => {
   return _internalBalances;
 
 }
+
+// const wDiv = ( _a, _b) => {
+//   // cleanse input 
+//   const a = BigNumber(_a);
+//   const b = BigNumber(_b);
+
+//   const halfB = b.dividedBy(BigNumber(2)).dp(18, ROUND_DOWN);
+//   const numerator = a.plus(halfB);
+//   const answer = numerator.dividedBy(b).dp(18, ROUND_DOWN);
+//   return answer;
+
+   
+// };
 // const objectBNCleaner = (objectToBeCleaned) => {
 //   return Object.keys(objectToBeCleaned).map((key) => {
 //     let cleanedObj = {};
@@ -763,5 +841,9 @@ calculateAddLiquidityQuantities,
 calculateAddTokenPairLiquidityQuantities,
 calculateBaseTokenQty,
 calculateQuoteTokenQty,
-calculateLiquidityTokenFees
+calculateLiquidityTokenFees,
+INSUFFICIENT_QTY,
+INSUFFICIENT_LIQUIDITY
+
+
 }
