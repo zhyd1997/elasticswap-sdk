@@ -214,9 +214,9 @@ const calculateLiquidityTokenQtyForSingleAssetEntry = (
 
   */
   const liquidityTokenQty = (totalSupplyOfLiquidityTokensBN.multipliedBy(gamma)).dividedBy(BigNumber(1).minus(gamma)).dp(18, ROUND_DOWN);
-  console.log("deltRo: ", liquidityTokenQty.toString());
+  console.log("liquidityTokenQty: ", liquidityTokenQty.toString());
 
-  return deltaRo;
+  return liquidityTokenQty;
 
   // const wNumerator = (tokenQtyAToAddBN.dividedBy(internalTokenAReserveQtyBN)).multipliedBy(tokenBDecayChangeBN.multipliedBy(WAD));
   // const wDenominator = tokenBDecayBN.dividedBy(WAD.dividedBy(BigNumber(2)));
