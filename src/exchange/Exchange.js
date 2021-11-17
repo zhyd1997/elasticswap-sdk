@@ -2,6 +2,11 @@ import ExchangeSolidity from '@elastic-dao/elasticswap/artifacts/src/contracts/E
 import ERC20 from '../tokens/ERC20';
 import Base from '../Base';
 
+const onlyAfterSummoning = 'DAO must be summoned';
+const onlyBeforeSummoning = 'DAO must not be summoned';
+const prefix = '@elasticswap/sdk - ElasticSwap';
+const valueGreaterThanZero = 'a value greater than 0 must be provided';
+
 export default class Exchange extends Base {
   constructor(sdk, exchangeAddress, baseTokenAddress, quoteTokenAddress) {
     super(sdk);
