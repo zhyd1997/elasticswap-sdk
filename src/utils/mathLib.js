@@ -163,7 +163,7 @@ const calculateLiquidityTokenQtyForSingleAssetEntry = (
   const AAndBDecayMulDivByTokenBDecay = aAndBDecayMul.dividedBy(tokenBDecayBN);
   console.log("AAndBDecayMulDivByTokenBDecay: ", AAndBDecayMulDivByTokenBDecay.toString());
 
-  const altWGamma = AAndBDecayMulDivByTokenBDecay.dividedBy(BigNumber(1).dividedBy(2));
+  const altWGamma = AAndBDecayMulDivByTokenBDecay.dividedBy(BigNumber(2));
   console.log("altWGamma: ", altWGamma.toString());
 
   
@@ -213,7 +213,7 @@ const calculateLiquidityTokenQtyForSingleAssetEntry = (
                   ( 1 - gamma )
 
   */
-  const liquidityTokenQty = (totalSupplyOfLiquidityTokensBN.multipliedBy(gamma)).dividedBy(BigNumber(1).minus(gamma)).dp(18, ROUND_DOWN);
+  const liquidityTokenQty = (totalSupplyOfLiquidityTokensBN.multipliedBy(altWGamma)).dividedBy(BigNumber(1).minus(altWGamma)).dp(18, ROUND_DOWN);
   console.log("liquidityTokenQty: ", liquidityTokenQty.toString());
 
   return liquidityTokenQty;

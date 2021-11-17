@@ -13,7 +13,7 @@ const {
   INSUFFICIENT_QTY,
   INSUFFICIENT_LIQUIDITY } = mathLib;
 
-
+const EPSILON = .0000000000000001;
 
 describe("calculateQty", () => {
 
@@ -119,9 +119,8 @@ describe("calculateLiquidityTokenQtyForSingleAssetEntry", () => {
     const gamma =
       (tokenAQtyToAdd / tokenAInternalReserveQtyAfterTransaction / 2) *
       (tokenBDecayChange / tokenBDecay);
-    const expectLiquidityTokens = Math.floor(
-      (totalSupplyOfLiquidityTokens * gamma) / (1 - gamma)
-    );
+    const expectLiquidityTokens = (totalSupplyOfLiquidityTokens * gamma) / (1 - gamma);
+
     expect(
       calculateLiquidityTokenQtyForSingleAssetEntry(
         totalSupplyOfLiquidityTokens,
@@ -130,7 +129,7 @@ describe("calculateLiquidityTokenQtyForSingleAssetEntry", () => {
         tokenBDecayChange,
         tokenBDecay
       ).toNumber()
-    ).to.equal(expectLiquidityTokens);
+    ).to.be.closeTo(expectLiquidityTokens, EPSILON);
 
     // if we supply half, and remove half the decay, we should get roughly 1/2 the tokens
     const tokenAQtyToAdd2 = 25;
@@ -139,9 +138,7 @@ describe("calculateLiquidityTokenQtyForSingleAssetEntry", () => {
     const gamma2 =
       (tokenAQtyToAdd2 / tokenAInternalReserveQtyAfterTransaction2 / 2) *
       (tokenBDecayChange2 / tokenBDecay);
-    const expectLiquidityTokens2 = Math.floor(
-      (totalSupplyOfLiquidityTokens * gamma2) / (1 - gamma2)
-    );
+    const expectLiquidityTokens2 = (totalSupplyOfLiquidityTokens * gamma2) / (1 - gamma2);
 
     expect(
       calculateLiquidityTokenQtyForSingleAssetEntry(
@@ -151,7 +148,7 @@ describe("calculateLiquidityTokenQtyForSingleAssetEntry", () => {
         tokenBDecayChange2,
         tokenBDecay
       ).toNumber()
-    ).to.equal(expectLiquidityTokens2);
+    ).to.be.closeTo(expectLiquidityTokens2, EPSILON);
   });
 
   it("Should return the correct qty of liquidity tokens with a rebase up", async () => {
