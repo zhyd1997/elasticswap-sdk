@@ -36,7 +36,7 @@ describe('ERC20', () => {
   });
 
   describe('balanceOf', () => {
-    it('gets correct balance of address when balance is not zero', async () => {
+    it('Gets correct balance of address when balance is not zero', async () => {
       const accounts = await ethers.getSigners();
 
       await deployments.fixture();
@@ -55,7 +55,7 @@ describe('ERC20', () => {
       assert.isTrue(expectedBalance.eq(balance));
     });
 
-    it('gets zero balance of address when balance is zero', async () => {
+    it('Gets zero balance of address when balance is zero', async () => {
       const accounts = await ethers.getSigners();
 
       await deployments.fixture();
@@ -75,25 +75,36 @@ describe('ERC20', () => {
   });
 
   describe('approve', () => {
-    it('approve balance increases', async () => {
+    it('Should increment balance for QuoteToken Allowance', async () => {
       const accounts = await ethers.getSigners();
 
       await deployments.fixture();
-      const QuoteToken = await deployments.get('QuoteToken');
-      const quoteToken = new ethers.Contract(
-        QuoteToken.address,
-        QuoteToken.abi,
+      const quoteTokenMock = await deployments.get('QuoteToken');
+      const quoteTokenContract = new ethers.Contract(
+        quoteTokenMock.address,
+        quoteTokenMock.abi,
         accounts[0],
       );
 
-      const approvalAddress = QuoteToken.address;
-      const erc20 = new elasticSwap.ERC20(sdk, QuoteToken.address);
+      const spenderAddress = accounts[1].address;
+      const erc20 = new elasticSwap.ERC20(sdk, quoteTokenMock.address);
 
       // checking initial approvals
-      const startingApproval = await quoteToken.allowance(accounts[0].address, approvalAddress);
+      const startingApproval = await quoteTokenContract
+        .allowance(
+          accounts[0].address,
+          spenderAddress,
+        );
+
       const approvalAmount = 50000;
-      await erc20.approve(approvalAddress, approvalAmount);
-      const endingApproval = await quoteToken.allowance(accounts[0].address, approvalAddress);
+      await erc20.approve(spenderAddress, approvalAmount);
+
+      const endingApproval = await quoteTokenContract
+        .allowance(
+          accounts[0].address,
+          spenderAddress,
+        );
+
       assert.isTrue(startingApproval.eq(0));
       assert.isTrue(endingApproval.eq(approvalAmount));
       assert.isTrue(endingApproval.gt(startingApproval));

@@ -9,7 +9,7 @@ export default class Cache extends Base {
   constructor(sdk, key = 'default', { persist = true } = {}) {
     super(sdk);
 
-    this._key = `@elastic-dao/sdk - ${key}`;
+    this._key = `@elasticswap/sdk - ${key}`;
     this._globalPersist = persist;
 
     if (!isPOJO(localData.ignore[this._key])) {

@@ -3,38 +3,32 @@
 import { ethers } from 'ethers';
 import { shortenAddress, validateIsAddress } from '@pie-dao/utils';
 import Notify from 'bnc-notify';
+import ERC20Contract from '@elastic-dao/elasticswap/artifacts/@openzeppelin/contracts/token/ERC20/ERC20.sol/ERC20.json';
 import Subscribable from './Subscribable';
 import ExchangeFactoryClass from './exchange/ExchangeFactory';
+import ExchangeClass from './exchange/Exchange';
 import ERC20Class from './tokens/ERC20';
 
 import {
   amountFormatter,
-  domain,
-  buildError,
-  isValidTypedDataOrMessageSignature,
   swapBigNumber,
   toBigNumber,
   toEthersBigNumber,
   toKey,
   toNumber,
   upTo,
-  validate,
   truncate,
   round,
 } from './utils/utils';
 
 export const utils = {
   amountFormatter,
-  buildError,
-  domain,
-  isValidTypedDataOrMessageSignature,
   swapBigNumber,
   toBigNumber,
   toEthersBigNumber,
   toKey,
   toNumber,
   upTo,
-  validate,
   truncate,
   round,
 };
@@ -42,6 +36,7 @@ export const utils = {
 const prefix = '@elastic-dao/elasticswap-sdk';
 
 export const ExchangeFactory = ExchangeFactoryClass;
+export const Exchange = ExchangeClass;
 export const ERC20 = ERC20Class;
 
 export class SDK extends Subscribable {
@@ -53,6 +48,9 @@ export class SDK extends Subscribable {
     this.account = account;
     this.env = env;
     this.setName();
+
+    this._balances = {};
+    this._balancesToTrack = [];
 
     if (this.account) {
       this.balanceOf(this.account);
@@ -115,6 +113,7 @@ export class SDK extends Subscribable {
   async balanceOf(address) {
     validateIsAddress(address);
     const key = address.toLowerCase();
+
     if (this._balances[key]) {
       return this._balances[key];
     }
@@ -140,9 +139,10 @@ export class SDK extends Subscribable {
     const { provider, signer } = this;
 
     const connection = readonly ? provider : signer || provider;
-    const contract = this._contract({ abi: abi || erc20, address }).connect(
-      connection,
-    );
+    const contract = this._contract({
+      abi: abi || ERC20Contract.abi,
+      address,
+    }).connect(connection);
 
     return contract;
   }
@@ -163,12 +163,31 @@ export class SDK extends Subscribable {
     }
 
     if (hash) {
-      this._notify.hash(hash);
+      return this._notify.hash(hash);
     }
 
     if (obj) {
       return this._notify.notification(obj);
     }
+  }
+
+  async sendETH(recipient, value) {
+    let to = recipient;
+    if (!ethers.utils.isAddress(to)) {
+      // attempt to to resolve address from ENS
+      to = await this.provider.resolveName(to);
+      if (!to) {
+        // resolving address failed.
+        console.error('invalid to address / ENS');
+        return;
+      }
+    }
+    const tx = this.signer.sendTransaction({
+      to,
+      value: toEthersBigNumber(value, 18),
+    });
+    this.notify(tx);
+    return tx;
   }
 
   async isValidETHAddress(address) {
