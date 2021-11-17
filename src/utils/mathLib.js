@@ -163,18 +163,8 @@ const calculateLiquidityTokenQtyForSingleAssetEntry = (
   const AAndBDecayMulDivByTokenBDecay = aAndBDecayMul.dividedBy(tokenBDecayBN);
   console.log("AAndBDecayMulDivByTokenBDecay: ", AAndBDecayMulDivByTokenBDecay.toString());
 
-  const altWGamma = AAndBDecayMulDivByTokenBDecay.dividedBy(BigNumber(2));
+  const altWGamma = (AAndBDecayMulDivByTokenBDecay.dividedBy(BigNumber(2))).dp(18, ROUND_DOWN);
   console.log("altWGamma: ", altWGamma.toString());
-
-  
-  //                                          WAD: 1000000000000000000
-  // aTokenDiv                                       50000000000000000  => 0.05
-  // bOtkenWADMul                                250000000000000000000  => 250
-  // aAndBDecayMul                                12500000000000000000  => 12.5
-  //AAndBDecayMulDivByTokenBDecay: 50000000000000000000000000000000000  => 5 x 10^16
-  // WAD:                        1000000000000000000
-  // altWGamma                                       25000000000000000  => 0.025
-  // bTokenWADMUL
 
  
 
@@ -187,19 +177,19 @@ const calculateLiquidityTokenQtyForSingleAssetEntry = (
   //               Y'    *   alphaDecay'
 
   // */
-  const deltaY = tokenQtyAToAddBN;
-  const YDash = internalTokenAReserveQtyBN;
-  const deltaX = tokenBDecayChangeBN;
-  const alphaDecayDash = tokenBDecayBN;
+  // const deltaY = tokenQtyAToAddBN;
+  // const YDash = internalTokenAReserveQtyBN;
+  // const deltaX = tokenBDecayChangeBN;
+  // const alphaDecayDash = tokenBDecayBN;
 
-  const gammaNumerator = (deltaY.multipliedBy(deltaX)).multipliedBy(BigNumber(2));
-  console.log('gammaNumerator: ', gammaNumerator.toString());
-  const gammaDenominator = (YDash.multipliedBy(alphaDecayDash));
-  console.log("gammaDenominat: ", gammaDenominator.toString());
+  // const gammaNumerator = (deltaY.multipliedBy(deltaX)).multipliedBy(BigNumber(2));
+  // console.log('gammaNumerator: ', gammaNumerator.toString());
+  // const gammaDenominator = (YDash.multipliedBy(alphaDecayDash));
+  // console.log("gammaDenominat: ", gammaDenominator.toString());
   
 
-  const gamma = gammaNumerator.dividedBy(gammaDenominator);
-  console.log("gamma: ", gamma.toString());
+  // const gamma = gammaNumerator.dividedBy(gammaDenominator);
+  // console.log("gamma: ", gamma.toString());
 
 
   /*
@@ -213,18 +203,10 @@ const calculateLiquidityTokenQtyForSingleAssetEntry = (
                   ( 1 - gamma )
 
   */
-  const liquidityTokenQty = (totalSupplyOfLiquidityTokensBN.multipliedBy(altWGamma)).dividedBy(BigNumber(1).minus(altWGamma)).dp(18, ROUND_DOWN);
+  const liquidityTokenQty = (totalSupplyOfLiquidityTokensBN.multipliedBy(altWGamma)).dividedBy(BigNumber(1).minus(altWGamma)).dp(0, ROUND_DOWN);
   console.log("liquidityTokenQty: ", liquidityTokenQty.toString());
 
   return liquidityTokenQty;
-
-  // const wNumerator = (tokenQtyAToAddBN.dividedBy(internalTokenAReserveQtyBN)).multipliedBy(tokenBDecayChangeBN.multipliedBy(WAD));
-  // const wDenominator = tokenBDecayBN.dividedBy(WAD.dividedBy(BigNumber(2)));
-  // const wGamma = wNumerator.dividedBy(wDenominator);
-
-  // const liquidityTokenQty = (((totalSupplyOfLiquidityTokensBN.multipliedBy(WAD)).multipliedBy(wGamma)).dividedBy(WAD.minus(wGamma))).dividedBy(WAD);
-  // console.log("liquidityTokenQty: ", liquidityTokenQty.toString());
-  // return liquidityTokenQty;
 }
 
 /**
@@ -806,16 +788,6 @@ const internalBalancesBNCleaner = (_internalBalances) => {
   return _internalBalances;
 
 }
-
-// const wDiv = ( _a, _b) => {
-//   // cleanse input 
-//   const a = BigNumber(_a);
-//   const b = BigNumber(_b);
-
-//   const halfB = b.dividedBy(BigNumber(2)).dp(18, ROUND_DOWN);
-//   const numerator = a.plus(halfB);
-//   const answer = numerator.dividedBy(b).dp(18, ROUND_DOWN);
-//   return answer;
 
    
 // };
