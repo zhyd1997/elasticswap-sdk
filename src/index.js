@@ -3,38 +3,32 @@
 import { ethers } from 'ethers';
 import { shortenAddress, validateIsAddress } from '@pie-dao/utils';
 import Notify from 'bnc-notify';
+import ERC20Contract from '@elastic-dao/elasticswap/artifacts/@openzeppelin/contracts/token/ERC20/ERC20.sol/ERC20.json';
 import Subscribable from './Subscribable';
 import ExchangeFactoryClass from './exchange/ExchangeFactory';
+import ExchangeClass from './exchange/Exchange';
 import ERC20Class from './tokens/ERC20';
 
 import {
   amountFormatter,
-  domain,
-  buildError,
-  isValidTypedDataOrMessageSignature,
   swapBigNumber,
   toBigNumber,
   toEthersBigNumber,
   toKey,
   toNumber,
   upTo,
-  validate,
   truncate,
   round,
 } from './utils/utils';
 
 export const utils = {
   amountFormatter,
-  buildError,
-  domain,
-  isValidTypedDataOrMessageSignature,
   swapBigNumber,
   toBigNumber,
   toEthersBigNumber,
   toKey,
   toNumber,
   upTo,
-  validate,
   truncate,
   round,
 };
@@ -42,6 +36,7 @@ export const utils = {
 const prefix = '@elastic-dao/elasticswap-sdk';
 
 export const ExchangeFactory = ExchangeFactoryClass;
+export const Exchange = ExchangeClass;
 export const ERC20 = ERC20Class;
 
 export class SDK extends Subscribable {
@@ -140,7 +135,7 @@ export class SDK extends Subscribable {
     const { provider, signer } = this;
 
     const connection = readonly ? provider : signer || provider;
-    const contract = this._contract({ abi: abi || erc20, address }).connect(
+    const contract = this._contract({ abi: abi || ERC20Contract, address }).connect(
       connection,
     );
 
