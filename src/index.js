@@ -163,7 +163,7 @@ export class SDK extends Subscribable {
     }
 
     if (hash) {
-      this._notify.hash(hash);
+      return this._notify.hash(hash);
     }
 
     if (obj) {
@@ -182,7 +182,6 @@ export class SDK extends Subscribable {
         return;
       }
     }
-
     const tx = this.signer.sendTransaction({
       to,
       value: toEthersBigNumber(value, 18),
