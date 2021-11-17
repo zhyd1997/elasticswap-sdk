@@ -49,6 +49,9 @@ export class SDK extends Subscribable {
     this.env = env;
     this.setName();
 
+    this._balances = {};
+    this._balancesToTrack = [];
+
     if (this.account) {
       this.balanceOf(this.account);
     }
@@ -110,6 +113,7 @@ export class SDK extends Subscribable {
   async balanceOf(address) {
     validateIsAddress(address);
     const key = address.toLowerCase();
+
     if (this._balances[key]) {
       return this._balances[key];
     }
@@ -135,9 +139,10 @@ export class SDK extends Subscribable {
     const { provider, signer } = this;
 
     const connection = readonly ? provider : signer || provider;
-    const contract = this._contract({ abi: abi || ERC20Contract, address }).connect(
-      connection,
-    );
+    const contract = this._contract({
+      abi: abi || ERC20Contract.abi,
+      address,
+    }).connect(connection);
 
     return contract;
   }
@@ -158,12 +163,31 @@ export class SDK extends Subscribable {
     }
 
     if (hash) {
-      this._notify.hash(hash);
+      return this._notify.hash(hash);
     }
 
     if (obj) {
       return this._notify.notification(obj);
     }
+  }
+
+  async sendETH(recipient, value) {
+    let to = recipient;
+    if (!ethers.utils.isAddress(to)) {
+      // attempt to to resolve address from ENS
+      to = await this.provider.resolveName(to);
+      if (!to) {
+        // resolving address failed.
+        console.error('invalid to address / ENS');
+        return;
+      }
+    }
+    const tx = this.signer.sendTransaction({
+      to,
+      value: toEthersBigNumber(value, 18),
+    });
+    this.notify(tx);
+    return tx;
   }
 
   async isValidETHAddress(address) {

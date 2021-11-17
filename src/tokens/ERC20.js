@@ -5,6 +5,11 @@ export default class ERC20 extends Base {
   constructor(sdk, address) {
     super(sdk);
     this._address = address;
+    this._contract = sdk.contract({
+      abi: ERC20Contract.abi,
+      address,
+      readonly: false,
+    });
   }
 
   static contract(sdk, address, readonly = false) {
@@ -20,7 +25,7 @@ export default class ERC20 extends Base {
   }
 
   get contract() {
-    return this.constructor.contract(this.sdk, this.address, false);
+    return this._contract;
   }
 
   get readonlyContract() {
@@ -28,18 +33,25 @@ export default class ERC20 extends Base {
   }
 
   async approve(spenderAddress, amount, overrides = {}) {
-    const ERC20Token = await this.contract;
-    const approveStatus = await ERC20Token.approve(
+    const txStatus = await this.contract.approve(
       spenderAddress,
       this.toEthersBigNumber(amount),
       this.sanitizeOverrides(overrides),
     );
-    return approveStatus;
+    return txStatus;
+  }
+
+  async transfer(recipient, amount, overrides = {}) {
+    const txStatus = await this.contract.transfer(
+      recipient,
+      this.toEthersBigNumber(amount),
+      this.sanitizeOverrides(overrides),
+    );
+    return txStatus;
   }
 
   async balanceOf(accountAddress, overrides = {}) {
-    const ERC20Token = await this.contract;
-    const balance = await ERC20Token.balanceOf(
+    const balance = await this.contract.balanceOf(
       accountAddress,
       this.sanitizeOverrides(overrides, true),
     );
