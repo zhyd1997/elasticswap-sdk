@@ -1,0 +1,24 @@
+{
+  "exchange": {
+    "classCode": "1",
+    "classCommonName": "Exchange",
+    "exceptions": {
+      "NOT_ENOUGH_BASE_TOKEN_BALANCE": {
+        "message": "NOT_ENOUGH_BASE_TOKEN_BALANCE",
+        "code": "11"
+      },
+      "NOT_ENOUGH_QUOTE_TOKEN_BALANCE": {
+        "message": "NOT_ENOUGH_QUOTE_TOKEN_BALANCE",
+        "code": "12"
+      },
+      "TRANSFER_NOT_APPROVED": {
+        "message": "TRANSFER_NOT_APPROVED",
+        "code": "13"
+      },
+      "TIMESTAMP_EXPIRED": {
+        "message": "TIMESTAMP_EXPIRED",
+        "code": "14"
+      }
+    }
+  }
+}
