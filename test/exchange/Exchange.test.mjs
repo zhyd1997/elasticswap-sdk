@@ -279,7 +279,7 @@ describe('Exchange', () => {
   describe('addLiquidity', () => {
     it('Should allow for ADD quote and base token liquidity', async () => {
       // create expiration 50 minutes from now.
-      const expiration = Math.round(new Date().getTime() / 1000 - 60 * 50);
+      const expiration = Math.round(new Date().getTime() / 1000 + 60 * 50);
       const liquidityProvider = accounts[1];
       const liquidityProviderInitialBalances = 1000000;
       const baseTokenQtyToAdd = 10000;
