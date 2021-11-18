@@ -1,19 +1,23 @@
 /* eslint import/extensions: 0 */
 import chai, { expect } from 'chai';
 import mathLib from '../../src/utils/MathLib.js';
-// import BigNumber from 'bignumber.js';
+import BigNumber from 'bignumber.js';
 
 
 // const { assert } = chai;
 const { 
+  calculateExchangeRate,
   calculateQty,
   calculateQtyToReturnAfterFees,
   calculateLiquidityTokenQtyForSingleAssetEntry,
   calculateLiquidityTokenQtyForDoubleAssetEntry,
   INSUFFICIENT_QTY,
-  INSUFFICIENT_LIQUIDITY } = mathLib;
+  INSUFFICIENT_LIQUIDITY,
+  NEGATIVE_INPUT,
+  NAN_ERROR } = mathLib;
 
 const EPSILON = .0000000000000001;
+const ZERO = BigNumber(0);
 
 describe("calculateQty", () => {
 
@@ -199,6 +203,40 @@ describe("calculateLiquidityTokenQtyForSingleAssetEntry", () => {
   });
 });
 
+describe("calculateExchangeRate", () => {
+  it("Should calculate the exchange rate correctly", async () => {
+    const baseTokenReserveQty1 = BigNumber('10.123456789123456789');
+    const quoteTokenReserveQty1 = BigNumber('12.123456789123456789');
+
+    const calculatedExchangeRate1 = baseTokenReserveQty1.dividedBy(quoteTokenReserveQty1);
+    expect(calculateExchangeRate(baseTokenReserveQty1, quoteTokenReserveQty1).toNumber()).to.equal(calculatedExchangeRate1.toNumber());
+
+    const baseTokenReserveQty2 = BigNumber('10');
+    const quoteTokenReserveQty2 = BigNumber('12.123456789123456789');
+
+    const calculatedExchangeRate2 = baseTokenReserveQty2.dividedBy(quoteTokenReserveQty2);
+    expect(calculateExchangeRate(baseTokenReserveQty2, quoteTokenReserveQty2).toNumber()).to.equal(calculatedExchangeRate2.toNumber());
+
+  });
+
+  it("Should return an error when incorrect values are provided", async () => {
+    const baseTokenReserveQty1 = BigNumber('10.123456789123456789');
+    const quoteTokenReserveQty1 = BigNumber('12.123456789123456789');
+    const negativequoteTokenReserveQty = BigNumber('-12.123456789123456789');
+
+    // ZERO case
+    expect(() => calculateExchangeRate(ZERO, quoteTokenReserveQty1)).to.throw(INSUFFICIENT_LIQUIDITY);
+    expect(() => calculateExchangeRate(quoteTokenReserveQty1, ZERO)).to.throw(INSUFFICIENT_LIQUIDITY);
+    
+    // Negative inputs provided
+    expect(() => calculateExchangeRate(quoteTokenReserveQty1, negativequoteTokenReserveQty)).to.throw(NEGATIVE_INPUT);
+
+    // Nan cases
+    expect(() => calculateExchangeRate(null, negativequoteTokenReserveQty)).to.throw(NAN_ERROR);
+    expect(() => calculateExchangeRate(undefined, negativequoteTokenReserveQty)).to.throw(NAN_ERROR);
+
+  });
+});
 
   
 

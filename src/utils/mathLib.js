@@ -16,6 +16,8 @@ const INSUFFICIENT_QUOTE_QTY = new Error("MathLib: INSUFFICIENT_QUOTE_QTY");
 const INSUFFICIENT_QUOTE_QTY_DESIRED = new Error("MathLib: INSUFFICIENT_QUOTE_QTY_DESIRED");
 const INSUFFICIENT_QUOTE_TOKEN_QTY = new Error( "MathLib: INSUFFICIENT_QUOTE_TOKEN_QTY");
 const INSUFFICIENT_TOKEN_QTY = new Error("MathLib: INSUFFICIENT_TOKEN_QTY");
+const NAN_ERROR = new Error("MathLib: NaN");
+const NEGATIVE_INPUT = new Error("MathLib: NEGATIVE_INPUT");
 const NO_QUOTE_DECAY = new Error( "MathLib: NO_QUOTE_DECAY");
 
 // let internalBalances = {
@@ -485,6 +487,35 @@ const BASIS_POINTS = BigNumber('10000');
   };
 
 /**
+ * @dev calculates the current exchange rate (X/Y)
+ * @param _inputTokenReserveQty - The reserve qty of the X token (the baseToken) (the elastic token, in an elastic pair)
+ * @param _outputTokenReserveQty -The reserve qty of the Y token (the quoteToken) (the non-elastic token, in an elastic pair)
+ * @returns exchangeRate - the current exchange rate
+ */ 
+
+const calculateExchangeRate = (_inputTokenReserveQty, _outputTokenReserveQty) => {
+  // cleanse input 
+  const inputTokenReserveQtyBN = BigNumber(_inputTokenReserveQty);
+  const outputTokenReserveQtyBN = BigNumber(_outputTokenReserveQty);
+
+  if(inputTokenReserveQtyBN.isNaN() || outputTokenReserveQtyBN.isNaN()){
+    throw NAN_ERROR;
+  }
+  
+  if(inputTokenReserveQtyBN.isNegative() || outputTokenReserveQtyBN.isNegative()){
+    throw NEGATIVE_INPUT;
+  }
+
+  if(inputTokenReserveQtyBN.isEqualTo(ZERO) || outputTokenReserveQtyBN.isEqualTo(ZERO)){
+    throw INSUFFICIENT_LIQUIDITY;
+  }
+
+  const exchangeRate = inputTokenReserveQtyBN.dividedBy(outputTokenReserveQtyBN);
+  return exchangeRate;
+  
+}  
+
+/**
  * @dev calculates the qty of liquidity tokens that should be sent to the DAO due to the growth in K from trading.
  * The DAO takes 1/6 of the total fees (30BP total fee, 25 BP to lps and 5 BP to the DAO)
  * @param _totalSupplyOfLiquidityTokens the total supply of our exchange's liquidity tokens (aka Ro)
@@ -820,8 +851,11 @@ calculateAddTokenPairLiquidityQuantities,
 calculateBaseTokenQty,
 calculateQuoteTokenQty,
 calculateLiquidityTokenFees,
+calculateExchangeRate,
 INSUFFICIENT_QTY,
-INSUFFICIENT_LIQUIDITY
+INSUFFICIENT_LIQUIDITY,
+NEGATIVE_INPUT,
+NAN_ERROR
 
 
 }
