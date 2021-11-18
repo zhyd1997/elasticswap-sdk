@@ -717,6 +717,54 @@ const calculateOutputAmountLessFees = (
 
   };
 
+/**
+ * @dev calculates the price impact ( or % move in x/y )
+ * @param inputTokenAmount 
+ * @param inputTokenReserveQty
+ * @param outputTokenReserveQty
+ * @returns priceImpact (in percentage)
+ */
+const calculatePriceImpact = (inputTokenAmount, inputTokenReserveQty, outputTokenReserveQty, slippagePercent, feeAmount) => {
+  // cleanse inputs 
+  const inputTokenAmountBN = BigNumber(inputTokenAmount);
+  const inputTokenReserveQtyBN = BigNumber(inputTokenReserveQty);
+  const outputTokenReserveQtyBN = BigNumber(outputTokenReserveQty);
+  const slippagePercentBN = BigNumber(slippagePercent);
+  const feeAmountBN = BigNumber(feeAmount);
+
+  if(inputTokenAmountBN.isNaN() || inputTokenReserveQtyBN.isNaN() || outputTokenReserveQtyBN.isNaN() || slippagePercentBN.isNaN() || feeAmountBN.isNaN() ){
+    throw NAN_ERROR;
+  }
+  
+  if(inputTokenAmountBN.isNegative() || inputTokenReserveQtyBN.isNegative() || outputTokenReserveQtyBN.isNegative() || slippagePercentBN.isNegative() || feeAmountBN.isNegative()){
+    throw NEGATIVE_INPUT;
+  }
+
+  if(inputTokenReserveQtyBN.isEqualTo(ZERO) || outputTokenReserveQtyBN.isEqualTo(ZERO)){
+    throw INSUFFICIENT_LIQUIDITY;
+  }
+
+  const initialPrice = calculateExchangeRate(inputTokenReserveQtyBN, outputTokenReserveQtyBN);
+  console.log("sdk: initialPrice: ", initialPrice.toString());
+
+  const outputTokenAmount = calculateOutputAmountLessFees(inputTokenAmountBN, inputTokenReserveQtyBN, outputTokenReserveQtyBN, slippagePercentBN, feeAmountBN);
+
+  const inputTokenReserveQtyAfter = inputTokenReserveQtyBN.plus(inputTokenAmount);
+  console.log("sdk: inputTokenReserveQtyAfter: ", inputTokenReserveQtyAfter.toString());
+
+  const outputTokenReserveQtyAfter = outputTokenReserveQtyBN.minus(outputTokenAmount);
+  console.log("sdk: outputTokenReserveQtyAfter: ", outputTokenReserveQtyAfter.toString());
+
+  const finalPrice = calculateExchangeRate(inputTokenReserveQtyAfter, outputTokenReserveQtyAfter);
+  console.log("sdk: finalPrice: ", finalPrice.toString());
+
+  const priceDiff = finalPrice.minus(initialPrice);
+  const priceDiffRatio = priceDiff.dividedBy(initialPrice);
+  const priceImpact = priceDiffRatio.multipliedBy(BigNumber("100"));
+  console.log("sdk: priceImpact: ", priceImpact.toString());
+
+  return priceImpact;
+};
 
  /**
  * @dev used to calculate the qty of token a liquidity provider
@@ -901,6 +949,8 @@ calculateQuoteTokenQty,
 calculateLiquidityTokenFees,
 calculateExchangeRate,
 calculateOutputAmountLessFees,
+calculatePriceImpact,
+BASIS_POINTS,
 INSUFFICIENT_QTY,
 INSUFFICIENT_LIQUIDITY,
 NEGATIVE_INPUT,

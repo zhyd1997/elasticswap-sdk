@@ -12,6 +12,7 @@ const {
   calculateLiquidityTokenQtyForSingleAssetEntry,
   calculateLiquidityTokenQtyForDoubleAssetEntry,
   calculateOutputAmountLessFees,
+  calculatePriceImpact,
   INSUFFICIENT_QTY,
   INSUFFICIENT_LIQUIDITY,
   NEGATIVE_INPUT,
@@ -403,5 +404,52 @@ describe("calculateOutputAmountLessFees", () => {
 
 });  
 
+describe("calculatePriceImpact", () => {
+  it.only("Should calculate price impact correctly accounting for 0 fees and 0 slippage ", async () => {
+    // no slippage no fees
+    const tokenSwapQty = BigNumber(15);
+    const tokenAReserveQtyBeforeTrade = BigNumber(2000);
 
+    const tokenAReserveQtyAfterTrade = tokenAReserveQtyBeforeTrade.plus(tokenSwapQty);
+    console.log("tst: tokenAReserveQtyAfterTrade: ", tokenAReserveQtyAfterTrade.toString());  
+
+    const tokenBReserveQtyBeforeTrade = BigNumber(3000);
+
+
+    const tokenBOutAmount = calculateOutputAmountLessFees(tokenSwapQty, tokenAReserveQtyAfterTrade,tokenBReserveQtyBeforeTrade, 0, 0);
+    
+    const tokenBQtyReserveAfterTrade = tokenBReserveQtyBeforeTrade.minus(tokenBOutAmount);
+    console.log("tst: tokenBQtyReserveAfterTrade: ", tokenBQtyReserveAfterTrade.toString());
+
+    const initialPrice = BigNumber(tokenAReserveQtyBeforeTrade).dividedBy(BigNumber(tokenBReserveQtyBeforeTrade));
+    console.log("tst: initialPrice: ", initialPrice.toString());
+
+    const finalPrice = BigNumber(tokenAReserveQtyAfterTrade).dividedBy(BigNumber(tokenBQtyReserveAfterTrade));
+    console.log("tst: finalPrice: ", finalPrice.toString());
+
+    const priceDiff = BigNumber(finalPrice).minus(BigNumber(initialPrice));
+    const priceDiffRatio = priceDiff.dividedBy(BigNumber(initialPrice));
+    const priceImpact = priceDiffRatio.multipliedBy(BigNumber(100));
+    console.log("tst: priceImpact: ", priceImpact.toString());
+
+    expect(
+      calculatePriceImpact(
+        tokenSwapQty,
+        tokenAReserveQtyBeforeTrade,
+        tokenBReserveQtyBeforeTrade,
+        ZERO,
+        ZERO
+      ).toNumber()
+    ).to.equal(priceImpact.toNumber());
+
+
+  });
+
+  it("should calculate priceImpact correctly accounting for fees and 0 slippage", async () => {
+    
+
+  });
+
+
+});
 
