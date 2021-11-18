@@ -12,7 +12,7 @@
         "code": "12"
       },
       "TRANSFER_NOT_APPROVED": {
-        "message": "TRANSFER_NOT_APPROVED",
+        "message": "TRANSFER_NOT_APPROVED_BY_USER",
         "code": "13"
       },
       "TIMESTAMP_EXPIRED": {
@@ -22,6 +22,10 @@
       "TOKEN_QTY_DESIRED_LESS_OR_EQUAL_THAN_MINIMUM": {
         "message": "TOKEN_QTY_DESIRED_LESS_OR_EQUAL_THAN_MINIMUM",
         "code": "15"
+      },
+      "NOT_ENOUGH_LP_TOKEN_BALANCE": {
+        "message": "NOT_ENOUGH_LP_TOKEN_BALANCE",
+        "code": "16"
       }
     }
   }

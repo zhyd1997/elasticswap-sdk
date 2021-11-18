@@ -109,20 +109,24 @@ export default class Exchange extends Base {
       throw this.errorHandling.error('TIMESTAMP_EXPIRED');
     }
     if (baseTokenQtyDesired <= baseTokenQtyMin) {
-      throw this.errorHandling.error('TOKEN_QTY_DESIRED_LESS_OR_EQUAL_THAN_MINIMUM');
+      throw this.errorHandling.error(
+        'TOKEN_QTY_DESIRED_LESS_OR_EQUAL_THAN_MINIMUM',
+      );
     }
     if (await this.baseTokenBalance < baseTokenQtyDesired) {
       throw this.errorHandling.error('NOT_ENOUGH_BASE_TOKEN_BALANCE');
     }
     if (quoteTokenQtyDesired <= quoteTokenQtyMin) {
-      throw this.errorHandling.error('TOKEN_QTY_DESIRED_LESS_OR_EQUAL_THAN_MINIMUM');
+      throw this.errorHandling.error(
+        'TOKEN_QTY_DESIRED_LESS_OR_EQUAL_THAN_MINIMUM',
+      );
     }
     if (await this.quoteTokenBalance < quoteTokenQtyDesired) {
       throw this.errorHandling.error('NOT_ENOUGH_QUOTE_TOKEN_BALANCE');
     }
     if (
-      await this.baseTokenAllowance < baseTokenQtyDesired ||
-      await this.quoteTokenAllowance < quoteTokenQtyDesired
+      (await this.baseTokenAllowance) < baseTokenQtyDesired ||
+      (await this.quoteTokenAllowance) < quoteTokenQtyDesired
     ) {
       throw this.errorHandling.error('TRANSFER_NOT_APPROVED');
     }
@@ -148,6 +152,9 @@ export default class Exchange extends Base {
   ) {
     if (expirationTimestamp < new Date().getTime() / 1000) {
       throw this.errorHandling.error('TIMESTAMP_EXPIRED');
+    }
+    if (await this.lpTokenBalance < liquidityTokenQty) {
+      throw this.errorHandling.error('NOT_ENOUGH_LP_TOKEN_BALANCE');
     }
     if (await this.lpTokenAllowance < liquidityTokenQty) {
       throw this.errorHandling.error('TRANSFER_NOT_APPROVED');
