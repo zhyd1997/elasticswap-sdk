@@ -450,6 +450,76 @@ describe("calculatePriceImpact", () => {
 
   });
 
+  it.only("should return an error when incorrect values are provided", async() => {
+    // no slippage no fees
+    const tokenSwapQty = BigNumber(15);
+    const tokenAReserveQtyBeforeTrade = BigNumber(2000);
+
+    const tokenAReserveQtyAfterTrade = tokenAReserveQtyBeforeTrade.plus(tokenSwapQty);
+    console.log("tst: tokenAReserveQtyAfterTrade: ", tokenAReserveQtyAfterTrade.toString());  
+
+    const tokenBReserveQtyBeforeTrade = BigNumber(3000);
+
+
+    const tokenBOutAmount = calculateOutputAmountLessFees(tokenSwapQty, tokenAReserveQtyAfterTrade,tokenBReserveQtyBeforeTrade, 0, 0);
+    
+    const tokenBQtyReserveAfterTrade = tokenBReserveQtyBeforeTrade.minus(tokenBOutAmount);
+    console.log("tst: tokenBQtyReserveAfterTrade: ", tokenBQtyReserveAfterTrade.toString());
+
+    const initialPrice = BigNumber(tokenAReserveQtyBeforeTrade).dividedBy(BigNumber(tokenBReserveQtyBeforeTrade));
+    console.log("tst: initialPrice: ", initialPrice.toString());
+
+    const finalPrice = BigNumber(tokenAReserveQtyAfterTrade).dividedBy(BigNumber(tokenBQtyReserveAfterTrade));
+    console.log("tst: finalPrice: ", finalPrice.toString());
+
+    const priceDiff = BigNumber(finalPrice).minus(BigNumber(initialPrice));
+    const priceDiffRatio = priceDiff.dividedBy(BigNumber(initialPrice));
+    const priceImpact = priceDiffRatio.multipliedBy(BigNumber(100));
+    console.log("tst: priceImpact: ", priceImpact.toString());
+
+    expect(() => 
+      calculatePriceImpact(
+        tokenSwapQty,
+        BigNumber(-100),
+        tokenBReserveQtyBeforeTrade,
+        ZERO,
+        ZERO
+      ).toNumber()
+    ).to.throw(NEGATIVE_INPUT);
+
+
+    expect(() => 
+      calculatePriceImpact(
+        tokenSwapQty,
+        0,
+        tokenBReserveQtyBeforeTrade,
+        ZERO,
+        ZERO
+      ).toNumber()
+    ).to.throw(INSUFFICIENT_LIQUIDITY);
+
+    expect(() => 
+    calculatePriceImpact(
+      tokenSwapQty,
+      null,
+      tokenBReserveQtyBeforeTrade,
+      ZERO,
+      ZERO
+    ).toNumber()
+  ).to.throw(NAN_ERROR);
+
+  expect(() => 
+    calculatePriceImpact(
+      tokenSwapQty,
+      undefined,
+      tokenBReserveQtyBeforeTrade,
+      ZERO,
+      ZERO
+    ).toNumber()
+  ).to.throw(NAN_ERROR);
+  });
+  
+
 
 });
 
