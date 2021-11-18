@@ -52,7 +52,6 @@
     "@pie-dao/utils": "^1.0.0",
     "bignumber.js": "^9.0.1",
     "bnc-notify": "^1.9.1",
-    "chai-as-promised": "^7.1.1",
     "ethers": "^5.5.1",
     "rxjs": "^7.4.0"
   }
