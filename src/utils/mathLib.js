@@ -670,6 +670,20 @@ const calculateExchangeRate = ( inputTokenReserveQty, outputTokenReserveQty) => 
   return liquidityTokenQty;
 }
 
+// calculates expected To Amount bas
+/**
+ * @dev calculates expected Ro amount based on inputs
+ * @param  quoteTokenAmount 
+ * @param  baseTokenAmount 
+ * @param  quoteTokenReserveQty 
+ * @param  baseTokenReserveQty 
+ * @param  decay 
+ * @param  slippage 
+ */
+const calculateLPTokenAmount = (quoteTokenAmount, baseTokenAmount, quoteTokenReserveQty, baseTokenReserveQty, decay, slippage) => {
+
+}
+
 /**
  * @dev calculates the min amount of output tokens given the slippage percent supplied
  * @param inputTokenAmount base or quote token qty to be swapped by the trader
