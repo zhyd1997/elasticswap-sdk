@@ -488,15 +488,15 @@ const BASIS_POINTS = BigNumber('10000');
 
 /**
  * @dev calculates the current exchange rate (X/Y)
- * @param _inputTokenReserveQty - The reserve qty of the X token (the baseToken) (the elastic token, in an elastic pair)
- * @param _outputTokenReserveQty -The reserve qty of the Y token (the quoteToken) (the non-elastic token, in an elastic pair)
+ * @param inputTokenReserveQty - The reserve qty of the X token (the baseToken) (the elastic token, in an elastic pair)
+ * @param outputTokenReserveQty -The reserve qty of the Y token (the quoteToken) (the non-elastic token, in an elastic pair)
  * @returns exchangeRate - the current exchange rate
  */ 
 
-const calculateExchangeRate = (_inputTokenReserveQty, _outputTokenReserveQty) => {
+const calculateExchangeRate = ( inputTokenReserveQty, outputTokenReserveQty) => {
   // cleanse input 
-  const inputTokenReserveQtyBN = BigNumber(_inputTokenReserveQty);
-  const outputTokenReserveQtyBN = BigNumber(_outputTokenReserveQty);
+  const inputTokenReserveQtyBN = BigNumber(inputTokenReserveQty);
+  const outputTokenReserveQtyBN = BigNumber(outputTokenReserveQty);
 
   if(inputTokenReserveQtyBN.isNaN() || outputTokenReserveQtyBN.isNaN()){
     throw NAN_ERROR;
@@ -669,6 +669,54 @@ const calculateExchangeRate = (_inputTokenReserveQty, _outputTokenReserveQty) =>
 
   return liquidityTokenQty;
 }
+
+/**
+ * @dev calculates the min amount of output tokens given the slippage percent supplied
+ * @param inputTokenAmount base or quote token qty to be swapped by the trader
+ * @param inputTokenReserveQty current reserve qty of the base or quote token (same token as tokenA) 
+ * @param outputTokenReserveQty current reserve qty of the other base or quote token (not tokenA)
+ * @param slippagePercent the percentage of slippage
+ * @param feeAmount the total amount of fees in Basis points for the trade
+ * @returns outputAmountLessSlippage
+ */
+const calculateOutputAmountLessFees = (
+  inputTokenAmount, 
+  inputTokenReserveQty, 
+  outputTokenReserveQty,
+  slippagePercent,
+  feeAmount ) => {
+  
+  // cleanse input to BN
+  const inputTokenAmountBN = BigNumber(inputTokenAmount);
+  const inputTokenReserveQtyBN = BigNumber(inputTokenReserveQty);
+  const outputTokenReserveQtyBN = BigNumber(outputTokenReserveQty);
+  const slippagePercentBN = BigNumber(slippagePercent);
+  const feeAmountBN = BigNumber(feeAmount);
+
+  if(inputTokenAmountBN.isNaN() || inputTokenReserveQtyBN.isNaN() || outputTokenReserveQtyBN.isNaN() || slippagePercentBN.isNaN() || feeAmountBN.isNaN() ){
+    throw NAN_ERROR;
+  }
+  
+  if(inputTokenAmountBN.isNegative() || inputTokenReserveQtyBN.isNegative() || outputTokenReserveQtyBN.isNegative() || slippagePercentBN.isNegative() || feeAmountBN.isNegative()){
+    throw NEGATIVE_INPUT;
+  }
+
+  if(inputTokenReserveQtyBN.isEqualTo(ZERO) || outputTokenReserveQtyBN.isEqualTo(ZERO)){
+    throw INSUFFICIENT_LIQUIDITY;
+  }
+
+  const outputAmount = calculateQtyToReturnAfterFees(inputTokenAmountBN, inputTokenReserveQtyBN, outputTokenReserveQtyBN, feeAmountBN);
+  
+  // slippage multiplier = 1 - (slippage% / 100)
+  const slippageMultiplier = BigNumber(1).minus(slippagePercentBN.dividedBy(BigNumber(100)));
+
+  // outputAmountLessSlippage = outputamount * slippage multiplier
+  const outputAmountLessSlippage =  outputAmount.multipliedBy(slippageMultiplier);
+
+  return outputAmountLessSlippage;
+
+  };
+
 
  /**
  * @dev used to calculate the qty of token a liquidity provider
@@ -852,6 +900,7 @@ calculateBaseTokenQty,
 calculateQuoteTokenQty,
 calculateLiquidityTokenFees,
 calculateExchangeRate,
+calculateOutputAmountLessFees,
 INSUFFICIENT_QTY,
 INSUFFICIENT_LIQUIDITY,
 NEGATIVE_INPUT,

@@ -11,6 +11,7 @@ const {
   calculateQtyToReturnAfterFees,
   calculateLiquidityTokenQtyForSingleAssetEntry,
   calculateLiquidityTokenQtyForDoubleAssetEntry,
+  calculateOutputAmountLessFees,
   INSUFFICIENT_QTY,
   INSUFFICIENT_LIQUIDITY,
   NEGATIVE_INPUT,
@@ -238,7 +239,169 @@ describe("calculateExchangeRate", () => {
   });
 });
 
-  
+describe("calculateOutputAmountLessFees", () => {
+  it("Should calculateOutputAmount correctly, accounting for fees and  slippage", async () => {
+    // slippage and fees 
+    // 5 percent slippage
+    const slippage = 5;
+    const tokenSwapQty = 50;
+    const feeInBasisPoints = 30;
+    const expectedFeeAmount = (tokenSwapQty * 30) / 10000;
+    const tokenAReserveQtyBeforeTrade = 100;
+    const tokenAReserveQtyAfterTrade =
+      tokenAReserveQtyBeforeTrade + tokenSwapQty - expectedFeeAmount;
+    const tokenBReserveQtyBeforeTrade = 5000;
+    const pricingConstantK =
+      tokenAReserveQtyBeforeTrade * tokenBReserveQtyBeforeTrade;
+
+    const tokenBReserveQtyBeforeTradeAfterTrade =
+      pricingConstantK / tokenAReserveQtyAfterTrade;
+    const tokenBQtyExpected = Math.floor(
+      tokenBReserveQtyBeforeTrade - tokenBReserveQtyBeforeTradeAfterTrade
+    );
+
+    const tokenBQtyExpectedLessSlippage = (tokenBQtyExpected) * (1 - (slippage/100));
+
+    expect(
+      calculateOutputAmountLessFees(
+        tokenSwapQty,
+        tokenAReserveQtyBeforeTrade,
+        tokenBReserveQtyBeforeTrade,
+        slippage,
+        feeInBasisPoints
+      ).toNumber()
+    ).to.equal(tokenBQtyExpectedLessSlippage);
+
+  });
+
+  it("Should calculateOutputAmount correctly, accounting for fees and 0 slippage", async () => {
+    // no slippage 
+    const tokenSwapQty = 50;
+    const feeInBasisPoints = 30;
+    const expectedFeeAmount = (tokenSwapQty * 30) / 10000;
+    const tokenAReserveQtyBeforeTrade = 100;
+    const tokenAReserveQtyAfterTrade =
+      tokenAReserveQtyBeforeTrade + tokenSwapQty - expectedFeeAmount;
+    const tokenBReserveQtyBeforeTrade = 5000;
+    const pricingConstantK =
+      tokenAReserveQtyBeforeTrade * tokenBReserveQtyBeforeTrade;
+
+    const tokenBReserveQtyBeforeTradeAfterTrade =
+      pricingConstantK / tokenAReserveQtyAfterTrade;
+    const tokenBQtyExpected = Math.floor(
+      tokenBReserveQtyBeforeTrade - tokenBReserveQtyBeforeTradeAfterTrade
+    );
+
+    expect(
+      calculateOutputAmountLessFees(
+        tokenSwapQty,
+        tokenAReserveQtyBeforeTrade,
+        tokenBReserveQtyBeforeTrade,
+        ZERO,
+        feeInBasisPoints
+      ).toNumber()
+    ).to.equal(tokenBQtyExpected);
+
+  });
+
+  it("Should calculateOutputAmount correctly, accounting for 0 fees and 0 slippage", async() => {
+    // no slippage no fees
+    const tokenSwapQty = 15;
+    const tokenAReserveQtyBeforeTrade = 2000;
+    const tokenAReserveQtyAfterTrade =
+      tokenAReserveQtyBeforeTrade + tokenSwapQty;
+    const tokenBReserveQtyBeforeTrade = 3000;
+    const pricingConstantK =
+      tokenAReserveQtyBeforeTrade * tokenBReserveQtyBeforeTrade;
+
+    const tokenBReserveQtyBeforeTradeAfterTrade =
+      pricingConstantK / tokenAReserveQtyAfterTrade;
+    const tokenBQtyExpected = Math.floor(
+      tokenBReserveQtyBeforeTrade - tokenBReserveQtyBeforeTradeAfterTrade
+    );
+
+    expect(
+      calculateOutputAmountLessFees(
+        tokenSwapQty,
+        tokenAReserveQtyBeforeTrade,
+        tokenBReserveQtyBeforeTrade,
+        ZERO,
+        ZERO
+      ).toNumber()
+    ).to.equal(tokenBQtyExpected);
+
+  });
+
+  it("Should return an error when incorrect values are provided", async () => {
+
+    const slippage = 5;
+    const tokenSwapQty = 50;
+    const negativeSwapQty = -50;
+    const feeInBasisPoints = 30;
+    const expectedFeeAmount = (tokenSwapQty * 30) / 10000;
+    const tokenAReserveQtyBeforeTrade = 100;
+    const tokenAReserveQtyAfterTrade =
+      tokenAReserveQtyBeforeTrade + tokenSwapQty - expectedFeeAmount;
+    const tokenBReserveQtyBeforeTrade = 5000;
+    const pricingConstantK =
+      tokenAReserveQtyBeforeTrade * tokenBReserveQtyBeforeTrade;
+
+    const tokenBReserveQtyBeforeTradeAfterTrade =
+      pricingConstantK / tokenAReserveQtyAfterTrade;
+    const tokenBQtyExpected = Math.floor(
+      tokenBReserveQtyBeforeTrade - tokenBReserveQtyBeforeTradeAfterTrade
+    );
+
+    const tokenBQtyExpectedLessSlippage = (tokenBQtyExpected) * (1 - (slippage/100));
+
+    // ZERO case
+    expect(() => calculateOutputAmountLessFees(
+      tokenSwapQty,
+      ZERO,
+      tokenBReserveQtyBeforeTrade,
+      slippage,
+      feeInBasisPoints
+    )).to.throw(INSUFFICIENT_LIQUIDITY);
+
+    expect(() => calculateOutputAmountLessFees(
+      tokenSwapQty,
+      tokenAReserveQtyBeforeTrade,
+      ZERO,
+      slippage,
+      feeInBasisPoints
+    )).to.throw(INSUFFICIENT_LIQUIDITY);
+    
+    // Negative inputs provided
+    expect(() => calculateOutputAmountLessFees(
+      negativeSwapQty,
+      tokenAReserveQtyBeforeTrade,
+      tokenBReserveQtyBeforeTrade,
+      slippage,
+      feeInBasisPoints
+    )).to.throw(NEGATIVE_INPUT);
+
+    // Nan cases
+    expect(() =>
+      calculateOutputAmountLessFees(
+        null,
+        tokenAReserveQtyBeforeTrade,
+        tokenBReserveQtyBeforeTrade,
+        slippage,
+        feeInBasisPoints
+      )).to.throw(NAN_ERROR);
+    
+    expect(() =>
+      calculateOutputAmountLessFees(
+        undefined,
+        tokenAReserveQtyBeforeTrade,
+        tokenBReserveQtyBeforeTrade,
+        slippage,
+        feeInBasisPoints
+      )).to.throw(NAN_ERROR);  
+
+  });
+
+});  
 
 
 
