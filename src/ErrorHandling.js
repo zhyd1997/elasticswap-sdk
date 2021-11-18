@@ -11,7 +11,7 @@ export default class ErrorHandling {
     return this._origin;
   }
 
-  error(errorType, path = 'unknow') {
+  error(errorType, path = 'unknown') {
     const exception = JSON.parse(JSON.stringify(errorMessages))[this.origin].exceptions[errorType];
     return new Error(`Origin: ${this.origin}, Code: ${exception.code}, Message: ${exception.message}, Path: ${path}.`);
   }
