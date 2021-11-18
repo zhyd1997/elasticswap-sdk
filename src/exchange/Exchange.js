@@ -1,11 +1,7 @@
 import ExchangeSolidity from '@elastic-dao/elasticswap/artifacts/src/contracts/Exchange.sol/Exchange.json';
 import ERC20 from '../tokens/ERC20';
 import Base from '../Base';
-
-const onlyAfterSummoning = 'DAO must be summoned';
-const onlyBeforeSummoning = 'DAO must not be summoned';
-const prefix = '@elasticswap/sdk - ElasticSwap';
-const valueGreaterThanZero = 'a value greater than 0 must be provided';
+import ErrorHandling from '../ErrorHandling';
 
 export default class Exchange extends Base {
   constructor(sdk, exchangeAddress, baseTokenAddress, quoteTokenAddress) {
@@ -21,6 +17,7 @@ export default class Exchange extends Base {
       address: exchangeAddress,
       readonly: false,
     });
+    this._errorHandling = new ErrorHandling('exchange');
   }
 
   static contract(sdk, address, readonly = false) {
@@ -95,6 +92,10 @@ export default class Exchange extends Base {
     return this.contract.TOTAL_LIQUIDITY_FEE();
   }
 
+  get errorHandling() {
+    return this._errorHandling;
+  }
+
   async addLiquidity(
     baseTokenQtyDesired,
     quoteTokenQtyDesired,
@@ -105,7 +106,8 @@ export default class Exchange extends Base {
     overrides = {},
   ) {
     if (expirationTimestamp < new Date().getTime() / 1000) {
-      return false;
+      const { error } = this.errorHandling.error('TIMESTAMP_EXPIRED');
+      throw error;
     }
     if (
       baseTokenQtyDesired <= baseTokenQtyMin ||
