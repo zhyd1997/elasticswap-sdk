@@ -111,21 +111,24 @@ export default class Exchange extends Base {
     }
     if (
       baseTokenQtyDesired <= baseTokenQtyMin ||
-      quoteTokenQtyDesired <= quoteTokenQtyMin
+      this.baseTokenBalance < baseTokenQtyDesired
     ) {
-      return false;
+      const { error } = this.errorHandling.error('NOT_ENOUGH_BASE_TOKEN_BALANCE');
+      throw error;
     }
     if (
-      this.baseTokenBalance < baseTokenQtyDesired ||
+      quoteTokenQtyDesired <= quoteTokenQtyMin ||
       this.quoteTokenBalance < quoteTokenQtyDesired
     ) {
-      return false;
+      const { error } = this.errorHandling.error('NOT_ENOUGH_QUOTE_TOKEN_BALANCE');
+      throw error;
     }
     if (
       this.baseTokenAllowance < baseTokenQtyDesired ||
       this.quoteTokenAllowance < quoteTokenQtyDesired
     ) {
-      return false;
+      const { error } = this.errorHandling.error('TRANSFER_NOT_APPROVED');
+      throw error;
     }
     const txStatus = await this.contract.addLiquidity(
       baseTokenQtyDesired,
@@ -148,10 +151,12 @@ export default class Exchange extends Base {
     overrides = {},
   ) {
     if (expirationTimestamp < new Date().getTime() / 1000) {
-      return false;
+      const { error } = this.errorHandling.error('TIMESTAMP_EXPIRED');
+      throw error;
     }
     if (this.lpTokenAllowance < liquidityTokenQty) {
-      return false;
+      const { error } = this.errorHandling.error('TRANSFER_NOT_APPROVED');
+      throw error;
     }
     const txStatus = await this.contract.removeLiquidity(
       liquidityTokenQty,
@@ -171,14 +176,18 @@ export default class Exchange extends Base {
     overrides = {},
   ) {
     if (expirationTimestamp < new Date().getTime() / 1000) {
-      return false;
+      const { error } = this.errorHandling.error('TIMESTAMP_EXPIRED');
+      throw error;
     }
-    if (
-      this.baseTokenBalance < baseTokenQty ||
-      this.baseTokenAllowance < baseTokenQty
-    ) {
-      return false;
+    if (this.baseTokenBalance < baseTokenQty) {
+      const { error } = this.errorHandling.error('NOT_ENOUGH_BASE_TOKEN_BALANCE');
+      throw error;
     }
+    if (this.baseTokenAllowance < baseTokenQty) {
+      const { error } = this.errorHandling.error('TRANSFER_NOT_APPROVED');
+      throw error;
+    }
+
     const txStatus = await this.contract.swapBaseTokenForQuoteToken(
       baseTokenQty,
       quoteTokenQtyMin,
@@ -195,13 +204,16 @@ export default class Exchange extends Base {
     overrides = {},
   ) {
     if (expirationTimestamp < new Date().getTime() / 1000) {
-      return false;
+      const { error } = this.errorHandling.error('TIMESTAMP_EXPIRED');
+      throw error;
     }
-    if (
-      this.quoteTokenBalance < quoteTokenQty ||
-      this.quoteTokenAllowance < quoteTokenQty
-    ) {
-      return false;
+    if (this.quoteTokenBalance < quoteTokenQty) {
+      const { error } = this.errorHandling.error('NOT_ENOUGH_QUOTE_TOKEN_BALANCE');
+      throw error;
+    }
+    if (this.quoteTokenAllowance < quoteTokenQty) {
+      const { error } = this.errorHandling.error('TRANSFER_NOT_APPROVED');
+      throw error;
     }
     const txStatus = await this.contract.swapQuoteTokenForBaseToken(
       quoteTokenQty,

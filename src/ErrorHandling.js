@@ -13,11 +13,17 @@ export default class ErrorHandling {
         classCode: '1',
         classCommonName: 'Exchange',
         messages: {
-          NOT_ENOUGH_BALANCE: {
+          NOT_ENOUGH_BASE_TOKEN_BALANCE: {
+            message: 'NOT_ENOUGH_BASE_TOKEN_BALANCE',
+            code: '11',
+            appPath: path,
+            error: new Error(`Origin: ${this.origin}, Code: 11, Message: NOT_ENOUGH_BASE_TOKEN_BALANCE, Path: ${path}`),
+          },
+          NOT_ENOUGH_QUOTE_TOKEN_BALANCE: {
             message: 'NOT_ENOUGH_BALANCE',
             code: '11',
             appPath: path,
-            error: new Error(`Origin: ${this.origin}, Code: 11, Message: NOT_ENOUGH_BALANCE, Path: ${path}`),
+            error: new Error(`Origin: ${this.origin}, Code: 11, Message: NOT_ENOUGH_QUOTE_TOKEN_BALANCE, Path: ${path}`),
           },
           TRANSFER_NOT_APPROVED: {
             message: 'TRANSFER_NOT_APPROVED',
