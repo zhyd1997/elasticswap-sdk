@@ -13,6 +13,7 @@ const {
   calculateLiquidityTokenQtyForDoubleAssetEntry,
   calculateOutputAmountLessFees,
   calculatePriceImpact,
+  calculateLPTokenAmount,
   INSUFFICIENT_QTY,
   INSUFFICIENT_LIQUIDITY,
   NEGATIVE_INPUT,
@@ -405,7 +406,7 @@ describe("calculateOutputAmountLessFees", () => {
 });  
 
 describe("calculatePriceImpact", () => {
-  it.only("Should calculate price impact correctly accounting for 0 fees and 0 slippage ", async () => {
+  it("Should calculate price impact correctly accounting for 0 fees and 0 slippage ", async () => {
     // no slippage no fees
     const tokenSwapQty = BigNumber(15);
     const tokenAReserveQtyBeforeTrade = BigNumber(2000);
@@ -445,7 +446,7 @@ describe("calculatePriceImpact", () => {
 
   });
 
-  it.only("should calculate priceImpact correctly accounting for fees and 0 slippage", async () => {
+  it("should calculate priceImpact correctly accounting for fees and 0 slippage", async () => {
     const feesInBasisPoints = 3000;
     const tokenSwapQty = BigNumber(15);
     const tokenAReserveQtyBeforeTrade = BigNumber(2000);
@@ -484,7 +485,7 @@ describe("calculatePriceImpact", () => {
 
   });
 
-  it.only("should calculate the priceImpact correctly accounting for fees and slippage", async () => {
+  it("should calculate the priceImpact correctly accounting for fees and slippage", async () => {
 
     const feesInBasisPoints = 3000;
     const slippage = 5;
@@ -595,6 +596,58 @@ describe("calculatePriceImpact", () => {
   });
   
 
-
 });
 
+describe("calculateLPTokenAmount", () => {
+  it.only("should calculateLPTokenAmount correctly when there is no liquidity initially and no decay", () => {
+    const quoteTokenAmount = BigNumber("100");
+    const baseTokenAmount = BigNumber("100");
+    const quoteTokenReserveQty = ZERO;
+    const baseTokenReserveQty = ZERO;
+    const decay = ZERO;
+    const slippage = ZERO;
+    const totalSupplyOfLiquidityTokens = ZERO;
+
+    const LPExpectedAmount = quoteTokenAmount.multipliedBy(baseTokenAmount).sqrt();
+
+    expect(
+      calculateLPTokenAmount(quoteTokenAmount, baseTokenAmount, quoteTokenReserveQty, baseTokenReserveQty, decay, slippage, totalSupplyOfLiquidityTokens).toNumber()).to.equal(LPExpectedAmount.toNumber());
+
+  });
+
+  it.only("should calculateLPTokenAmount correctly when there is liquidity initially and no decay (Double Asset Entry)", () => {
+    const quoteTokenAmount = BigNumber("100");
+    const baseTokenAmount = BigNumber("100");
+    const quoteTokenReserveQty = BigNumber("100");
+    const baseTokenReserveQty = BigNumber("100");
+    const decay = ZERO;
+    const slippage = ZERO;
+    const totalSupplyOfLiquidityTokens = BigNumber("100");;
+
+    const LPExpectedAmount = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
+
+    expect(
+      calculateLPTokenAmount(quoteTokenAmount, baseTokenAmount, quoteTokenReserveQty, baseTokenReserveQty, decay, slippage, totalSupplyOfLiquidityTokens).toNumber()).to.equal(LPExpectedAmount.toNumber());
+
+  });
+
+  it.only("should calculateLPTokenAmount correctly when there is liquidity initially and baseToken decay (alphaDecay) (Single Asset Entry)", () => {
+    const quoteTokenAmount = BigNumber("100");
+    const baseTokenAmount = BigNumber("100");
+    const quoteTokenReserveQty = BigNumber("100");
+    const baseTokenReserveQty = BigNumber("100");
+    const decay = ZERO;
+    const slippage = ZERO;
+    const totalSupplyOfLiquidityTokens = BigNumber("100");;
+
+    const LPExpectedAmount = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
+
+    expect(
+      calculateLPTokenAmount(quoteTokenAmount, baseTokenAmount, quoteTokenReserveQty, baseTokenReserveQty, decay, slippage, totalSupplyOfLiquidityTokens).toNumber()).to.equal(LPExpectedAmount.toNumber());
+
+  });
+
+
+
+
+});
