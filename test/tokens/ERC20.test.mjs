@@ -50,8 +50,8 @@ describe('ERC20', () => {
 
       let expectedBalance = await quoteTokenContract.balanceOf(accounts[0].address);
       expectedBalance = toBigNumber(expectedBalance.toString());
-      const balance = await erc20Contract.balanceOf(accounts[0].address);
-
+      let balance = await erc20Contract.balanceOf(accounts[0].address);
+      balance = toBigNumber(balance.toString());
       assert.isTrue(expectedBalance.eq(balance));
     });
 
@@ -68,8 +68,8 @@ describe('ERC20', () => {
       const erc20Contract = new elasticSwap.ERC20(sdk, quoteToken.address);
       let expectedBalance = await quoteTokenContract.balanceOf(accounts[1].address);
       expectedBalance = toBigNumber(expectedBalance.toString());
-      const balance = await erc20Contract.balanceOf(accounts[1].address);
-
+      let balance = await erc20Contract.balanceOf(accounts[1].address);
+      balance = toBigNumber(balance.toString());
       assert.isTrue(expectedBalance.eq(balance));
     });
   });

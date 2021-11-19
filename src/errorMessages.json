@@ -1,0 +1,32 @@
+{
+  "exchange": {
+    "classCode": "1",
+    "classCommonName": "Exchange",
+    "exceptions": {
+      "NOT_ENOUGH_BASE_TOKEN_BALANCE": {
+        "message": "NOT_ENOUGH_BASE_TOKEN_BALANCE",
+        "code": "11"
+      },
+      "NOT_ENOUGH_QUOTE_TOKEN_BALANCE": {
+        "message": "NOT_ENOUGH_QUOTE_TOKEN_BALANCE",
+        "code": "12"
+      },
+      "TRANSFER_NOT_APPROVED": {
+        "message": "TRANSFER_NOT_APPROVED_BY_USER",
+        "code": "13"
+      },
+      "TIMESTAMP_EXPIRED": {
+        "message": "TIMESTAMP_EXPIRED",
+        "code": "14"
+      },
+      "TOKEN_QTY_DESIRED_LESS_OR_EQUAL_THAN_MINIMUM": {
+        "message": "TOKEN_QTY_DESIRED_LESS_OR_EQUAL_THAN_MINIMUM",
+        "code": "15"
+      },
+      "NOT_ENOUGH_LP_TOKEN_BALANCE": {
+        "message": "NOT_ENOUGH_LP_TOKEN_BALANCE",
+        "code": "16"
+      }
+    }
+  }
+}

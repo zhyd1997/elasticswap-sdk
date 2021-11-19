@@ -8,6 +8,7 @@ import Subscribable from './Subscribable';
 import ExchangeFactoryClass from './exchange/ExchangeFactory';
 import ExchangeClass from './exchange/Exchange';
 import ERC20Class from './tokens/ERC20';
+import ErrorHandlingClass from './ErrorHandling';
 
 import {
   amountFormatter,
@@ -38,6 +39,7 @@ const prefix = '@elastic-dao/elasticswap-sdk';
 export const ExchangeFactory = ExchangeFactoryClass;
 export const Exchange = ExchangeClass;
 export const ERC20 = ERC20Class;
+export const ErrorHandling = ErrorHandlingClass;
 
 export class SDK extends Subscribable {
   constructor({ account, customFetch, env, provider, signer }) {
