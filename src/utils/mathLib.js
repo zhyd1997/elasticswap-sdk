@@ -159,19 +159,23 @@ const BASIS_POINTS = BigNumber('10000');
     liquidityTokenQty: ZERO,
     liquidityTokenFeeQty: ZERO,
   };
-  console.log("sdk: calculateAddLiquidityQuantities: input : ");
-  console.log("baseTokenQtyDesiredBN: ", baseTokenQtyDesiredBN.toString());
-  console.log("quoteTokenQtyDesiredBN: ", quoteTokenQtyDesiredBN.toString());
-  console.log("baseTokenQtyMinBN: ", baseTokenQtyMinBN.toString());
-  console.log("quoteTokenQtyMinBN: ", quoteTokenQtyMinBN.toString());
-  console.log("baseTokenReserveQtyBN: ", baseTokenReserveQtyBN.toString());
-  console.log("quoteTokenReserveQtyBN: ", quoteTokenReserveQtyBN.toString());
-  console.log("totalSupplyOfLiquidityTokensBN: ", totalSupplyOfLiquidityTokensBN.toString());
-  console.log("internalBalances: ", JSON.stringify(internalBalances));
+  const inputs = {
+    baseTokenQtyDesiredBN,
+    quoteTokenQtyDesiredBN,
+    baseTokenQtyMinBN,
+    quoteTokenQtyMinBN,
+    baseTokenReserveQtyBN,
+    quoteTokenReserveQtyBN,
+    totalSupplyOfLiquidityTokensBN,
+    internalBalances
+
+  };
+  console.log("sdk: calculateAddLiquidityQuantities: input : ", JSON.stringify(inputs));
+  
 
 
-  console.log("sdk: tokenQty's: initially: ");
-  console.log(JSON.stringify(tokenQtys));
+  console.log("sdk: tokenQty's: initially: ", JSON.stringify(tokenQtys));
+
 
   if(totalSupplyOfLiquidityTokensBN.isGreaterThan(ZERO)){
     // we have outstanding liquidity tokens present and an existing price curve
@@ -180,8 +184,7 @@ const BASIS_POINTS = BigNumber('10000');
       internalBalances
     );
 
-    console.log("sdk: tokenQty's: (when there is liquidity already)");
-    console.log(JSON.stringify(tokenQtys));
+    console.log("sdk: tokenQty's: (when there is liquidity already)", JSON.stringify(tokenQtys));
 
 
     // we need to take this amount (that will be minted) into account for below calculations
@@ -212,7 +215,13 @@ const BASIS_POINTS = BigNumber('10000');
         );
         
         quoteTokenQtyFromDecay = fetchCalculateAddQuoteTokenLiquidityQuantities.quoteTokenQty;
-        liquidityTokenQtyFromDecay = fetchCalculateAddQuoteTokenLiquidityQuantities. liquidityTokenQty;
+        liquidityTokenQtyFromDecay = fetchCalculateAddQuoteTokenLiquidityQuantities.liquidityTokenQty;
+        tokenQtys.quoteTokenQty = (tokenQtys.quoteTokenQty).plus(quoteTokenQtyFromDecay);
+        tokenQtys.liquidityTokenQty = (tokenQtys.liquidityTokenQty).plus(liquidityTokenQtyFromDecay);
+
+        console.log("calculateAddQuoteTokenLiquidityQuantities: liquidityTokenQtyFromDecay: ",liquidityTokenQtyFromDecay.toString());
+        console.log("SOFARSOGOOD- ");
+        console.log(" ");
 
       } else {
         // we have less base token than expected (quote token decay) due to a rebase down
@@ -229,11 +238,18 @@ const BASIS_POINTS = BigNumber('10000');
         // {baseTokenQty, liquidityTokenQty}
         baseTokenQtyFromDecay = fetchCalculateAddBaseTokenLiquidityQuantities.baseTokenQty;
         liquidityTokenQtyFromDecay = fetchCalculateAddBaseTokenLiquidityQuantities.liquidityTokenQty;
+        
+        tokenQtys.baseTokenQty = (tokenQtys.baseTokenQty).plus(baseTokenQtyFromDecay);
+        tokenQtys.liquidityTokenQty = (tokenQtys.liquidityTokenQty).plus(liquidityTokenQtyFromDecay);
+
       }
 
       if( quoteTokenQtyFromDecay.isLessThan(quoteTokenQtyDesiredBN) && baseTokenQtyFromDecay.isLessThan(baseTokenQtyDesiredBN) ){
         // the user still has qty that they desire to contribute to the exchange for liquidity
-
+        console.log(' ');
+        console.log("the user still has qty that they desire to contribute to the exchange for liquidity ")
+        console.log(' '); 
+        
         const fetchTokenQty = calculateAddTokenPairLiquidityQuantities(
           baseTokenQtyDesiredBN.minus(baseTokenQtyFromDecay),
           quoteTokenQtyDesiredBN.minus(quoteTokenQtyFromDecay),
@@ -241,7 +257,7 @@ const BASIS_POINTS = BigNumber('10000');
           ZERO,
           quoteTokenReserveQtyBN.plus(quoteTokenQtyFromDecay),
           totalSupplyOfLiquidityTokensBN.plus(liquidityTokenQtyFromDecay),
-          internalBalances
+          internalBalances // NOTE: these balances have already been updated when we did the decay math.
         );
 
         tokenQtys.baseTokenQty = fetchTokenQty.baseTokenQty;
@@ -261,7 +277,8 @@ const BASIS_POINTS = BigNumber('10000');
         
 
       }
-      
+      console.log("return: calculateAddLiquidityQuantities: ", JSON.stringify(tokenQtys));
+      console.log(' ');
       return tokenQtys;
 
     } else {
@@ -329,8 +346,24 @@ const BASIS_POINTS = BigNumber('10000');
   const baseTokenReserveQtyBN = BigNumber(_baseTokenReserveQty);
   const totalSupplyOfLiquidityTokensBN = BigNumber(_totalSupplyOfLiquidityTokens);
   const internalBalances = internalBalancesBNCleaner(_internalBalances);
+  console.log("sdk: calculateAddQuoteTokenLiquidityQuantities: inputs: foo", JSON.stringify(
+    {quoteTokenQtyDesiredBN,
+    quoteTokenQtyMinBN,
+    baseTokenReserveQtyBN,
+    totalSupplyOfLiquidityTokensBN,
+    internalBalances}
+  ));
+
+  const inputs = {
+    quoteTokenQtyDesiredBN, 
+    quoteTokenQtyMinBN, 
+    baseTokenReserveQtyBN,
+    totalSupplyOfLiquidityTokensBN,
+    internalBalances};
 
   const baseTokenDecay = baseTokenReserveQtyBN.minus(internalBalances.baseTokenReserveQty);
+  console.log("sdk: calculateAddQuoteTokenLiquidityQuantities: ", JSON.stringify(inputs));
+ 
 
   // omega - X/Y
   const internalBaseTokenToQuoteTokenRatio = internalBalances.baseTokenReserveQty.dividedBy(internalBalances.quoteTokenReserveQty);
@@ -362,6 +395,7 @@ const BASIS_POINTS = BigNumber('10000');
   internalBalances.baseTokenReserveQty = internalBalances.baseTokenReserveQty.plus(baseTokenQtyDecayChange);
   internalBalances.quoteTokenReserveQty = internalBalances.quoteTokenReserveQty.plus(quoteTokenQty);
 
+  console.log("call to calculateLiquidityTokenQtyForSingleAssetEntry: ");
   const liquidityTokenQty = calculateLiquidityTokenQtyForSingleAssetEntry(
     totalSupplyOfLiquidityTokensBN, 
     quoteTokenQty, 
@@ -374,7 +408,8 @@ const BASIS_POINTS = BigNumber('10000');
     liquidityTokenQty : liquidityTokenQty
   };
     
-
+  console.log("return: calculateAddQuoteTokenLiquidityQuantities: ", JSON.stringify(quoteAndLiquidityTokenQty));
+  console.log(' ');
   return quoteAndLiquidityTokenQty;
 
 
@@ -638,13 +673,18 @@ const calculateExchangeRate = ( inputTokenReserveQty, outputTokenReserveQty) => 
   const tokenBDecayBN = BigNumber(_tokenBDecay);
 
   console.log("-----------------------");
-  console.log("sdk: calculateLiquidityTokenQtyForSingleAssetEntryL: ");
-  console.log("_totalSupplyOfLiquidityTokensBN: ", totalSupplyOfLiquidityTokensBN.toString());
-  console.log("_tokenQtyAToAddBN: ", tokenQtyAToAddBN.toString());
-  console.log("internalTokenAReserveQtyBN: ", internalTokenAReserveQtyBN.toString());
-  console.log("tokenBDecayChangeBN: ", tokenBDecayChangeBN.toString());
-  console.log("tokenBDecayBN: ", tokenBDecayBN.toString());
+  console.log("sdk: calculateLiquidityTokenQtyForSingleAssetEntry: input", JSON.stringify(
+    {
+      totalSupplyOfLiquidityTokensBN,
+      tokenQtyAToAddBN,
+      internalTokenAReserveQtyBN,
+      tokenBDecayChangeBN,
+      tokenBDecayBN
+
+    }
+  ));
   
+  console.log("-- sdk: calculateLiquidityTokenQtyForSingleAssetEntry: calcs");
   const aTokenDiv = tokenQtyAToAddBN.dividedBy(internalTokenAReserveQtyBN);
   console.log("aTokenDiv: ", tokenQtyAToAddBN.toString(), " / ", internalTokenAReserveQtyBN.toString());
   console.log("aTokenDiv: ", aTokenDiv.toString());
@@ -699,8 +739,8 @@ const calculateExchangeRate = ( inputTokenReserveQty, outputTokenReserveQty) => 
 
   */
   const liquidityTokenQty = (totalSupplyOfLiquidityTokensBN.multipliedBy(altWGamma)).dividedBy(BigNumber(1).minus(altWGamma)).dp(0, ROUND_DOWN);
-  console.log("liquidityTokenQty: ", liquidityTokenQty.toString());
-
+  console.log("return: calculateLiquidityTokenQtyForSingleAssetEntry: liquidityTokenQty: ", liquidityTokenQty.toString());
+  console.log('');
   return liquidityTokenQty;
 }
 
@@ -735,17 +775,22 @@ const calculateLPTokenAmount = (quoteTokenAmount, baseTokenAmount, quoteTokenRes
   const slippageBN = BigNumber(slippage);
   const totalSupplyOfLiquidityTokensBN = BigNumber(totalSupplyOfLiquidityTokens);
   const cleansedInternalBalances = internalBalancesBNCleaner(internalBalances);
+
+  const inputs = {
+    quoteTokenAmountBN,
+    baseTokenAmountBN,
+    quoteTokenReserveQtyBN,
+    baseTokenReserveQtyBN,
+    slippageBN,
+    totalSupplyOfLiquidityTokensBN,
+    cleansedInternalBalances
+
+  };
   
 
-  console.log("sdk: calculateLPTokenAmount: inputs:")
-  console.log("quoteTokenAmountBN: ", quoteTokenAmountBN.toString());
-  console.log("baseTokenAmountBN: ", baseTokenAmountBN.toString());
-  console.log("quoteTokenReserveQtyBN: ", quoteTokenReserveQtyBN.toString());
-  console.log("baseTokenReserveQtyBN: ", baseTokenReserveQtyBN.toString());
-  console.log("slippageBN: ", slippageBN.toString());
-  console.log("totalSupplyOfLiquidityTokensBN: ", totalSupplyOfLiquidityTokensBN.toString());
-  console.log("cleansedInternalBalances: ", JSON.stringify(cleansedInternalBalances));
-  console.log('-----------------------------');
+  console.log("sdk: calculateLPTokenAmount: inputs:", JSON.stringify(inputs));
+  
+
   
 
   // // NaN cases
@@ -766,6 +811,7 @@ const calculateLPTokenAmount = (quoteTokenAmount, baseTokenAmount, quoteTokenRes
 const tokenQtys = calculateAddLiquidityQuantities(baseTokenAmountBN, quoteTokenAmountBN, baseTokenAmountLessSlippage, 
 quoteTokenAmountLessSlippage, baseTokenReserveQtyBN, quoteTokenReserveQtyBN, totalSupplyOfLiquidityTokensBN,  cleansedInternalBalances);
 
+console.log('return: calculateLPTokenAmount: ', JSON.stringify(tokenQtys))
 return tokenQtys.liquidityTokenQty;
 
  

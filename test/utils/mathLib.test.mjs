@@ -672,6 +672,7 @@ describe("calculateLPTokenAmount", () => {
 
     const altWGamma = (AAndBDecayMulDivByTokenBDecay.dividedBy(BigNumber(2))).dp(18, ROUND_DOWN);
     console.log("test: altWGamma: ", altWGamma.toString());
+    console.log('call to sdk: ');
     console.log(' ');
   
     // const LPExpectedAmount = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
@@ -680,7 +681,9 @@ describe("calculateLPTokenAmount", () => {
     const expectedAnswer = calculateLPTokenAmount(quoteTokenAmountToRemoveDecay, baseTokenAmountToRemoveDecay, 
       quoteTokenReserveQty, baseTokenReserveQty, slippage,
        totalSupplyOfLiquidityTokens, internalBalances).toNumber(); 
-
+     
+    console.log(' ');
+    console.log('bask from sdk: ');   
     console.log("expectedAnswer", expectedAnswer.toString());
     console.log("actualAnswer", liquidityTokenQty.toString());   
 
