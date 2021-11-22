@@ -658,11 +658,21 @@ describe("calculateLPTokenAmount", () => {
     // here decay and decay change are the same
     const decay = baseTokenReserveQty.minus(baseTokenInternalBalance);
 
-    const aTokenDiv = quoteTokenAmountToRemoveDecay.dividedBy(quoteTokenReserveQty)
+    const aTokenDiv = quoteTokenAmountToRemoveDecay.dividedBy(baseTokenReserveQty);
+    console.log("aTokenDiv: ", quoteTokenAmountToRemoveDecay.toString(), " / ", baseTokenReserveQty.toString());
+    console.log("aTokenDiv: ", aTokenDiv.toString());
     const bTokenWADMul = decay;
+    console.log("bTokenWADMul: ", bTokenWADMul.toString());
+
     const aAndBDecayMul = aTokenDiv.multipliedBy(bTokenWADMul);
+    console.log("aAndBdecayMul: ", aAndBDecayMul.toString());
+
     const AAndBDecayMulDivByTokenBDecay = aAndBDecayMul.dividedBy(decay);
+    console.log("AAndBDecayMulDivByTokenBDecay: ", AAndBDecayMulDivByTokenBDecay.toString());
+
     const altWGamma = (AAndBDecayMulDivByTokenBDecay.dividedBy(BigNumber(2))).dp(18, ROUND_DOWN);
+    console.log("test: altWGamma: ", altWGamma.toString());
+    console.log(' ');
   
     // const LPExpectedAmount = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
     const liquidityTokenQty = (totalSupplyOfLiquidityTokens.multipliedBy(altWGamma)).dividedBy(BigNumber(1).minus(altWGamma)).dp(0, ROUND_DOWN);

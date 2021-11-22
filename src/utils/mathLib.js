@@ -171,10 +171,7 @@ const BASIS_POINTS = BigNumber('10000');
 
 
   console.log("sdk: tokenQty's: initially: ");
-  console.log((tokenQtys.baseTokenQty.toString()));
-  console.log((tokenQtys.quoteTokenQty.toString()));
-  console.log((tokenQtys.liquidityTokenQty.toString()));
-  console.log((tokenQtys.liquidityTokenFeeQty.toString()));
+  console.log(JSON.stringify(tokenQtys));
 
   if(totalSupplyOfLiquidityTokensBN.isGreaterThan(ZERO)){
     // we have outstanding liquidity tokens present and an existing price curve
@@ -184,10 +181,7 @@ const BASIS_POINTS = BigNumber('10000');
     );
 
     console.log("sdk: tokenQty's: (when there is liquidity already)");
-    console.log((tokenQtys.baseTokenQty.toString()));
-    console.log((tokenQtys.quoteTokenQty.toString()));
-    console.log((tokenQtys.liquidityTokenQty.toString()));
-    console.log((tokenQtys.liquidityTokenFeeQty.toString()));
+    console.log(JSON.stringify(tokenQtys));
 
 
     // we need to take this amount (that will be minted) into account for below calculations
@@ -203,6 +197,9 @@ const BASIS_POINTS = BigNumber('10000');
       let liquidityTokenQtyFromDecay;
       
       if( baseTokenReserveQtyBN.isGreaterThan(internalBalances.baseTokenReserveQty)){
+        console.log(" ");
+        console.log("sdk: baseTokenDecay presence:")
+        console.log(" ");
         // we have more base token than expected (base token decay) due to rebase up
         // we first need to handle this situation by requiring this user
         // to add quote tokens
@@ -640,15 +637,16 @@ const calculateExchangeRate = ( inputTokenReserveQty, outputTokenReserveQty) => 
   const tokenBDecayChangeBN = BigNumber(_tokenBDecayChange);
   const tokenBDecayBN = BigNumber(_tokenBDecay);
 
-  console.log("sdk: inputs--------");
+  console.log("-----------------------");
+  console.log("sdk: calculateLiquidityTokenQtyForSingleAssetEntryL: ");
   console.log("_totalSupplyOfLiquidityTokensBN: ", totalSupplyOfLiquidityTokensBN.toString());
   console.log("_tokenQtyAToAddBN: ", tokenQtyAToAddBN.toString());
   console.log("internalTokenAReserveQtyBN: ", internalTokenAReserveQtyBN.toString());
   console.log("tokenBDecayChangeBN: ", tokenBDecayChangeBN.toString());
   console.log("tokenBDecayBN: ", tokenBDecayBN.toString());
-  console.log("-----------------------");
-
+  
   const aTokenDiv = tokenQtyAToAddBN.dividedBy(internalTokenAReserveQtyBN);
+  console.log("aTokenDiv: ", tokenQtyAToAddBN.toString(), " / ", internalTokenAReserveQtyBN.toString());
   console.log("aTokenDiv: ", aTokenDiv.toString());
 
   const bTokenWADMul = tokenBDecayChangeBN;
