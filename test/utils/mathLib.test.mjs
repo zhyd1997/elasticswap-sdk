@@ -667,10 +667,14 @@ describe("calculateLPTokenAmount", () => {
     // const LPExpectedAmount = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
     const liquidityTokenQty = (totalSupplyOfLiquidityTokens.multipliedBy(altWGamma)).dividedBy(BigNumber(1).minus(altWGamma)).dp(0, ROUND_DOWN);
     
-    expect(
-      calculateLPTokenAmount(quoteTokenAmountToRemoveDecay, baseTokenAmountToRemoveDecay, 
-        quoteTokenReserveQty, baseTokenReserveQty, slippage,
-         totalSupplyOfLiquidityTokens, internalBalances).toNumber()).to.equal(liquidityTokenQty.toNumber());
+    const expectedAnswer = calculateLPTokenAmount(quoteTokenAmountToRemoveDecay, baseTokenAmountToRemoveDecay, 
+      quoteTokenReserveQty, baseTokenReserveQty, slippage,
+       totalSupplyOfLiquidityTokens, internalBalances).toNumber(); 
+
+    console.log("expectedAnswer", expectedAnswer.toString());
+    console.log("actualAnswer", liquidityTokenQty.toString());   
+
+    expect(expectedAnswer).to.equal(liquidityTokenQty.toNumber());
 
   });
 
