@@ -5,6 +5,7 @@ import BigNumber from 'bignumber.js';
 
 
 // const { assert } = chai;
+const {ROUND_DOWN} = BigNumber;
 const { 
   calculateExchangeRate,
   calculateQty,
@@ -599,7 +600,7 @@ describe("calculatePriceImpact", () => {
 });
 
 describe("calculateLPTokenAmount", () => {
-  it.only("should calculateLPTokenAmount correctly when there is no liquidity initially and no decay", () => {
+  it("should calculateLPTokenAmount correctly when there is no liquidity initially and no decay", () => {
     const quoteTokenAmount = BigNumber("100");
     const baseTokenAmount = BigNumber("100");
     const quoteTokenReserveQty = ZERO;
@@ -615,7 +616,7 @@ describe("calculateLPTokenAmount", () => {
 
   });
 
-  it.only("should calculateLPTokenAmount correctly when there is liquidity initially and no decay (Double Asset Entry)", () => {
+  it("should calculateLPTokenAmount correctly when there is liquidity initially and no decay (Double Asset Entry)", () => {
     const quoteTokenAmount = BigNumber("100");
     const baseTokenAmount = BigNumber("100");
     const quoteTokenReserveQty = BigNumber("100");
@@ -632,18 +633,44 @@ describe("calculateLPTokenAmount", () => {
   });
 
   it.only("should calculateLPTokenAmount correctly when there is liquidity initially and baseToken decay (alphaDecay) (Single Asset Entry)", () => {
-    const quoteTokenAmount = BigNumber("100");
-    const baseTokenAmount = BigNumber("100");
-    const quoteTokenReserveQty = BigNumber("100");
-    const baseTokenReserveQty = BigNumber("100");
-    const decay = ZERO;
+    const quoteTokenInternalBalance = BigNumber("100");
+    const baseTokenInternalBalance = BigNumber("100");
+    const kLastInternalBalance = BigNumber("10000");
+    // state prior to rebase
+    const internalBalances = {
+      baseTokenReserveQty: baseTokenInternalBalance,
+      quoteTokenReserveQty: quoteTokenInternalBalance,
+      kLast: kLastInternalBalance,
+    }
+    const totalSupplyOfLiquidityTokens = BigNumber("100");
+
+    // let there be a baseToken rebase of 50, causing baseTokenDecay (alphaDecay)
+    const quoteTokenReserveQty = BigNumber("100"); 
+    const baseTokenReserveQty = BigNumber("150");  
+
+    // quote token desired to absolve decay => alphaDecay / omega = 50 / (100/100)
+    const quoteTokenAmountToRemoveDecay = BigNumber("50");
+
+    // Only SAE here
+    const baseTokenAmountToRemoveDecay = ZERO;
     const slippage = ZERO;
-    const totalSupplyOfLiquidityTokens = BigNumber("100");;
 
-    const LPExpectedAmount = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
+    // here decay and decay change are the same
+    const decay = baseTokenReserveQty.minus(baseTokenInternalBalance);
 
+    const aTokenDiv = quoteTokenAmountToRemoveDecay.dividedBy(quoteTokenReserveQty)
+    const bTokenWADMul = decay;
+    const aAndBDecayMul = aTokenDiv.multipliedBy(bTokenWADMul);
+    const AAndBDecayMulDivByTokenBDecay = aAndBDecayMul.dividedBy(decay);
+    const altWGamma = (AAndBDecayMulDivByTokenBDecay.dividedBy(BigNumber(2))).dp(18, ROUND_DOWN);
+  
+    // const LPExpectedAmount = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
+    const liquidityTokenQty = (totalSupplyOfLiquidityTokens.multipliedBy(altWGamma)).dividedBy(BigNumber(1).minus(altWGamma)).dp(0, ROUND_DOWN);
+    
     expect(
-      calculateLPTokenAmount(quoteTokenAmount, baseTokenAmount, quoteTokenReserveQty, baseTokenReserveQty, decay, slippage, totalSupplyOfLiquidityTokens).toNumber()).to.equal(LPExpectedAmount.toNumber());
+      calculateLPTokenAmount(quoteTokenAmountToRemoveDecay, baseTokenAmountToRemoveDecay, 
+        quoteTokenReserveQty, baseTokenReserveQty, slippage,
+         totalSupplyOfLiquidityTokens, internalBalances).toNumber()).to.equal(liquidityTokenQty.toNumber());
 
   });
 

@@ -1,6 +1,6 @@
 const sdk = require("@elastic-dao/sdk");
 const BigNumber = require("bignumber.js");
-const {ROUND_DOWN} = require("bignumber.js")
+const {ROUND_DOWN} = require("bignumber.js");
 const {utils} = sdk;
 
 const ZERO = BigNumber('0');
@@ -159,6 +159,17 @@ const BASIS_POINTS = BigNumber('10000');
     liquidityTokenQty: ZERO,
     liquidityTokenFeeQty: ZERO,
   };
+  console.log("sdk: calculateAddLiquidityQuantities: input : ");
+  console.log("baseTokenQtyDesiredBN: ", baseTokenQtyDesiredBN.toString());
+  console.log("quoteTokenQtyDesiredBN: ", quoteTokenQtyDesiredBN.toString());
+  console.log("baseTokenQtyMinBN: ", baseTokenQtyMinBN.toString());
+  console.log("quoteTokenQtyMinBN: ", quoteTokenQtyMinBN.toString());
+  console.log("baseTokenReserveQtyBN: ", baseTokenReserveQtyBN.toString());
+  console.log("quoteTokenReserveQtyBN: ", quoteTokenReserveQtyBN.toString());
+  console.log("totalSupplyOfLiquidityTokensBN: ", totalSupplyOfLiquidityTokensBN.toString());
+  console.log("internalBalances: ", JSON.stringify(internalBalances));
+
+
   console.log("sdk: tokenQty's: initially: ");
   console.log((tokenQtys.baseTokenQty.toString()));
   console.log((tokenQtys.quoteTokenQty.toString()));
@@ -325,7 +336,7 @@ const BASIS_POINTS = BigNumber('10000');
   const baseTokenDecay = baseTokenReserveQtyBN.minus(internalBalances.baseTokenReserveQty);
 
   // omega - X/Y
-  const internalBaseTokenToQuoteTokenRatio = internalBalances.baseTokenReserveQty.dividedBy(quoteTokenReserveQty);
+  const internalBaseTokenToQuoteTokenRatio = internalBalances.baseTokenReserveQty.dividedBy(internalBalances.quoteTokenReserveQty);
 
   // alphaDecay / omega (A/B)
   const maxQuoteTokenQty = baseTokenDecay.dividedBy(internalBaseTokenToQuoteTokenRatio);
@@ -616,7 +627,7 @@ const calculateExchangeRate = ( inputTokenReserveQty, outputTokenReserveQty) => 
  *
  * @return liquidityTokenQty qty of liquidity tokens to be issued in exchange
  */
- const calculateLiquidityTokenQtyForSingleAssetEntry = (
+ const calculateLiquidityTokenQtyForSingleAssetEntry    = (
   _totalSupplyOfLiquidityTokens,
   _tokenQtyAToAdd,
   _internalTokenAReserveQty,
@@ -698,59 +709,64 @@ const calculateExchangeRate = ( inputTokenReserveQty, outputTokenReserveQty) => 
 
 /**
  * @dev calculates expected Ro amount based on inputs
- * @param  quoteTokenAmount 
- * @param  baseTokenAmount 
+ * @param  quoteTokenAmount The amount of quote token the user wants to provide for liquidity
+ * @param  baseTokenAmount The amount of base token the user wants to provide for liquidity
  * @param  quoteTokenReserveQty 
  * @param  baseTokenReserveQty 
  * @param  decay 
  * @param  slippage percentage
+ * @param totalSupplyOfLiquidityTokens 
+ * @param internalBalances - internal balances struct from the exchange's internal accounting
+ * internalBalances - {
+ *  baseTokenReserveQty:
+ *  quoteTokenReserveQty:
+ *  kLast:
+ *  }
  */
-const calculateLPTokenAmount = (quoteTokenAmount, baseTokenAmount, quoteTokenReserveQty, baseTokenReserveQty, decay, slippage,  totalSupplyOfLiquidityTokens) => {
+const calculateLPTokenAmount = (quoteTokenAmount, baseTokenAmount, quoteTokenReserveQty, baseTokenReserveQty, slippage,  totalSupplyOfLiquidityTokens, internalBalances) => {
   
   // cleanse input 
+  // the amount of quote token the user wants to contribute
   const quoteTokenAmountBN = BigNumber(quoteTokenAmount);
-  const baseTokenAmountBN = BigNumber(baseTokenAmount);
+
+  // the amount of base token the user wants to contribute
+  const baseTokenAmountBN = BigNumber(baseTokenAmount); 
+
   const quoteTokenReserveQtyBN = BigNumber(quoteTokenReserveQty);
   const baseTokenReserveQtyBN = BigNumber(baseTokenReserveQty);
-  const decayBN = BigNumber(decay);
   const slippageBN = BigNumber(slippage);
   const totalSupplyOfLiquidityTokensBN = BigNumber(totalSupplyOfLiquidityTokens);
+  const cleansedInternalBalances = internalBalancesBNCleaner(internalBalances);
+  
 
-  console.log("test: inputs:")
+  console.log("sdk: calculateLPTokenAmount: inputs:")
   console.log("quoteTokenAmountBN: ", quoteTokenAmountBN.toString());
   console.log("baseTokenAmountBN: ", baseTokenAmountBN.toString());
   console.log("quoteTokenReserveQtyBN: ", quoteTokenReserveQtyBN.toString());
   console.log("baseTokenReserveQtyBN: ", baseTokenReserveQtyBN.toString());
-  console.log("decayBN: ", decayBN.toString());
   console.log("slippageBN: ", slippageBN.toString());
   console.log("totalSupplyOfLiquidityTokensBN: ", totalSupplyOfLiquidityTokensBN.toString());
+  console.log("cleansedInternalBalances: ", JSON.stringify(cleansedInternalBalances));
+  console.log('-----------------------------');
   
 
-  // NaN cases
-  if(quoteTokenAmountBN.isNaN() || baseTokenAmountBN.isNaN() || quoteTokenReserveQtyBN.isNaN() 
-    || baseTokenReserveQtyBN.isNaN() || decayBN.isNaN() || slippageBN.isNaN() || totalSupplyOfLiquidityTokensBN.isNaN()) {
+  // // NaN cases
+  // if(quoteTokenAmountBN.isNaN() || baseTokenAmountBN.isNaN() || quoteTokenReserveQtyBN.isNaN() 
+  //   || baseTokenReserveQtyBN.isNaN() || slippageBN.isNaN() || totalSupplyOfLiquidityTokensBN.isNaN()) {
 
-      throw NAN_ERROR;
-  }
+  //     throw NAN_ERROR;
+  // }
   const slippageMultiplier = BigNumber("1").minus(slippageBN.dividedBy(100));
 
+  // the minimum amount of quote token the user wants to contribute (allows for slippage)
   const quoteTokenAmountLessSlippage = quoteTokenAmountBN.multipliedBy(slippageMultiplier);
-  const baseTokenAmountLessSlippage = baseTokenAmountBN.multipliedBy(slippageMultiplier);
-// let internalBalances = {
-//   baseTokenReserveQty: ZERO,
-//   quoteTokenReserveQty: ZERO,
-//   kLast: ZERO
 
-// };
-const calculatedKLast = quoteTokenReserveQtyBN.multipliedBy(baseTokenReserveQtyBN);
-const internalBalances = {
-  baseTokenReserveQty: baseTokenReserveQtyBN,
-  quoteTokenReserveQty: quoteTokenReserveQtyBN,
-  kLast : calculatedKLast
-}
+  // the minimum amount of base token the user wants to contribute (allows for slippage)
+  const baseTokenAmountLessSlippage = baseTokenAmountBN.multipliedBy(slippageMultiplier);
+
 
 const tokenQtys = calculateAddLiquidityQuantities(baseTokenAmountBN, quoteTokenAmountBN, baseTokenAmountLessSlippage, 
-quoteTokenAmountLessSlippage, baseTokenReserveQtyBN, quoteTokenReserveQtyBN, totalSupplyOfLiquidityTokensBN,  internalBalances);
+quoteTokenAmountLessSlippage, baseTokenReserveQtyBN, quoteTokenReserveQtyBN, totalSupplyOfLiquidityTokensBN,  cleansedInternalBalances);
 
 return tokenQtys.liquidityTokenQty;
 
