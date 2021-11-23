@@ -642,7 +642,7 @@ describe("calculateLPTokenAmount", () => {
 
   });
 
-  it.only("should calculateLPTokenAmount correctly when there is liquidity initially and no decay (Double Asset Entry)", () => {
+  it("should calculateLPTokenAmount correctly when there is liquidity initially and no decay (Double Asset Entry)", () => {
     const internalBalances = {
       baseTokenReserveQty: BigNumber("100"),
       quoteTokenReserveQty: BigNumber("100"),
@@ -663,7 +663,7 @@ describe("calculateLPTokenAmount", () => {
 
   });
 
-  it.only("should calculateLPTokenAmount correctly when there is liquidity initially and no decay (Double Asset Entry)", () => {
+  it("should calculateLPTokenAmount correctly when there is liquidity initially and no decay (Double Asset Entry)(with slippage)", () => {
     const internalBalances = {
       baseTokenReserveQty: BigNumber("100"),
       quoteTokenReserveQty: BigNumber("100"),
@@ -706,6 +706,65 @@ describe("calculateLPTokenAmount", () => {
     // Only SAE here
     const baseTokenAmountToRemoveDecay = ZERO;
     const slippage = ZERO;
+
+    // here decay and decay change are the same
+    const decay = baseTokenReserveQty.minus(baseTokenInternalBalance);
+
+    const aTokenDiv = quoteTokenAmountToRemoveDecay.dividedBy(baseTokenReserveQty);
+    console.log("aTokenDiv: ", quoteTokenAmountToRemoveDecay.toString(), " / ", baseTokenReserveQty.toString());
+    console.log("aTokenDiv: ", aTokenDiv.toString());
+    const bTokenWADMul = decay;
+    console.log("bTokenWADMul: ", bTokenWADMul.toString());
+
+    const aAndBDecayMul = aTokenDiv.multipliedBy(bTokenWADMul);
+    console.log("aAndBdecayMul: ", aAndBDecayMul.toString());
+
+    const AAndBDecayMulDivByTokenBDecay = aAndBDecayMul.dividedBy(decay);
+    console.log("AAndBDecayMulDivByTokenBDecay: ", AAndBDecayMulDivByTokenBDecay.toString());
+
+    const altWGamma = (AAndBDecayMulDivByTokenBDecay.dividedBy(BigNumber(2))).dp(18, ROUND_DOWN);
+    console.log("test: altWGamma: ", altWGamma.toString());
+    console.log('call to sdk: ');
+    console.log(' ');
+  
+    // const LPExpectedAmount = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
+    const liquidityTokenQty = (totalSupplyOfLiquidityTokens.multipliedBy(altWGamma)).dividedBy(BigNumber(1).minus(altWGamma)).dp(0, ROUND_DOWN);
+    
+    const expectedAnswer = calculateLPTokenAmount(quoteTokenAmountToRemoveDecay, baseTokenAmountToRemoveDecay, 
+      quoteTokenReserveQty, baseTokenReserveQty, slippage,
+       totalSupplyOfLiquidityTokens, internalBalances).toNumber(); 
+     
+    console.log(' ');
+    console.log('bask from sdk: ');   
+    console.log("expectedAnswer", expectedAnswer.toString());
+    console.log("actualAnswer", liquidityTokenQty.toString());   
+
+    expect(expectedAnswer).to.equal(liquidityTokenQty.toNumber());
+
+  });
+
+  it.only("should calculateLPTokenAmount correctly when there is liquidity initially and baseToken decay (alphaDecay) (Single Asset Entry) (with Slippage)", () => {
+    const quoteTokenInternalBalance = BigNumber("100");
+    const baseTokenInternalBalance = BigNumber("100");
+    const kLastInternalBalance = BigNumber("10000");
+    // state prior to rebase
+    const internalBalances = {
+      baseTokenReserveQty: baseTokenInternalBalance,
+      quoteTokenReserveQty: quoteTokenInternalBalance,
+      kLast: kLastInternalBalance,
+    }
+    const totalSupplyOfLiquidityTokens = BigNumber("100");
+
+    // let there be a baseToken rebase of 50, causing baseTokenDecay (alphaDecay)
+    const quoteTokenReserveQty = BigNumber("100"); 
+    const baseTokenReserveQty = BigNumber("150");  
+
+    // quote token desired to absolve decay => alphaDecay / omega = 50 / (100/100)
+    const quoteTokenAmountToRemoveDecay = BigNumber("50");
+
+    // Only SAE here
+    const baseTokenAmountToRemoveDecay = ZERO;
+    const slippage = BigNumber("10");
 
     // here decay and decay change are the same
     const decay = baseTokenReserveQty.minus(baseTokenInternalBalance);
