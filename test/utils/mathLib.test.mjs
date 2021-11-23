@@ -981,7 +981,7 @@ describe("calculateLPTokenAmount", () => {
 });
 
 describe("calculateTokenAmountsFromLPTokens,", () => {
-  it.only("Should return an error when incorrect values are provided ", async  () => {
+  it("Should return an error when incorrect values are provided ", async  () => {
 
     const lpTokenQtyToRedeem = BigNumber(-10);
     const slippagePercent = BigNumber(2);
@@ -1014,7 +1014,7 @@ describe("calculateTokenAmountsFromLPTokens,", () => {
     )).to.throw(NAN_ERROR);
 
   });
-  it.only("Should calculate correct amount of tokens received (without slippage) ", async () => {
+  it("Should calculate correct amount of tokens received (without slippage) ", async () => {
     const lpTokenQtyToRedeem = BigNumber(10);
     const slippagePercent = ZERO;
     const baseTokenReserveQty = BigNumber(100);
@@ -1040,7 +1040,7 @@ describe("calculateTokenAmountsFromLPTokens,", () => {
 
   });
 
-  it.only("Should calculate correct amount of tokens received (with slippage) ", async () => {
+  it("Should calculate correct amount of tokens received (with slippage) ", async () => {
     const lpTokenQtyToRedeem = BigNumber(10);
     const slippagePercent = BigNumber(2);
     const baseTokenReserveQty = BigNumber(100);
