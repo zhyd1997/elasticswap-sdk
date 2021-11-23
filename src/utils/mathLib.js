@@ -64,6 +64,9 @@ const BASIS_POINTS = BigNumber('10000');
   const baseTokenReserveQtyBN = BigNumber(_baseTokenReserveQty);
   const totalSupplyOfLiquidityTokensBN = BigNumber(_totalSupplyOfLiquidityTokens);
   const internalBalances = internalBalancesBNCleaner(_internalBalances);
+  console.log("sdk: calculateAddBaseTokenLiquidityQuantities: inputs: ", JSON.stringify({
+    baseTokenQtyDesiredBN, baseTokenQtyMinBN, baseTokenReserveQtyBN, totalSupplyOfLiquidityTokensBN, internalBalances
+  }));
 
   const maxBaseTokenQty = internalBalances.baseTokenReserveQty.minus(baseTokenReserveQtyBN);
   if(baseTokenQtyMinBN.isGreaterThanOrEqualTo(maxBaseTokenQty)){
@@ -99,6 +102,8 @@ const BASIS_POINTS = BigNumber('10000');
   // quoteTokenReserveQty += quoteTokenQtyDecayChange;
   // baseTokenReserveQty += baseTokenQty;
 
+  console.log("sdk: calculateAddBaseTokenLiquidityQuantities: call to calculateLiquidityTokenQtyForSingleAssetEntry: ");
+  console.log(' ');
   const liquidityTokenQty = calculateLiquidityTokenQtyForSingleAssetEntry(
     totalSupplyOfLiquidityTokensBN,
     baseTokenQty,
@@ -228,7 +233,8 @@ const BASIS_POINTS = BigNumber('10000');
       } else {
         // we have less base token than expected (quote token decay) due to a rebase down
         // we first need to handle this by adding base tokens to offset this.
-
+        console.log("sdk: calculateAddLiquidityQuantities: call to calculateAddBaseTokenLiquidityQuantities (quoteTokenDecay): ");
+        console.log(' ');
         const fetchCalculateAddBaseTokenLiquidityQuantities = calculateAddBaseTokenLiquidityQuantities(
           baseTokenQtyDesiredBN,
           ZERO,  // there is no minimum for this particular call since we may use quote tokens later.

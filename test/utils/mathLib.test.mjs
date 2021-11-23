@@ -767,6 +767,73 @@ describe("calculateLPTokenAmount", () => {
 
   });
 
+  it("should calculateLPTokenAmount correctly when there is liquidity initially and then quoteToken decay (betaDecay) (Single Asset Entry)", () => {
+    const quoteTokenInternalBalance = BigNumber("100");
+    const baseTokenInternalBalance = BigNumber("100");
+    const kLastInternalBalance = BigNumber("10000");
+    // state prior to rebase
+    const internalBalances = {
+      baseTokenReserveQty: baseTokenInternalBalance,
+      quoteTokenReserveQty: quoteTokenInternalBalance,
+      kLast: kLastInternalBalance,
+    }
+    const totalSupplyOfLiquidityTokens = BigNumber("100");
+
+    // let there be a quoteToken rebase of 50 (by baseToken rebasing down), causing baseTokenDecay (alphaDecay)
+    const quoteTokenReserveQty = BigNumber("100"); 
+    const baseTokenReserveQty = BigNumber("50");  
+
+    // quote token desired to absolve decay => ZERO (SAE)
+    const quoteTokenAmountToRemoveDecay = BigNumber("50");
+
+    // Only SAE here
+    // confirm the "decay" is equal to the re-based amount times the previous iOmega (B/A). (this is betaDecay)
+    const iOmega = quoteTokenInternalBalance.dividedBy(baseTokenInternalBalance);
+    const quoteTokenDecay = (baseTokenInternalBalance.minus(baseTokenReserveQty)).multipliedBy(iOmega);
+
+    // here decay and decay change are the same
+    const baseTokenAmountToRemoveDecay = quoteTokenDecay;
+    const slippage = ZERO;
+
+    
+    
+
+    const aTokenDiv = baseTokenReserveQty.dividedBy(baseTokenInternalBalance);
+    console.log("aTokenDiv: ", baseTokenReserveQty.toString(), " / ", baseTokenInternalBalance.toString());
+    console.log("aTokenDiv: ", aTokenDiv.toString());
+    const bTokenWADMul = decay;
+    console.log("bTokenWADMul: ", bTokenWADMul.toString());
+
+    const aAndBDecayMul = aTokenDiv.multipliedBy(bTokenWADMul);
+    console.log("aAndBdecayMul: ", aAndBDecayMul.toString());
+
+    const AAndBDecayMulDivByTokenBDecay = aAndBDecayMul.dividedBy(decay);
+    console.log("AAndBDecayMulDivByTokenBDecay: ", AAndBDecayMulDivByTokenBDecay.toString());
+
+    const altWGamma = (AAndBDecayMulDivByTokenBDecay.dividedBy(BigNumber(2))).dp(18, ROUND_DOWN);
+    console.log("test: altWGamma: ", altWGamma.toString());
+    console.log('call to sdk: ');
+    console.log(' ');
+  
+    // const LPExpectedAmount = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
+    const liquidityTokenQty = (totalSupplyOfLiquidityTokens.multipliedBy(altWGamma)).dividedBy(BigNumber(1).minus(altWGamma)).dp(0, ROUND_DOWN);
+    
+    const expectedAnswer = calculateLPTokenAmount(quoteTokenAmountToRemoveDecay, baseTokenAmountToRemoveDecay, 
+      quoteTokenReserveQty, baseTokenReserveQty, slippage,
+       totalSupplyOfLiquidityTokens, internalBalances).toNumber(); 
+     
+    console.log(' ');
+    console.log('bask from sdk: ');   
+    console.log("expectedAnswer", expectedAnswer.toString());
+    console.log("actualAnswer", liquidityTokenQty.toString());   
+
+    expect(expectedAnswer).to.equal(liquidityTokenQty.toNumber());
+
+
+
+
+  });
+
   it("should calculateLPTokenAmount correctly when there is liquidity initially and baseToken decay (alphaDecay) (Single Asset Entry) (with Slippage)", () => {
     const quoteTokenInternalBalance = BigNumber("100");
     const baseTokenInternalBalance = BigNumber("100");
@@ -1070,7 +1137,7 @@ describe("calculateTokenAmountsFromLPTokens", () => {
 });
 
 describe("calculateFees", () => {
-  it.only("Should return an error when incorrect values are provided ", async () => {
+  it("Should return an error when incorrect values are provided ", async () => {
     const feesInBasisPoints = BigNumber("-2");
     const swapAmount = BigNumber(100);
 
@@ -1079,7 +1146,7 @@ describe("calculateFees", () => {
     expect(() => calculateFees(undefined, swapAmount)).to.throw(NAN_ERROR);
   });
 
-  it.only("Should calculate correct amount of fees", async () => {
+  it("Should calculate correct amount of fees", async () => {
     const feesInBasisPoints1 = BigNumber("5");
     const swapAmount1 = BigNumber("100");
     const answer1 = swapAmount1.multipliedBy(feesInBasisPoints1.dividedBy(BASIS_POINTS));
