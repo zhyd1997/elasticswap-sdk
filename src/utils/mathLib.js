@@ -277,8 +277,7 @@ const BASIS_POINTS = BigNumber('10000');
         console.log(" ");
         
 
-        // NOTE: AD HOC solution
-        // tokenQtys.liquidityTokenQty = (tokenQtys.liquidityTokenQty).plus(liquidityTokenQtyFromDecay);
+        tokenQtys.liquidityTokenQty = (tokenQtys.liquidityTokenQty).plus(liquidityTokenQtyFromDecay);
         console.log(" ");
 
         if((tokenQtys.baseTokenQty).isLessThan(baseTokenQtyMinBN)){
@@ -682,7 +681,7 @@ const calculateExchangeRate = ( inputTokenReserveQty, outputTokenReserveQty) => 
 
   console.log("return: calculateLiquidityTokenQtyForDoubleAssetEntry: ", liquidityTokenQty.toString());
   console.log(' ');
-  return liquidityTokenQty;
+  return deltaLiquidityTokenQty;
 
 }
 

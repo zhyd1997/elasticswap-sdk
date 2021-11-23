@@ -659,7 +659,7 @@ describe("calculateLPTokenAmount", () => {
     const totalLPAmount = totalSupplyOfLiquidityTokens.plus(LPExpectedAmountForDAE);
 
     expect(
-      calculateLPTokenAmount(quoteTokenAmount, baseTokenAmount, quoteTokenReserveQty, baseTokenReserveQty, slippage, totalSupplyOfLiquidityTokens, internalBalances).toNumber()).to.equal(totalLPAmount.toNumber());
+      calculateLPTokenAmount(quoteTokenAmount, baseTokenAmount, quoteTokenReserveQty, baseTokenReserveQty, slippage, totalSupplyOfLiquidityTokens, internalBalances).toNumber()).to.equal(LPExpectedAmountForDAE.toNumber());
 
   });
 
@@ -680,7 +680,7 @@ describe("calculateLPTokenAmount", () => {
     const totalLPAmount = totalSupplyOfLiquidityTokens.plus(LPExpectedAmountForDAE);
 
     expect(
-      calculateLPTokenAmount(quoteTokenAmount, baseTokenAmount, quoteTokenReserveQty, baseTokenReserveQty, slippage, totalSupplyOfLiquidityTokens, internalBalances).toNumber()).to.equal(totalLPAmount.toNumber());
+      calculateLPTokenAmount(quoteTokenAmount, baseTokenAmount, quoteTokenReserveQty, baseTokenReserveQty, slippage, totalSupplyOfLiquidityTokens, internalBalances).toNumber()).to.equal(LPExpectedAmountForDAE.toNumber());
 
   });
 
@@ -862,6 +862,7 @@ describe("calculateLPTokenAmount", () => {
 
     const liquidityTokenForDAE = (quoteTokenDiff.dividedBy(quoteTokenQtyAfterSAE)).multipliedBy(liquidityTokenQtyAfterSAE);
     const liquidityTokenQtyAfterDAE = liquidityTokenForDAE.plus(liquidityTokenQtyAfterSAE).dp(18, ROUND_DOWN);
+    const answer = liquidityTokenQtyAfterDAE.minus(initialTotalSupplyOfLiquidityTokens);
      
     console.log('call to sdk: ');
     console.log(' ');
@@ -874,10 +875,10 @@ describe("calculateLPTokenAmount", () => {
     console.log("expectedAnswer", expectedAnswer.toString());
     console.log("actualAnswer", liquidityTokenQtyAfterDAE.toString());   
 
-    expect(expectedAnswer).to.equal(liquidityTokenQtyAfterDAE.toNumber());
+    expect(expectedAnswer).to.equal(answer.toNumber());
   });
 
-  it.only("should calculateLPTokenAmount correctly when there is liquidity initially and baseToken decay (alphaDecay) (Partial Single Asset Entry) (with slippage)", () => {
+  it("should calculateLPTokenAmount correctly when there is liquidity initially and baseToken decay (alphaDecay) (Partial Single Asset Entry) (with slippage)", () => {
     const quoteTokenInternalBalance = BigNumber("100");
     const baseTokenInternalBalance = BigNumber("100");
     const kLastInternalBalance = BigNumber("10000");
@@ -937,6 +938,7 @@ describe("calculateLPTokenAmount", () => {
 
     const liquidityTokenForDAE = (quoteTokenDiff.dividedBy(quoteTokenQtyAfterSAE)).multipliedBy(liquidityTokenQtyAfterSAE);
     const liquidityTokenQtyAfterDAE = liquidityTokenForDAE.plus(liquidityTokenQtyAfterSAE).dp(18, ROUND_DOWN);
+    const answer = liquidityTokenQtyAfterDAE.minus(initialTotalSupplyOfLiquidityTokens);
      
     console.log('call to sdk: ');
     console.log(' ');
@@ -949,7 +951,7 @@ describe("calculateLPTokenAmount", () => {
     console.log("expectedAnswer", expectedAnswer.toString());
     console.log("actualAnswer", liquidityTokenQtyAfterDAE.toString());   
 
-    expect(expectedAnswer).to.equal(liquidityTokenQtyAfterDAE.toNumber());
+    expect(expectedAnswer).to.equal(answer.toNumber());
   });
 
 
