@@ -600,7 +600,7 @@ describe("calculatePriceImpact", () => {
 });
 
 describe("calculateLPTokenAmount", () => {
-  it.only("should calculateLPTokenAmount correctly when there is no liquidity initially and no decay", () => {
+  it("should calculateLPTokenAmount correctly when there is no liquidity initially and no decay", () => {
     const internalBalances = {
       baseTokenReserveQty: ZERO,
       quoteTokenReserveQty: ZERO,
@@ -621,7 +621,7 @@ describe("calculateLPTokenAmount", () => {
 
   });
 
-  it.only("should calculateLPTokenAmount correctly when there is no liquidity initially and no decay (with slippage)", () => {
+  it("should calculateLPTokenAmount correctly when there is no liquidity initially and no decay (with slippage)", () => {
     const internalBalances = {
       baseTokenReserveQty: ZERO,
       quoteTokenReserveQty: ZERO,
@@ -652,18 +652,39 @@ describe("calculateLPTokenAmount", () => {
     const baseTokenAmount = BigNumber("100");
     const quoteTokenReserveQty = BigNumber("100");
     const baseTokenReserveQty = BigNumber("100");
-    const decay = ZERO;
     const slippage = ZERO;
     const totalSupplyOfLiquidityTokens = BigNumber("100");;
 
-    const LPExpectedAmount = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
+    const LPExpectedAmountForDAE = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
+    const totalLPAmount = totalSupplyOfLiquidityTokens.plus(LPExpectedAmountForDAE);
 
     expect(
-      calculateLPTokenAmount(quoteTokenAmount, baseTokenAmount, quoteTokenReserveQty, baseTokenReserveQty, decay, slippage, totalSupplyOfLiquidityTokens, internalBalances).toNumber()).to.equal(LPExpectedAmount.toNumber());
+      calculateLPTokenAmount(quoteTokenAmount, baseTokenAmount, quoteTokenReserveQty, baseTokenReserveQty, slippage, totalSupplyOfLiquidityTokens, internalBalances).toNumber()).to.equal(totalLPAmount.toNumber());
 
   });
 
-  it.only("should calculateLPTokenAmount correctly when there is liquidity initially and baseToken decay (alphaDecay) (Single Asset Entry)", () => {
+  it.only("should calculateLPTokenAmount correctly when there is liquidity initially and no decay (Double Asset Entry)", () => {
+    const internalBalances = {
+      baseTokenReserveQty: BigNumber("100"),
+      quoteTokenReserveQty: BigNumber("100"),
+      kLast: BigNumber("10000"),
+    }
+    const quoteTokenAmount = BigNumber("100");
+    const baseTokenAmount = BigNumber("100");
+    const quoteTokenReserveQty = BigNumber("100");
+    const baseTokenReserveQty = BigNumber("100");
+    const slippage = BigNumber("1");
+    const totalSupplyOfLiquidityTokens = BigNumber("100");;
+
+    const LPExpectedAmountForDAE = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
+    const totalLPAmount = totalSupplyOfLiquidityTokens.plus(LPExpectedAmountForDAE);
+
+    expect(
+      calculateLPTokenAmount(quoteTokenAmount, baseTokenAmount, quoteTokenReserveQty, baseTokenReserveQty, slippage, totalSupplyOfLiquidityTokens, internalBalances).toNumber()).to.equal(totalLPAmount.toNumber());
+
+  });
+
+  it("should calculateLPTokenAmount correctly when there is liquidity initially and baseToken decay (alphaDecay) (Single Asset Entry)", () => {
     const quoteTokenInternalBalance = BigNumber("100");
     const baseTokenInternalBalance = BigNumber("100");
     const kLastInternalBalance = BigNumber("10000");
@@ -722,7 +743,7 @@ describe("calculateLPTokenAmount", () => {
 
   });
 
-  it.only("should calculateLPTokenAmount correctly when there is liquidity initially and baseToken decay (alphaDecay) (Partial Single Asset Entry)", () => {
+  it("should calculateLPTokenAmount correctly when there is liquidity initially and baseToken decay (alphaDecay) (Partial Single Asset Entry)", () => {
     const quoteTokenInternalBalance = BigNumber("100");
     const baseTokenInternalBalance = BigNumber("100");
     const kLastInternalBalance = BigNumber("10000");
