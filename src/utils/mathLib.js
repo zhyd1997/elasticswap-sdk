@@ -607,6 +607,33 @@ const calculateExchangeRate = ( inputTokenReserveQty, outputTokenReserveQty) => 
 }  
 
 /**
+ * @dev calculates the fees
+ * @param feesInBasisPoints - the amount of fees in basis points
+ * @param swapAmount - the amount being traded
+ * @return fees - the fee amount
+ */
+const calculateFees = (feesInBasisPoints, swapAmount) => {
+  
+  // cleanse inputs 
+  const feesInBasisPointsBN = BigNumber(feesInBasisPoints);
+  const swapAmountBN = BigNumber(swapAmount);
+
+  // NaN case
+  if(feesInBasisPointsBN.isNaN() || swapAmountBN.isNaN()){
+    throw NAN_ERROR
+  }
+
+  // negative case
+  if(feesInBasisPointsBN.isLessThan(ZERO) || swapAmountBN.isLessThan(ZERO)){
+    throw NEGATIVE_INPUT;
+  }
+
+  const fees = (feesInBasisPointsBN.dividedBy(BASIS_POINTS)).multipliedBy(swapAmountBN);
+
+  return fees;
+};
+
+/**
  * @dev calculates the qty of liquidity tokens that should be sent to the DAO due to the growth in K from trading.
  * The DAO takes 1/6 of the total fees (30BP total fee, 25 BP to lps and 5 BP to the DAO)
  * @param _totalSupplyOfLiquidityTokens the total supply of our exchange's liquidity tokens (aka Ro)
@@ -1215,6 +1242,7 @@ calculateOutputAmountLessFees,
 calculatePriceImpact,
 calculateLPTokenAmount,
 calculateTokenAmountsFromLPTokens,
+calculateFees,
 BASIS_POINTS,
 INSUFFICIENT_QTY,
 INSUFFICIENT_LIQUIDITY,

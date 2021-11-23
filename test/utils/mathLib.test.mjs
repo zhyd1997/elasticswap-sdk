@@ -16,6 +16,8 @@ const {
   calculatePriceImpact,
   calculateLPTokenAmount,
   calculateTokenAmountsFromLPTokens,
+  calculateFees,
+  BASIS_POINTS,
   INSUFFICIENT_QTY,
   INSUFFICIENT_LIQUIDITY,
   NEGATIVE_INPUT,
@@ -980,7 +982,7 @@ describe("calculateLPTokenAmount", () => {
 
 });
 
-describe("calculateTokenAmountsFromLPTokens,", () => {
+describe("calculateTokenAmountsFromLPTokens", () => {
   it("Should return an error when incorrect values are provided ", async  () => {
 
     const lpTokenQtyToRedeem = BigNumber(-10);
@@ -1065,4 +1067,31 @@ describe("calculateTokenAmountsFromLPTokens,", () => {
     expect((expected.baseTokenReceived).toNumber()).to.equal((answer.baseTokenReceived).toNumber());
 
   });
+});
+
+describe("calculateFees", () => {
+  it.only("Should return an error when incorrect values are provided ", async () => {
+    const feesInBasisPoints = BigNumber("-2");
+    const swapAmount = BigNumber(100);
+
+    expect(() => calculateFees(feesInBasisPoints, swapAmount)).to.throw(NEGATIVE_INPUT);
+    expect(() => calculateFees(null, swapAmount)).to.throw(NAN_ERROR);
+    expect(() => calculateFees(undefined, swapAmount)).to.throw(NAN_ERROR);
+  });
+
+  it.only("Should calculate correct amount of fees", async () => {
+    const feesInBasisPoints1 = BigNumber("5");
+    const swapAmount1 = BigNumber("100");
+    const answer1 = swapAmount1.multipliedBy(feesInBasisPoints1.dividedBy(BASIS_POINTS));
+    
+    const feesInBasisPoints2 = BigNumber("30");
+    const swapAmount2 = BigNumber("100");
+    const answer2 = swapAmount1.multipliedBy(feesInBasisPoints2.dividedBy(BASIS_POINTS));
+
+    expect(calculateFees(feesInBasisPoints1, swapAmount1).toNumber()).to.equal(answer1.toNumber());
+    expect(calculateFees(feesInBasisPoints2, swapAmount2).toNumber()).to.equal(answer2.toNumber());
+
+
+  });
+
 });
