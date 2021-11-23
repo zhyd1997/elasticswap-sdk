@@ -600,7 +600,7 @@ describe("calculatePriceImpact", () => {
 });
 
 describe("calculateLPTokenAmount", () => {
-  it("should calculateLPTokenAmount correctly when there is no liquidity initially and no decay", () => {
+  it.only("should calculateLPTokenAmount correctly when there is no liquidity initially and no decay", () => {
     const internalBalances = {
       baseTokenReserveQty: ZERO,
       quoteTokenReserveQty: ZERO,
@@ -621,7 +621,7 @@ describe("calculateLPTokenAmount", () => {
 
   });
 
-  it("should calculateLPTokenAmount correctly when there is liquidity initially and no decay (Double Asset Entry)", () => {
+  it.only("should calculateLPTokenAmount correctly when there is liquidity initially and no decay (Double Asset Entry)", () => {
     const internalBalances = {
       baseTokenReserveQty: BigNumber("100"),
       quoteTokenReserveQty: BigNumber("100"),
@@ -642,7 +642,7 @@ describe("calculateLPTokenAmount", () => {
 
   });
 
-  it("should calculateLPTokenAmount correctly when there is liquidity initially and baseToken decay (alphaDecay) (Single Asset Entry)", () => {
+  it.only("should calculateLPTokenAmount correctly when there is liquidity initially and baseToken decay (alphaDecay) (Single Asset Entry)", () => {
     const quoteTokenInternalBalance = BigNumber("100");
     const baseTokenInternalBalance = BigNumber("100");
     const kLastInternalBalance = BigNumber("10000");

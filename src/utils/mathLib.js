@@ -275,9 +275,10 @@ const BASIS_POINTS = BigNumber('10000');
         tokenQtys.baseTokenQty = (tokenQtys.baseTokenQty).plus(baseTokenQtyFromDecay);
         tokenQtys.quoteTokenQty = (tokenQtys.quoteTokenQty).plus(quoteTokenQtyFromDecay);
         console.log(" ");
-        console.log("sdk: calculateAddTokenPairLiquidityQuantities: (tokenQtys.liquidityTokenQty).plus(liquidityTokenQtyFromDecay): ", 
-        (tokenQtys.liquidityTokenQty).toString(), " + ", liquidityTokenQtyFromDecay.toString());
-        tokenQtys.liquidityTokenQty = (tokenQtys.liquidityTokenQty).plus(liquidityTokenQtyFromDecay);
+        
+
+        // NOTE: AD HOC solution
+        // tokenQtys.liquidityTokenQty = (tokenQtys.liquidityTokenQty).plus(liquidityTokenQtyFromDecay);
         console.log(" ");
 
         if((tokenQtys.baseTokenQty).isLessThan(baseTokenQtyMinBN)){
