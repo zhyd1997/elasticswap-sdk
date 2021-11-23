@@ -621,6 +621,27 @@ describe("calculateLPTokenAmount", () => {
 
   });
 
+  it.only("should calculateLPTokenAmount correctly when there is no liquidity initially and no decay (with slippage)", () => {
+    const internalBalances = {
+      baseTokenReserveQty: ZERO,
+      quoteTokenReserveQty: ZERO,
+      kLast: ZERO,
+    }
+    const quoteTokenAmount = BigNumber("100");
+    const baseTokenAmount = BigNumber("100");
+    const quoteTokenReserveQty = ZERO;
+    const baseTokenReserveQty = ZERO;
+    
+    const slippage = BigNumber("5");
+    const totalSupplyOfLiquidityTokens = ZERO;
+
+    const LPExpectedAmount = quoteTokenAmount.multipliedBy(baseTokenAmount).sqrt();
+
+    expect(
+      calculateLPTokenAmount(quoteTokenAmount, baseTokenAmount, quoteTokenReserveQty, baseTokenReserveQty, slippage, totalSupplyOfLiquidityTokens, internalBalances).toNumber()).to.equal(LPExpectedAmount.toNumber());
+
+  });
+
   it.only("should calculateLPTokenAmount correctly when there is liquidity initially and no decay (Double Asset Entry)", () => {
     const internalBalances = {
       baseTokenReserveQty: BigNumber("100"),
