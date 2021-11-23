@@ -15,6 +15,7 @@ const {
   calculateOutputAmountLessFees,
   calculatePriceImpact,
   calculateLPTokenAmount,
+  calculateTokenAmountsFromLPTokens,
   INSUFFICIENT_QTY,
   INSUFFICIENT_LIQUIDITY,
   NEGATIVE_INPUT,
@@ -977,4 +978,91 @@ describe("calculateLPTokenAmount", () => {
 
 
 
+});
+
+describe("calculateTokenAmountsFromLPTokens,", () => {
+  it.only("Should return an error when incorrect values are provided ", async  () => {
+
+    const lpTokenQtyToRedeem = BigNumber(-10);
+    const slippagePercent = BigNumber(2);
+    const baseTokenReserveQty = BigNumber(100);
+    const quoteTokenReserveQty = BigNumber(200);
+    const totalLPTokenSupply = BigNumber(200);
+
+    expect(() => calculateTokenAmountsFromLPTokens(
+      lpTokenQtyToRedeem,
+      slippagePercent,
+      baseTokenReserveQty,
+      quoteTokenReserveQty,
+      totalLPTokenSupply
+    )).to.throw(NEGATIVE_INPUT);
+
+    expect(() => calculateTokenAmountsFromLPTokens(
+      null,
+      slippagePercent,
+      baseTokenReserveQty,
+      quoteTokenReserveQty,
+      totalLPTokenSupply
+    )).to.throw(NAN_ERROR);
+    
+    expect(() => calculateTokenAmountsFromLPTokens(
+      undefined,
+      slippagePercent,
+      baseTokenReserveQty,
+      quoteTokenReserveQty,
+      totalLPTokenSupply
+    )).to.throw(NAN_ERROR);
+
+  });
+  it.only("Should calculate correct amount of tokens received (without slippage) ", async () => {
+    const lpTokenQtyToRedeem = BigNumber(10);
+    const slippagePercent = ZERO;
+    const baseTokenReserveQty = BigNumber(100);
+    const quoteTokenReserveQty = BigNumber(200);
+    const totalLPTokenSupply = BigNumber(200);
+
+    const answer = {
+      quoteTokenReceived: (quoteTokenReserveQty.multipliedBy(lpTokenQtyToRedeem.dividedBy(totalLPTokenSupply))).multipliedBy(BigNumber(1).minus(slippagePercent.dividedBy(BigNumber(100)))),
+      baseTokenReceived: (baseTokenReserveQty.multipliedBy(lpTokenQtyToRedeem.dividedBy(totalLPTokenSupply))).multipliedBy(BigNumber(1).minus(slippagePercent.dividedBy(BigNumber(100))))
+    }
+
+    const expected = calculateTokenAmountsFromLPTokens(
+      lpTokenQtyToRedeem,
+      slippagePercent,
+      baseTokenReserveQty,
+      quoteTokenReserveQty,
+      totalLPTokenSupply
+    );
+    console.log(JSON.stringify(answer), JSON.stringify(expected));
+
+    expect((expected.quoteTokenReceived).toNumber()).to.equal((answer.quoteTokenReceived).toNumber());
+    expect((expected.baseTokenReceived).toNumber()).to.equal((answer.baseTokenReceived).toNumber());
+
+  });
+
+  it.only("Should calculate correct amount of tokens received (with slippage) ", async () => {
+    const lpTokenQtyToRedeem = BigNumber(10);
+    const slippagePercent = BigNumber(2);
+    const baseTokenReserveQty = BigNumber(100);
+    const quoteTokenReserveQty = BigNumber(200);
+    const totalLPTokenSupply = BigNumber(200);
+
+    const answer = {
+      quoteTokenReceived: (quoteTokenReserveQty.multipliedBy(lpTokenQtyToRedeem.dividedBy(totalLPTokenSupply))).multipliedBy(BigNumber(1).minus(slippagePercent.dividedBy(BigNumber(100)))),
+      baseTokenReceived: (baseTokenReserveQty.multipliedBy(lpTokenQtyToRedeem.dividedBy(totalLPTokenSupply))).multipliedBy(BigNumber(1).minus(slippagePercent.dividedBy(BigNumber(100))))
+    }
+
+    const expected = calculateTokenAmountsFromLPTokens(
+      lpTokenQtyToRedeem,
+      slippagePercent,
+      baseTokenReserveQty,
+      quoteTokenReserveQty,
+      totalLPTokenSupply
+    );
+    console.log(JSON.stringify(answer), JSON.stringify(expected));
+
+    expect((expected.quoteTokenReceived).toNumber()).to.equal((answer.quoteTokenReceived).toNumber());
+    expect((expected.baseTokenReceived).toNumber()).to.equal((answer.baseTokenReceived).toNumber());
+
+  });
 });

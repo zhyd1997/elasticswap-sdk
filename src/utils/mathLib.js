@@ -1081,7 +1081,70 @@ const calculateQuoteTokenQty = (
 
 
    
-// returns the min amount of each token received by redeeming lpTokenQtyToRedeem
+/**
+ * @dev returns the min amount of each token received by redeeming @param lpTokenQtyToRedeem
+ * @param  lpTokenQtyToRedeem - the amount of LP tokens user wants to redeem
+ * @param  slippagePercent - the percentage of slippage set by the user
+ * @param baseTokenReserveQty - current reserve qty of the base token (the Elastic token if it is an elastic pair)
+ * @param  quoteTokenReserveQty - current reserve qty of the quote token (the non-Elastic token if it is an elastic pair)
+ * @param  totalLPTokenSupply - current total outstanding qty of the LP token 
+ * @return   tokenAmounts - The min amounts of each token received by redeeming @param lpTokenQtyToRedeem 
+ * {
+ *  quoteToken: BigNumber
+ *  baseToken: Bignumber
+ * }
+ * 
+ * Math: (not accounting for slippage)
+ * ΔX = α * ΔRo / Ro
+ * ΔY = β * ΔRo / Ro
+ *
+ * where,
+ * # ΔRo - The amount of liquidity tokens the liquidity provider wants to exchange
+ * # ΔX - The amount of baseToken the liquidity provider receives
+ * # ΔY - The amount of quoteTokens the liquidity provider receives
+ * # α - The balance of baseToken currently in the exchange
+ * # β - The balance of quoteToken currently in the exchange
+ * 
+ * Accounting for slippage:
+ * quoteTokenReceived = deltaX * (1 - (slippage/percent))
+ * baseTokenReceived = deltaY *  (1 - (slippage/percent))
+ */
+const calculateTokenAmountsFromLPTokens = (lpTokenQtyToRedeem, slippagePercent, baseTokenReserveQty, quoteTokenReserveQty, totalLPTokenSupply) => {
+  // cleanse inputs
+  const lpTokenQtyToRedeemBN = BigNumber(lpTokenQtyToRedeem);
+  const slippagePercentBN = BigNumber(slippagePercent);
+  const baseTokenReserveQtyBN = BigNumber(baseTokenReserveQty);
+  const quoteTokenReserveQtyBN = BigNumber(quoteTokenReserveQty); 
+  const totalSupplyLPTokenSupplyBN = BigNumber(totalLPTokenSupply);
+
+  // NaN cases
+  if(lpTokenQtyToRedeemBN.isNaN() || slippagePercentBN.isNaN() || baseTokenReserveQtyBN.isNaN() 
+      || quoteTokenReserveQtyBN.isNaN() || totalSupplyLPTokenSupplyBN.isNaN()){
+       throw NAN_ERROR;   
+  }
+
+  // negative cases
+  if(lpTokenQtyToRedeemBN.isLessThan(ZERO) || slippagePercentBN.isLessThan(ZERO) || baseTokenReserveQtyBN.isLessThan(ZERO)
+  || quoteTokenReserveQtyBN.isLessThan(ZERO) || totalSupplyLPTokenSupplyBN.isLessThan(ZERO)){
+    throw NEGATIVE_INPUT;
+  }
+
+  const lpRatio = lpTokenQtyToRedeemBN.dividedBy(totalSupplyLPTokenSupplyBN);
+  const slippageMultiplier = BigNumber(1).minus(slippagePercentBN.dividedBy(BigNumber(100)));
+
+  const baseTokenRecieved = baseTokenReserveQtyBN.multipliedBy(lpRatio);
+  const baseTokenRecievedMin = baseTokenRecieved.multipliedBy(slippageMultiplier);
+
+  const quoteTokenReceived = quoteTokenReserveQtyBN.multipliedBy(lpRatio);
+  const quoteTokenReceivedMin = quoteTokenReceived.multipliedBy(slippageMultiplier);
+
+  const tokenQtys = {
+    quoteTokenReceived: quoteTokenReceivedMin,
+    baseTokenReceived: baseTokenRecievedMin
+  }
+
+  return tokenQtys;
+};
 
 
 
@@ -1151,6 +1214,7 @@ calculateExchangeRate,
 calculateOutputAmountLessFees,
 calculatePriceImpact,
 calculateLPTokenAmount,
+calculateTokenAmountsFromLPTokens,
 BASIS_POINTS,
 INSUFFICIENT_QTY,
 INSUFFICIENT_LIQUIDITY,
