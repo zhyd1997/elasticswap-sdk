@@ -833,12 +833,20 @@ const calculateLPTokenAmount = (quoteTokenAmount, baseTokenAmount, quoteTokenRes
 
   
 
-  // // NaN cases
-  // if(quoteTokenAmountBN.isNaN() || baseTokenAmountBN.isNaN() || quoteTokenReserveQtyBN.isNaN() 
-  //   || baseTokenReserveQtyBN.isNaN() || slippageBN.isNaN() || totalSupplyOfLiquidityTokensBN.isNaN()) {
+  // NaN cases
+  if(quoteTokenAmountBN.isNaN() || baseTokenAmountBN.isNaN() || quoteTokenReserveQtyBN.isNaN() 
+    || baseTokenReserveQtyBN.isNaN() || slippageBN.isNaN() || totalSupplyOfLiquidityTokensBN.isNaN()) {
 
-  //     throw NAN_ERROR;
-  // }
+      throw NAN_ERROR;
+  }
+
+   // Negative cases
+   if(quoteTokenAmountBN.isLessThan(ZERO) || baseTokenAmountBN.isLessThan(ZERO) || quoteTokenReserveQtyBN.isLessThan(ZERO) 
+   || baseTokenReserveQtyBN.isLessThan(ZERO) || slippageBN.isLessThan(ZERO) || totalSupplyOfLiquidityTokensBN.isLessThan(ZERO)) {
+
+     throw NEGATIVE_INPUT;
+ }
+
   const slippageMultiplier = BigNumber("1").minus(slippageBN.dividedBy(100));
 
   // the minimum amount of quote token the user wants to contribute (allows for slippage)
@@ -1073,6 +1081,7 @@ const calculateQuoteTokenQty = (
 
 
    
+// returns the min amount of each token received by redeeming lpTokenQtyToRedeem
 
 
 

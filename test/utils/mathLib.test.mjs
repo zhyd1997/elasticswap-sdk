@@ -600,6 +600,27 @@ describe("calculatePriceImpact", () => {
 });
 
 describe("calculateLPTokenAmount", () => {
+  it("Should return an error when incorrect values are provided", async () => {
+
+    const internalBalances = {
+      baseTokenReserveQty: ZERO,
+      quoteTokenReserveQty: ZERO,
+      kLast: ZERO,
+    }
+    const quoteTokenAmount = BigNumber("-1");
+    const baseTokenAmount = BigNumber("100");
+    const quoteTokenReserveQty = ZERO;
+    const baseTokenReserveQty = ZERO;
+    
+    const slippage = ZERO;
+    const totalSupplyOfLiquidityTokens = ZERO;
+
+    const LPExpectedAmount = quoteTokenAmount.multipliedBy(baseTokenAmount).sqrt();
+    expect(() => calculateLPTokenAmount(quoteTokenAmount, baseTokenAmount, quoteTokenReserveQty, baseTokenReserveQty, slippage, totalSupplyOfLiquidityTokens, internalBalances)).to.throw(NEGATIVE_INPUT);
+    expect(() => calculateLPTokenAmount(null, baseTokenAmount, quoteTokenReserveQty, baseTokenReserveQty, slippage, totalSupplyOfLiquidityTokens, internalBalances)).to.throw(NAN_ERROR);
+    expect(() => calculateLPTokenAmount(undefined, baseTokenAmount, quoteTokenReserveQty, baseTokenReserveQty, slippage, totalSupplyOfLiquidityTokens, internalBalances)).to.throw(NAN_ERROR);
+  });
+
   it("should calculateLPTokenAmount correctly when there is no liquidity initially and no decay", () => {
     const internalBalances = {
       baseTokenReserveQty: ZERO,
