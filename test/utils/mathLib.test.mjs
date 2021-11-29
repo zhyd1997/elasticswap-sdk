@@ -767,7 +767,7 @@ describe("calculateLPTokenAmount", () => {
 
   });
 
-  it.only("should calculateLPTokenAmount correctly when there is liquidity initially and then quoteToken decay (betaDecay) (Single Asset Entry)", () => {
+  it("should calculateLPTokenAmount correctly when there is liquidity initially and then quoteToken decay (betaDecay) (Single Asset Entry)", () => {
     const quoteTokenInternalBalance = BigNumber("100");
     const baseTokenInternalBalance = BigNumber("100");
     const kLastInternalBalance = BigNumber("10000");
@@ -828,7 +828,7 @@ describe("calculateLPTokenAmount", () => {
 
   });
 
-  it.only("should calculateLPTokenAmount correctly when there is liquidity initially and then quoteToken decay (betaDecay) (Single Asset Entry) (with slippage)", () => {
+  it("should calculateLPTokenAmount correctly when there is liquidity initially and then quoteToken decay (betaDecay) (Single Asset Entry) (with slippage)", () => {
     const quoteTokenInternalBalance = BigNumber("100");
     const baseTokenInternalBalance = BigNumber("100");
     const kLastInternalBalance = BigNumber("10000");
@@ -1100,7 +1100,7 @@ describe("calculateLPTokenAmount", () => {
     expect(expectedAnswer).to.equal(answer.toNumber());
   });
 
-  it.only("should calculateLPTokenAmount correctly when there is liquidity initially and then a rebase down leading to quoteToken decay (betaDecay) (Partial Single Asset Entry)", () => {
+  it("should calculateLPTokenAmount correctly when there is liquidity initially and then a rebase down leading to quoteToken decay (betaDecay) (Partial Single Asset Entry)", () => {
     const quoteTokenInternalBalance = BigNumber("100");
     const baseTokenInternalBalance = BigNumber("100");
     const kLastInternalBalance = BigNumber("10000");
@@ -1182,7 +1182,7 @@ describe("calculateLPTokenAmount", () => {
 
   });
 
-  it.only("should calculateLPTokenAmount correctly when there is liquidity initially and then a rebase down leading to quoteToken decay (betaDecay) (Partial Single Asset Entry) (with slippage)", () => {
+  it("should calculateLPTokenAmount correctly when there is liquidity initially and then a rebase down leading to quoteToken decay (betaDecay) (Partial Single Asset Entry) (with slippage)", () => {
     const quoteTokenInternalBalance = BigNumber("100");
     const baseTokenInternalBalance = BigNumber("100");
     const kLastInternalBalance = BigNumber("10000");
