@@ -1,7 +1,5 @@
-const sdk = require("@elastic-dao/sdk");
 const BigNumber = require("bignumber.js");
 const {ROUND_DOWN} = require("bignumber.js");
-const {utils} = sdk;
 
 const ZERO = BigNumber('0');
 const INSUFFICIENT_BASE_QTY = new Error("MathLib: INSUFFICIENT_BASE_QTY");

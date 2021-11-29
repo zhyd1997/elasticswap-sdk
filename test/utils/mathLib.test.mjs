@@ -1,6 +1,6 @@
 /* eslint import/extensions: 0 */
-import chai, { expect } from 'chai';
-import mathLib from '../../src/utils/MathLib.js';
+import { expect } from 'chai';
+import mathLib from '../../src/utils/mathLib.js';
 import BigNumber from 'bignumber.js';
 
 
