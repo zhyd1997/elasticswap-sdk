@@ -23,7 +23,7 @@ const {
   NEGATIVE_INPUT,
   NAN_ERROR } = mathLib;
 
-const EPSILON = .0000000000000001;
+
 const ZERO = BigNumber(0);
 
 describe("calculateQty", () => {

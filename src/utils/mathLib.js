@@ -4,7 +4,6 @@ const {ROUND_DOWN} = require("bignumber.js");
 const {utils} = sdk;
 
 const ZERO = BigNumber('0');
-const WAD = BigNumber("1000000000000000000");
 const INSUFFICIENT_BASE_QTY = new Error("MathLib: INSUFFICIENT_BASE_QTY");
 const INSUFFICIENT_BASE_TOKEN_QTY = new Error( "MathLib: INSUFFICIENT_BASE_TOKEN_QTY");
 const INSUFFICIENT_BASE_QTY_DESIRED = new Error("MathLib: INSUFFICIENT_BASE_QTY_DESIRED");
@@ -20,19 +19,6 @@ const NAN_ERROR = new Error("MathLib: NaN");
 const NEGATIVE_INPUT = new Error("MathLib: NEGATIVE_INPUT");
 const NO_QUOTE_DECAY = new Error( "MathLib: NO_QUOTE_DECAY");
 
-// let internalBalances = {
-//   baseTokenReserveQty: ZERO,
-//   quoteTokenReserveQty: ZERO,
-//   kLast: ZERO
-
-// };
-
-// let TokenQtys = {
-//   baseTokenQty: ZERO,
-//   quoteTokenQty: ZERO,
-//   liquidityTokenQty: ZERO,
-//   liquidityTokenFeeQty: ZERO
-// }
 
 const BASIS_POINTS = BigNumber('10000');
 
@@ -174,12 +160,6 @@ const BASIS_POINTS = BigNumber('10000');
     internalBalances
 
   };
-  
-  
-
-
-  
-
 
   if(totalSupplyOfLiquidityTokensBN.isGreaterThan(ZERO)){
     // we have outstanding liquidity tokens present and an existing price curve
@@ -188,9 +168,6 @@ const BASIS_POINTS = BigNumber('10000');
       totalSupplyOfLiquidityTokensBN,
       internalBalances
     );
-
-    
-
 
     // we need to take this amount (that will be minted) into account for below calculations
     totalSupplyOfLiquidityTokensBN = (tokenQtys.liquidityTokenFeeQty).plus(totalSupplyOfLiquidityTokensBN);
@@ -208,9 +185,6 @@ const BASIS_POINTS = BigNumber('10000');
       let liquidityTokenQtyFromDecay = ZERO;
       
       if( baseTokenReserveQtyBN.isGreaterThan(internalBalances.baseTokenReserveQty)){
-        
-        
-        
         // we have more base token than expected (base token decay) due to rebase up
         // we first need to handle this situation by requiring this user
         // to add quote tokens
@@ -221,15 +195,10 @@ const BASIS_POINTS = BigNumber('10000');
           totalSupplyOfLiquidityTokensBN,
           internalBalances
         );
-        
         quoteTokenQtyFromDecay = fetchCalculateAddQuoteTokenLiquidityQuantities.quoteTokenQty;
         liquidityTokenQtyFromDecay = fetchCalculateAddQuoteTokenLiquidityQuantities.liquidityTokenQty;
         tokenQtys.quoteTokenQty = (tokenQtys.quoteTokenQty).plus(quoteTokenQtyFromDecay);
         tokenQtys.liquidityTokenQty = (tokenQtys.liquidityTokenQty).plus(liquidityTokenQtyFromDecay);
-
-        
-        
-        
 
       } else {
         // we have less base token than expected (quote token decay) due to a rebase down
@@ -256,12 +225,6 @@ const BASIS_POINTS = BigNumber('10000');
       if( quoteTokenQtyFromDecay.isLessThan(quoteTokenQtyDesiredBN) && baseTokenQtyFromDecay.isLessThan(baseTokenQtyDesiredBN) ){
         // the user still has qty that they desire to contribute to the exchange for liquidity
         
-        
-        
-
-        
-        
-        
         const fetchTokenQty = calculateAddTokenPairLiquidityQuantities(
           baseTokenQtyDesiredBN.minus(baseTokenQtyFromDecay),
           quoteTokenQtyDesiredBN.minus(quoteTokenQtyFromDecay),
@@ -271,31 +234,22 @@ const BASIS_POINTS = BigNumber('10000');
           totalSupplyOfLiquidityTokensBN.plus(liquidityTokenQtyFromDecay),
           internalBalances // NOTE: these balances have already been updated when we did the decay math.
         );
-        
-        
 
         tokenQtys.baseTokenQty = fetchTokenQty.baseTokenQty;
         tokenQtys.quoteTokenQty = fetchTokenQty.quoteTokenQty;
         tokenQtys.liquidityTokenQty = fetchTokenQty.liquidityTokenQty;
-
         tokenQtys.baseTokenQty = (tokenQtys.baseTokenQty).plus(baseTokenQtyFromDecay);
         tokenQtys.quoteTokenQty = (tokenQtys.quoteTokenQty).plus(quoteTokenQtyFromDecay);
-        
-        
-
         tokenQtys.liquidityTokenQty = (tokenQtys.liquidityTokenQty).plus(liquidityTokenQtyFromDecay);
         
-
         if((tokenQtys.baseTokenQty).isLessThan(baseTokenQtyMinBN)){
           throw INSUFFICIENT_BASE_QTY;
         }
         if((tokenQtys.quoteTokenQty).isLessThan(quoteTokenQtyMinBN)){
           throw INSUFFICIENT_QUOTE_QTY;
         }
-        
 
       }
-      
       
       return tokenQtys;
 
@@ -314,7 +268,6 @@ const BASIS_POINTS = BigNumber('10000');
       tokenQtys.baseTokenQty = fetchTokenQtys.baseTokenQty;
       tokenQtys.quoteTokenQty = fetchTokenQtys.quoteTokenQty;
       tokenQtys.liquidityTokenQty = fetchTokenQtys.liquidityTokenQty;
-
       
       return tokenQtys;
 
@@ -367,8 +320,6 @@ const BASIS_POINTS = BigNumber('10000');
   const baseTokenReserveQtyBN = BigNumber(_baseTokenReserveQty);
   const totalSupplyOfLiquidityTokensBN = BigNumber(_totalSupplyOfLiquidityTokens);
   const internalBalances = internalBalancesBNCleaner(_internalBalances);
- 
-
   const inputs = {
     quoteTokenQtyDesiredBN, 
     quoteTokenQtyMinBN, 
@@ -389,7 +340,6 @@ const BASIS_POINTS = BigNumber('10000');
   if(quoteTokenQtyMinBN.isGreaterThanOrEqualTo(maxQuoteTokenQty)){
       throw INSUFFICIENT_DECAY;
   }
-
   // deltaBeta
   let quoteTokenQty;
   if (quoteTokenQtyDesiredBN > maxQuoteTokenQty) {
@@ -422,13 +372,7 @@ const BASIS_POINTS = BigNumber('10000');
     quoteTokenQty: quoteTokenQty, 
     liquidityTokenQty : liquidityTokenQty
   };
-    
-  
-  
   return quoteAndLiquidityTokenQty;
-
-
-    
 
 };
 
@@ -492,12 +436,10 @@ const BASIS_POINTS = BigNumber('10000');
 
   }
   
-  
   liquidityTokenQty = calculateLiquidityTokenQtyForDoubleAssetEntry(totalSupplyOfLiquidityTokensBN, quoteTokenQty, quoteTokenReserveQtyBN);
 
   internalBalances.baseTokenReserveQty = baseTokenQty.plus(internalBalances.baseTokenReserveQty);
   internalBalances.quoteTokenReserveQty = quoteTokenQty.plus(internalBalances.quoteTokenReserveQty);
-  
 
   const baseQuoteLiquidityTokenQty = {
     baseTokenQty: baseTokenQty,
@@ -505,7 +447,6 @@ const BASIS_POINTS = BigNumber('10000');
     liquidityTokenQty: liquidityTokenQty
   }
 
-  
   return baseQuoteLiquidityTokenQty;
 };
 
@@ -675,7 +616,6 @@ const calculateFees = (feesInBasisPoints, swapAmount) => {
   const quoteTokenQtyBN = BigNumber(_quoteTokenQty);
   const quoteTokenReserveBalanceBN = BigNumber(_quoteTokenReserveBalance);
 
-
   /*
 
   # liquidityTokens - Ro
@@ -688,12 +628,6 @@ const calculateFees = (feesInBasisPoints, swapAmount) => {
   */
   const numerator = quoteTokenQtyBN.multipliedBy(totalSupplyOfLiquidityTokensBN).dp(18, ROUND_DOWN);
   const deltaLiquidityTokenQty = (numerator).dividedBy(quoteTokenReserveBalanceBN).dp(18, ROUND_DOWN);
-  
-  const liquidityTokenQty = deltaLiquidityTokenQty.plus(totalSupplyOfLiquidityTokensBN);
-  
- 
-
-  
   
   return deltaLiquidityTokenQty;
 
@@ -725,27 +659,11 @@ const calculateFees = (feesInBasisPoints, swapAmount) => {
   const internalTokenAReserveQtyBN = BigNumber(_internalTokenAReserveQty);
   const tokenBDecayChangeBN = BigNumber(_tokenBDecayChange);
   const tokenBDecayBN = BigNumber(_tokenBDecay);
-
-  
-  
   const aTokenDiv = tokenQtyAToAddBN.dividedBy(internalTokenAReserveQtyBN);
-  
-  
-
   const bTokenWADMul = tokenBDecayChangeBN;
-  
-
   const aAndBDecayMul = aTokenDiv.multipliedBy(bTokenWADMul);
-  
-
   const AAndBDecayMulDivByTokenBDecay = aAndBDecayMul.dividedBy(tokenBDecayBN);
-  
-
   const altWGamma = (AAndBDecayMulDivByTokenBDecay.dividedBy(BigNumber(2))).dp(18, ROUND_DOWN);
-  
-
- 
-
   // /*
   
   // # gamma = deltaY / Y' / 2 * (deltaX / alphaDecay')
@@ -768,8 +686,6 @@ const calculateFees = (feesInBasisPoints, swapAmount) => {
 
   */
   const liquidityTokenQty = (totalSupplyOfLiquidityTokensBN.multipliedBy(altWGamma)).dividedBy(BigNumber(1).minus(altWGamma)).dp(0, ROUND_DOWN);
-  
-  
   return liquidityTokenQty;
 }
 
@@ -815,13 +731,6 @@ const calculateLPTokenAmount = (quoteTokenAmount, baseTokenAmount, quoteTokenRes
     cleansedInternalBalances
 
   };
-  
-
-  
-  
-
-  
-
   // NaN cases
   if(quoteTokenAmountBN.isNaN() || baseTokenAmountBN.isNaN() || quoteTokenReserveQtyBN.isNaN() 
     || baseTokenReserveQtyBN.isNaN() || slippageBN.isNaN() || totalSupplyOfLiquidityTokensBN.isNaN()) {
@@ -847,15 +756,7 @@ const calculateLPTokenAmount = (quoteTokenAmount, baseTokenAmount, quoteTokenRes
 
 const tokenQtys = calculateAddLiquidityQuantities(baseTokenAmountBN, quoteTokenAmountBN, baseTokenAmountLessSlippage, 
 quoteTokenAmountLessSlippage, baseTokenReserveQtyBN, quoteTokenReserveQtyBN, totalSupplyOfLiquidityTokensBN,  cleansedInternalBalances);
-
-
 return tokenQtys.liquidityTokenQty;
-
- 
-
-
-  
-
 }
 
 /**
@@ -1062,8 +963,6 @@ const calculateQuoteTokenQty = (
   internalBalances.quoteTokenReserveQty = (internalBalances.quoteTokenReserveQty).minus(quoteTokenQty);
 
   return quoteTokenQty;
-
-
 };  
 
 
@@ -1152,21 +1051,11 @@ const calculateTokenAmountsFromLPTokens = (lpTokenQtyToRedeem, slippagePercent, 
 const isSufficientDecayPresent = (_baseTokenReserveQty, _internalBalances) => {
   const baseTokenReserveQtyBN = BigNumber(_baseTokenReserveQty);
   const internalBalances = internalBalancesBNCleaner(_internalBalances);
-
-  
-  
   const baseTokenReserveDifference = (baseTokenReserveQtyBN.minus(internalBalances.baseTokenReserveQty).abs());
-  
   const internalBalanceRatio = (internalBalances.baseTokenReserveQty).dividedBy(internalBalances.quoteTokenReserveQty);
-
   const decayPresentComparison = (baseTokenReserveDifference.dividedBy(internalBalanceRatio)).isGreaterThan(BigNumber('1'));
-  
   return decayPresentComparison;
 }
-
-
-
-
 
 
 // helper function
@@ -1180,14 +1069,7 @@ const internalBalancesBNCleaner = (_internalBalances) => {
 }
 
    
-// };
-// const objectBNCleaner = (objectToBeCleaned) => {
-//   return Object.keys(objectToBeCleaned).map((key) => {
-//     let cleanedObj = {};
-//     cleanedObj[key] = BigNumber(key);
-//     return cleanedObj;
-//   })
-// }
+
 
 module.exports = {
 isSufficientDecayPresent,
