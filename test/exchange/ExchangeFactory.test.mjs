@@ -2,10 +2,13 @@
 import chai from 'chai';
 import fetch from 'node-fetch';
 import hardhat from 'hardhat';
-import elasticSwapSDK from '../../dist/index.js';
+import * as elasticSwapSDK from '../../src/index.mjs';
+import LocalStorageAdapterMock from '../adapters/LocalStorageAdapterMock.mjs';
 
 const { ethers, deployments } = hardhat;
 const { assert } = chai;
+
+const storageAdapter = new LocalStorageAdapterMock();
 
 describe('ExchangeFactory', () => {
   let sdk;
@@ -15,7 +18,7 @@ describe('ExchangeFactory', () => {
       networkId: 99999,
       exchangeFactoryAddress: '0x8C2251e028043e38f58Ac64c00E1F940D305Aa62',
     };
-    sdk = new elasticSwapSDK.SDK({ env, customFetch: fetch, provider: hardhat.ethers.provider });
+    sdk = new elasticSwapSDK.SDK({ env, customFetch: fetch, provider: hardhat.ethers.provider, storageAdapter });
   });
 
   describe('Constructor', () => {

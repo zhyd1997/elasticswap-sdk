@@ -2,10 +2,13 @@
 import chai from 'chai';
 import fetch from 'node-fetch';
 import hardhat from 'hardhat';
-import elasticSwapSDK from '../../dist/index.js';
+import * as elasticSwapSDK from '../../src/index.mjs';
+import LocalStorageAdapterMock from '../adapters/LocalStorageAdapterMock.mjs';
 
 const { ethers, deployments } = hardhat;
 const { expect, assert } = chai;
+
+const storageAdapter = new LocalStorageAdapterMock();
 
 let sdk;
 let exchange;
@@ -42,6 +45,7 @@ describe('Exchange', () => {
       provider: hardhat.ethers.provider,
       account: accounts[0],
       signer: accounts[0],
+      storageAdapter
     });
 
     await deployments.fixture();

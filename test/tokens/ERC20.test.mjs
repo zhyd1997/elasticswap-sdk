@@ -2,11 +2,14 @@
 import chai from 'chai';
 import fetch from 'node-fetch';
 import hardhat from 'hardhat';
-import elasticSwap from '../../dist/index.js';
+import * as elasticSwap from '../../src/index.mjs';
+import LocalStorageAdapterMock from '../adapters/LocalStorageAdapterMock.mjs';
 
 const { toBigNumber } = elasticSwap.utils;
 const { ethers, deployments } = hardhat;
 const { assert } = chai;
+
+const storageAdapter = new LocalStorageAdapterMock();
 
 describe('ERC20', () => {
   let sdk;
@@ -22,6 +25,7 @@ describe('ERC20', () => {
       customFetch: fetch,
       provider: hardhat.ethers.provider,
       signer: accounts[0],
+      storageAdapter
     });
   });
 
