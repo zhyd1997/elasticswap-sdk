@@ -781,14 +781,15 @@ describe("calculateLPTokenAmount", () => {
     // let there be a quoteToken rebase of 50 (by baseToken rebasing down), causing baseTokenDecay (alphaDecay)
     const quoteTokenReserveQty = BigNumber("100"); 
     const baseTokenReserveQty = BigNumber("50");  
+    // here we need to base tokens to balance it out
     // quote token desired to absolve decay => ZERO (SAE)
-    const quoteTokenAmountToRemoveDecay = BigNumber("50");
+    const quoteTokenAmountToRemoveDecay = ZERO;
     // Only SAE here
     // confirm the "decay" is equal to the re-based amount times the previous iOmega (B/A). (this is betaDecay)
     const iOmega = quoteTokenInternalBalance.dividedBy(baseTokenInternalBalance); // 100/100
     const quoteTokenDecay = (baseTokenInternalBalance.minus(baseTokenReserveQty)).multipliedBy(iOmega); // (100 - 50)*1 = 50
     // here decay and decay change are the same
-    const baseTokenAmountToRemoveDecay = ZERO;
+    const baseTokenAmountToRemoveDecay = quoteTokenDecay;
     const slippage = ZERO;
 
     const aTokenDiv = baseTokenReserveQty.dividedBy(baseTokenInternalBalance);
