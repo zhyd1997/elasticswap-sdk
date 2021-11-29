@@ -118,7 +118,8 @@ describe('calculateLiquidityTokenQtyForSingleAssetEntry', () => {
     // and a user needs to 50 tokens in order to remove the decay
     const totalSupplyOfLiquidityTokens = 5000;
     const tokenAQtyToAdd = 50;
-    const tokenAInternalReserveQtyAfterTransaction = 1000; // 950 + 50 brining us back to original state.
+    // 950 + 50 brining us back to original state.
+    const tokenAInternalReserveQtyAfterTransaction = 1000;
     const tokenBDecayChange = 250;
     const tokenBDecay = 250;
 
@@ -141,7 +142,8 @@ describe('calculateLiquidityTokenQtyForSingleAssetEntry', () => {
 
     // if we supply half, and remove half the decay, we should get roughly 1/2 the tokens
     const tokenAQtyToAdd2 = 25;
-    const tokenAInternalReserveQtyAfterTransaction2 = 975; // 950 + 25 brining us back to original state.
+    // 950 + 25 brining us back to original state.
+    const tokenAInternalReserveQtyAfterTransaction2 = 975;
     const tokenBDecayChange2 = 125;
     const gamma2 =
       (tokenAQtyToAdd2 / tokenAInternalReserveQtyAfterTransaction2 / 2) *
@@ -239,7 +241,6 @@ describe('calculateExchangeRate', () => {
   });
 
   it('Should return an error when incorrect values are provided', async () => {
-    const baseTokenReserveQty1 = BigNumber('10.123456789123456789');
     const quoteTokenReserveQty1 = BigNumber('12.123456789123456789');
     const negativequoteTokenReserveQty = BigNumber('-12.123456789123456789');
 
@@ -365,22 +366,8 @@ describe('calculateOutputAmountLessFees', () => {
     const tokenSwapQty = 50;
     const negativeSwapQty = -50;
     const feeInBasisPoints = 30;
-    const expectedFeeAmount = (tokenSwapQty * 30) / 10000;
     const tokenAReserveQtyBeforeTrade = 100;
-    const tokenAReserveQtyAfterTrade =
-      tokenAReserveQtyBeforeTrade + tokenSwapQty - expectedFeeAmount;
     const tokenBReserveQtyBeforeTrade = 5000;
-    const pricingConstantK =
-      tokenAReserveQtyBeforeTrade * tokenBReserveQtyBeforeTrade;
-
-    const tokenBReserveQtyBeforeTradeAfterTrade =
-      pricingConstantK / tokenAReserveQtyAfterTrade;
-    const tokenBQtyExpected = Math.floor(
-      tokenBReserveQtyBeforeTrade - tokenBReserveQtyBeforeTradeAfterTrade,
-    );
-
-    const tokenBQtyExpectedLessSlippage =
-      tokenBQtyExpected * (1 - slippage / 100);
 
     // ZERO case
     expect(() =>
@@ -574,35 +561,7 @@ describe('calculatePriceImpact', () => {
   it('should return an error when incorrect values are provided', async () => {
     // no slippage no fees
     const tokenSwapQty = BigNumber(15);
-    const tokenAReserveQtyBeforeTrade = BigNumber(2000);
-
-    const tokenAReserveQtyAfterTrade =
-      tokenAReserveQtyBeforeTrade.plus(tokenSwapQty);
-
     const tokenBReserveQtyBeforeTrade = BigNumber(3000);
-
-    const tokenBOutAmount = calculateOutputAmountLessFees(
-      tokenSwapQty,
-      tokenAReserveQtyAfterTrade,
-      tokenBReserveQtyBeforeTrade,
-      0,
-      0,
-    );
-
-    const tokenBQtyReserveAfterTrade =
-      tokenBReserveQtyBeforeTrade.minus(tokenBOutAmount);
-
-    const initialPrice = BigNumber(tokenAReserveQtyBeforeTrade).dividedBy(
-      BigNumber(tokenBReserveQtyBeforeTrade),
-    );
-
-    const finalPrice = BigNumber(tokenAReserveQtyAfterTrade).dividedBy(
-      BigNumber(tokenBQtyReserveAfterTrade),
-    );
-
-    const priceDiff = BigNumber(finalPrice).minus(BigNumber(initialPrice));
-    const priceDiffRatio = priceDiff.dividedBy(BigNumber(initialPrice));
-    const priceImpact = priceDiffRatio.multipliedBy(BigNumber(100));
 
     expect(() =>
       calculatePriceImpact(
@@ -661,9 +620,6 @@ describe('calculateLPTokenAmount', () => {
     const slippage = ZERO;
     const totalSupplyOfLiquidityTokens = ZERO;
 
-    const LPExpectedAmount = quoteTokenAmount
-      .multipliedBy(baseTokenAmount)
-      .sqrt();
     expect(() =>
       calculateLPTokenAmount(
         quoteTokenAmount,
@@ -777,9 +733,6 @@ describe('calculateLPTokenAmount', () => {
     const LPExpectedAmountForDAE = quoteTokenAmount
       .dividedBy(quoteTokenReserveQty)
       .multipliedBy(totalSupplyOfLiquidityTokens);
-    const totalLPAmount = totalSupplyOfLiquidityTokens.plus(
-      LPExpectedAmountForDAE,
-    );
 
     expect(
       calculateLPTokenAmount(
@@ -810,9 +763,6 @@ describe('calculateLPTokenAmount', () => {
     const LPExpectedAmountForDAE = quoteTokenAmount
       .dividedBy(quoteTokenReserveQty)
       .multipliedBy(totalSupplyOfLiquidityTokens);
-    const totalLPAmount = totalSupplyOfLiquidityTokens.plus(
-      LPExpectedAmountForDAE,
-    );
 
     expect(
       calculateLPTokenAmount(
@@ -867,7 +817,6 @@ describe('calculateLPTokenAmount', () => {
       ROUND_DOWN,
     );
 
-    // const LPExpectedAmount = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
     const liquidityTokenQty = totalSupplyOfLiquidityTokens
       .multipliedBy(altWGamma)
       .dividedBy(BigNumber(1).minus(altWGamma))
@@ -897,14 +846,16 @@ describe('calculateLPTokenAmount', () => {
       kLast: kLastInternalBalance,
     };
     const totalSupplyOfLiquidityTokens = BigNumber('100');
-    // let there be a quoteToken rebase of 50 (by baseToken rebasing down), causing baseTokenDecay (alphaDecay)
+    // let there be a quoteToken rebase of 50 (by baseToken rebasing down),
+    // causing baseTokenDecay (alphaDecay)
     const quoteTokenReserveQty = BigNumber('100');
     const baseTokenReserveQty = BigNumber('50');
     // here we need to base tokens to balance it out
     // quote token desired to absolve decay => ZERO (SAE)
     const quoteTokenAmountToRemoveDecay = ZERO;
     // Only SAE here
-    // confirm the "decay" is equal to the re-based amount times the previous iOmega (B/A). (this is betaDecay)
+    // confirm the "decay" is equal to the re-based amount times
+    // the previous iOmega (B/A). (this is betaDecay)
     const iOmega = quoteTokenInternalBalance.dividedBy(
       baseTokenInternalBalance,
     ); // 100/100
@@ -929,7 +880,6 @@ describe('calculateLPTokenAmount', () => {
       ROUND_DOWN,
     );
 
-    // const LPExpectedAmount = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
     const liquidityTokenQty = totalSupplyOfLiquidityTokens
       .multipliedBy(altWGamma)
       .dividedBy(BigNumber(1).minus(altWGamma))
@@ -959,14 +909,16 @@ describe('calculateLPTokenAmount', () => {
       kLast: kLastInternalBalance,
     };
     const totalSupplyOfLiquidityTokens = BigNumber('100');
-    // let there be a quoteToken rebase of 50 (by baseToken rebasing down), causing baseTokenDecay (alphaDecay)
+    // let there be a quoteToken rebase of 50 (by baseToken rebasing down),
+    // causing baseTokenDecay (alphaDecay)
     const quoteTokenReserveQty = BigNumber('100');
     const baseTokenReserveQty = BigNumber('50');
     // here we need to base tokens to balance it out
     // quote token desired to absolve decay => ZERO (SAE)
     const quoteTokenAmountToRemoveDecay = ZERO;
     // Only SAE here
-    // confirm the "decay" is equal to the re-based amount times the previous iOmega (B/A). (this is betaDecay)
+    // confirm the "decay" is equal to the re-based amount times the
+    // previous iOmega (B/A). (this is betaDecay)
     const iOmega = quoteTokenInternalBalance.dividedBy(
       baseTokenInternalBalance,
     ); // 100/100
@@ -991,7 +943,6 @@ describe('calculateLPTokenAmount', () => {
       ROUND_DOWN,
     );
 
-    // const LPExpectedAmount = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
     const liquidityTokenQty = totalSupplyOfLiquidityTokens
       .multipliedBy(altWGamma)
       .dividedBy(BigNumber(1).minus(altWGamma))
@@ -1050,7 +1001,6 @@ describe('calculateLPTokenAmount', () => {
       ROUND_DOWN,
     );
 
-    // const LPExpectedAmount = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
     const liquidityTokenQty = totalSupplyOfLiquidityTokens
       .multipliedBy(altWGamma)
       .dividedBy(BigNumber(1).minus(altWGamma))
@@ -1119,7 +1069,6 @@ describe('calculateLPTokenAmount', () => {
       ROUND_DOWN,
     );
 
-    // const LPExpectedAmount = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
     const liquidityTokenQtyForSAE = initialTotalSupplyOfLiquidityTokens
       .multipliedBy(altWGamma)
       .dividedBy(BigNumber(1).minus(altWGamma))
@@ -1205,7 +1154,6 @@ describe('calculateLPTokenAmount', () => {
       ROUND_DOWN,
     );
 
-    // const LPExpectedAmount = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
     const liquidityTokenQtyForSAE = initialTotalSupplyOfLiquidityTokens
       .multipliedBy(altWGamma)
       .dividedBy(BigNumber(1).minus(altWGamma))
@@ -1255,7 +1203,8 @@ describe('calculateLPTokenAmount', () => {
 
     const initialTotalSupplyOfLiquidityTokens = BigNumber('100');
 
-    // let there be a quoteToken rebase of 50 (by baseToken rebasing down), causing baseTokenDecay (alphaDecay)
+    // let there be a quoteToken rebase of 50 (by baseToken rebasing down),
+    // causing baseTokenDecay (alphaDecay)
     const quoteTokenReserveQty = BigNumber('100');
     const baseTokenReserveQty = BigNumber('50');
 
@@ -1271,7 +1220,8 @@ describe('calculateLPTokenAmount', () => {
       quoteTokenAmountToRemoveDecay,
     );
 
-    // confirm the "decay" is equal to the re-based amount times the previous iOmega (B/A). (this is betaDecay)
+    // confirm the "decay" is equal to the re-based amount
+    // times the previous iOmega (B/A). (this is betaDecay)
     const iOmega = quoteTokenInternalBalance.dividedBy(
       baseTokenInternalBalance,
     ); // 100/100
@@ -1302,7 +1252,6 @@ describe('calculateLPTokenAmount', () => {
       ROUND_DOWN,
     );
 
-    // const LPExpectedAmount = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
     const liquidityTokenQtyForSAE = initialTotalSupplyOfLiquidityTokens
       .multipliedBy(altWGamma)
       .dividedBy(BigNumber(1).minus(altWGamma))
@@ -1352,7 +1301,8 @@ describe('calculateLPTokenAmount', () => {
 
     const initialTotalSupplyOfLiquidityTokens = BigNumber('100');
 
-    // let there be a quoteToken rebase of 50 (by baseToken rebasing down), causing baseTokenDecay (alphaDecay)
+    // let there be a quoteToken rebase of 50 (by baseToken rebasing down),
+    // causing baseTokenDecay (alphaDecay)
     const quoteTokenReserveQty = BigNumber('100');
     const baseTokenReserveQty = BigNumber('50');
 
@@ -1368,7 +1318,8 @@ describe('calculateLPTokenAmount', () => {
       quoteTokenAmountToRemoveDecay,
     );
 
-    // confirm the "decay" is equal to the re-based amount times the previous iOmega (B/A). (this is betaDecay)
+    // confirm the "decay" is equal to the re-based amount times
+    // the previous iOmega (B/A). (this is betaDecay)
     const iOmega = quoteTokenInternalBalance.dividedBy(
       baseTokenInternalBalance,
     ); // 100/100
@@ -1399,7 +1350,6 @@ describe('calculateLPTokenAmount', () => {
       ROUND_DOWN,
     );
 
-    // const LPExpectedAmount = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
     const liquidityTokenQtyForSAE = initialTotalSupplyOfLiquidityTokens
       .multipliedBy(altWGamma)
       .dividedBy(BigNumber(1).minus(altWGamma))
