@@ -1039,6 +1039,88 @@ describe("calculateLPTokenAmount", () => {
     expect(expectedAnswer).to.equal(answer.toNumber());
   });
 
+  it.only("should calculateLPTokenAmount correctly when there is liquidity initially and then a rebase down leading to quoteToken decay (betaDecay) (Partial Single Asset Entry)", () => {
+    const quoteTokenInternalBalance = BigNumber("100");
+    const baseTokenInternalBalance = BigNumber("100");
+    const kLastInternalBalance = BigNumber("10000");
+
+    // state prior to rebase
+    const internalBalances = {
+      baseTokenReserveQty: baseTokenInternalBalance,
+      quoteTokenReserveQty: quoteTokenInternalBalance,
+      kLast: kLastInternalBalance,
+    }
+
+    const initialTotalSupplyOfLiquidityTokens = BigNumber("100");
+
+    // let there be a quoteToken rebase of 50 (by baseToken rebasing down), causing baseTokenDecay (alphaDecay)
+    const quoteTokenReserveQty = BigNumber("100"); 
+    const baseTokenReserveQty = BigNumber("50");  
+
+    // quote token desired to absolve decay => ZERO (SAE)
+    const quoteTokenAmountToRemoveDecay = ZERO;
+
+     // this is the amount of quote Token user wants to send
+    const quoteTokenAmountDesired = quoteTokenAmountToRemoveDecay.plus(BigNumber("100"));
+
+    const quoteTokenDiff = quoteTokenAmountDesired.minus(quoteTokenAmountToRemoveDecay);
+
+    // confirm the "decay" is equal to the re-based amount times the previous iOmega (B/A). (this is betaDecay)
+    const iOmega = quoteTokenInternalBalance.dividedBy(baseTokenInternalBalance); // 100/100
+    const quoteTokenDecay = (baseTokenInternalBalance.minus(baseTokenReserveQty)).multipliedBy(iOmega); // (100 - 50)*1 = 50
+    // here decay and decay change are the same
+    const baseTokenAmountToRemoveDecay = quoteTokenDecay;
+
+    // DAE here
+    const baseTokenAmountDesired = baseTokenAmountToRemoveDecay.plus(BigNumber("100"));
+
+
+    const slippage = ZERO;
+
+    const aTokenDiv = baseTokenReserveQty.dividedBy(baseTokenInternalBalance);
+    console.log("aTokenDiv: ", baseTokenReserveQty.toString(), " / ", baseTokenInternalBalance.toString());
+    console.log("aTokenDiv: ", aTokenDiv.toString());
+    const bTokenWADMul = quoteTokenDecay;
+    console.log("bTokenWADMul: ", bTokenWADMul.toString());
+
+    const aAndBDecayMul = aTokenDiv.multipliedBy(bTokenWADMul);
+    console.log("aAndBdecayMul: ", aAndBDecayMul.toString());
+
+    const AAndBDecayMulDivByTokenBDecay = aAndBDecayMul.dividedBy(quoteTokenDecay);
+    console.log("AAndBDecayMulDivByTokenBDecay: ", AAndBDecayMulDivByTokenBDecay.toString());
+
+    const altWGamma = (AAndBDecayMulDivByTokenBDecay.dividedBy(BigNumber(2))).dp(18, ROUND_DOWN);
+    console.log("test: altWGamma: ", altWGamma.toString());
+    console.log('call to sdk: ');
+    console.log(' ');
+  
+    // const LPExpectedAmount = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
+    const liquidityTokenQtyForSAE = (initialTotalSupplyOfLiquidityTokens.multipliedBy(altWGamma)).dividedBy(BigNumber(1).minus(altWGamma)).dp(0, ROUND_DOWN);
+    const liquidityTokenQtyAfterSAE = initialTotalSupplyOfLiquidityTokens.plus(liquidityTokenQtyForSAE);
+
+    const quoteTokenQtyAfterSAE = quoteTokenReserveQty.plus(quoteTokenAmountToRemoveDecay);
+
+    const liquidityTokenForDAE = (quoteTokenDiff.dividedBy(quoteTokenQtyAfterSAE)).multipliedBy(liquidityTokenQtyAfterSAE);
+    const liquidityTokenQtyAfterDAE = liquidityTokenForDAE.plus(liquidityTokenQtyAfterSAE).dp(18, ROUND_DOWN);
+    const answer = liquidityTokenQtyAfterDAE.minus(initialTotalSupplyOfLiquidityTokens);
+     
+    console.log('call to sdk: ');
+    console.log(' ');
+    const expectedAnswer = calculateLPTokenAmount(quoteTokenAmountDesired, baseTokenAmountDesired, 
+      quoteTokenReserveQty, baseTokenReserveQty, slippage,
+       initialTotalSupplyOfLiquidityTokens, internalBalances).toNumber(); 
+     
+    console.log(' ');
+    console.log('bask from sdk: ');   
+    console.log("expectedAnswer", expectedAnswer.toString());
+    console.log("actualAnswer", liquidityTokenQtyAfterDAE.toString());   
+
+    expect(expectedAnswer).to.equal(answer.toNumber());
+
+
+
+  });
+
 
 
 });
