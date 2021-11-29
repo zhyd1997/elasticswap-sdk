@@ -25,7 +25,7 @@ describe('ERC20', () => {
       customFetch: fetch,
       provider: hardhat.ethers.provider,
       signer: accounts[0],
-      storageAdapter
+      storageAdapter,
     });
   });
 
@@ -52,7 +52,9 @@ describe('ERC20', () => {
       });
       const erc20Contract = new elasticSwap.ERC20(sdk, quoteToken.address);
 
-      let expectedBalance = await quoteTokenContract.balanceOf(accounts[0].address);
+      let expectedBalance = await quoteTokenContract.balanceOf(
+        accounts[0].address,
+      );
       expectedBalance = toBigNumber(expectedBalance.toString());
       let balance = await erc20Contract.balanceOf(accounts[0].address);
       balance = toBigNumber(balance.toString());
@@ -70,7 +72,9 @@ describe('ERC20', () => {
         abi: quoteToken.abi,
       });
       const erc20Contract = new elasticSwap.ERC20(sdk, quoteToken.address);
-      let expectedBalance = await quoteTokenContract.balanceOf(accounts[1].address);
+      let expectedBalance = await quoteTokenContract.balanceOf(
+        accounts[1].address,
+      );
       expectedBalance = toBigNumber(expectedBalance.toString());
       let balance = await erc20Contract.balanceOf(accounts[1].address);
       balance = toBigNumber(balance.toString());
@@ -94,20 +98,18 @@ describe('ERC20', () => {
       const erc20 = new elasticSwap.ERC20(sdk, quoteTokenMock.address);
 
       // checking initial approvals
-      const startingApproval = await quoteTokenContract
-        .allowance(
-          accounts[0].address,
-          spenderAddress,
-        );
+      const startingApproval = await quoteTokenContract.allowance(
+        accounts[0].address,
+        spenderAddress,
+      );
 
       const approvalAmount = 50000;
       await erc20.approve(spenderAddress, approvalAmount);
 
-      const endingApproval = await quoteTokenContract
-        .allowance(
-          accounts[0].address,
-          spenderAddress,
-        );
+      const endingApproval = await quoteTokenContract.allowance(
+        accounts[0].address,
+        spenderAddress,
+      );
 
       assert.isTrue(startingApproval.eq(0));
       assert.isTrue(endingApproval.eq(approvalAmount));

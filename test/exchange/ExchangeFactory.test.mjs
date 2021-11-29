@@ -18,14 +18,22 @@ describe('ExchangeFactory', () => {
       networkId: 99999,
       exchangeFactoryAddress: '0x8C2251e028043e38f58Ac64c00E1F940D305Aa62',
     };
-    sdk = new elasticSwapSDK.SDK({ env, customFetch: fetch, provider: hardhat.ethers.provider, storageAdapter });
+    sdk = new elasticSwapSDK.SDK({
+      env,
+      customFetch: fetch,
+      provider: hardhat.ethers.provider,
+      storageAdapter,
+    });
   });
 
   describe('Constructor', () => {
     it('can be created via constructor', async () => {
       await deployments.fixture();
       const ExchangeFactory = await deployments.get('ExchangeFactory');
-      const exchangeFactory = new elasticSwapSDK.ExchangeFactory(sdk, ExchangeFactory.address);
+      const exchangeFactory = new elasticSwapSDK.ExchangeFactory(
+        sdk,
+        ExchangeFactory.address,
+      );
       assert.isNotNull(exchangeFactory);
       assert.equal(ExchangeFactory.address, exchangeFactory.address);
     });
@@ -37,7 +45,10 @@ describe('ExchangeFactory', () => {
 
       await deployments.fixture();
       const ExchangeFactory = await deployments.get('ExchangeFactory');
-      const exchangeFactory = new elasticSwapSDK.ExchangeFactory(sdk, ExchangeFactory.address);
+      const exchangeFactory = new elasticSwapSDK.ExchangeFactory(
+        sdk,
+        ExchangeFactory.address,
+      );
 
       const exchangeFactoryContract = new ethers.Contract(
         ExchangeFactory.address,
