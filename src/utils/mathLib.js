@@ -64,12 +64,10 @@ const BASIS_POINTS = BigNumber('10000');
   const baseTokenReserveQtyBN = BigNumber(_baseTokenReserveQty);
   const totalSupplyOfLiquidityTokensBN = BigNumber(_totalSupplyOfLiquidityTokens);
   const internalBalances = internalBalancesBNCleaner(_internalBalances);
-  console.log("sdk: calculateAddBaseTokenLiquidityQuantities: inputs: ", JSON.stringify({
-    baseTokenQtyDesiredBN, baseTokenQtyMinBN, baseTokenReserveQtyBN, totalSupplyOfLiquidityTokensBN, internalBalances
-  }));
+ 
 
   const maxBaseTokenQty = (internalBalances.baseTokenReserveQty).minus(baseTokenReserveQtyBN);
-  console.log("sdk: calculateAddBaseTokenLiquidityQuantities: maxBaseTokenQty: ", maxBaseTokenQty.toString());
+  
   if(baseTokenQtyMinBN.isGreaterThanOrEqualTo(maxBaseTokenQty)){
     throw INSUFFICIENT_DECAY;
   }
@@ -103,8 +101,8 @@ const BASIS_POINTS = BigNumber('10000');
   // quoteTokenReserveQty += quoteTokenQtyDecayChange;
   // baseTokenReserveQty += baseTokenQty;
 
-  console.log("sdk: calculateAddBaseTokenLiquidityQuantities: call to calculateLiquidityTokenQtyForSingleAssetEntry: ");
-  console.log(' ');
+  
+  
   const liquidityTokenQty = calculateLiquidityTokenQtyForSingleAssetEntry(
     totalSupplyOfLiquidityTokensBN,
     baseTokenQty,
@@ -176,22 +174,22 @@ const BASIS_POINTS = BigNumber('10000');
     internalBalances
 
   };
-  console.log("sdk: calculateAddLiquidityQuantities: input : ", JSON.stringify(inputs));
+  
   
 
 
-  console.log("sdk: tokenQty's: initially: ", JSON.stringify(tokenQtys));
+  
 
 
   if(totalSupplyOfLiquidityTokensBN.isGreaterThan(ZERO)){
     // we have outstanding liquidity tokens present and an existing price curve
-    console.log("we have outstanding liquidity tokens present and an existing price curve");
+    
     tokenQtys.liquidityTokenFeeQty = calculateLiquidityTokenFees(
       totalSupplyOfLiquidityTokensBN,
       internalBalances
     );
 
-    console.log("sdk: tokenQty's: (when there is liquidity already)", JSON.stringify(tokenQtys));
+    
 
 
     // we need to take this amount (that will be minted) into account for below calculations
@@ -199,20 +197,20 @@ const BASIS_POINTS = BigNumber('10000');
     
     // confirm that we have no beta or alpha decay present
     // if we do, we need to resolve that first
-    console.log("sdk: calculateAddLiquidityQuantities: call to isSufficientDecayPresent: ");
-    console.log(" ");
+    
+    
     if( isSufficientDecayPresent( baseTokenReserveQtyBN, internalBalances) ) {
       // decay is present and needs to be dealt with by the caller.
-      console.log("sdk: decay is present and needs to be dealt with by the caller: ");
+      
 
       let baseTokenQtyFromDecay = ZERO;
       let quoteTokenQtyFromDecay = ZERO;
       let liquidityTokenQtyFromDecay = ZERO;
       
       if( baseTokenReserveQtyBN.isGreaterThan(internalBalances.baseTokenReserveQty)){
-        console.log(" ");
-        console.log("sdk: baseTokenDecay presence:")
-        console.log(" ");
+        
+        
+        
         // we have more base token than expected (base token decay) due to rebase up
         // we first need to handle this situation by requiring this user
         // to add quote tokens
@@ -229,15 +227,15 @@ const BASIS_POINTS = BigNumber('10000');
         tokenQtys.quoteTokenQty = (tokenQtys.quoteTokenQty).plus(quoteTokenQtyFromDecay);
         tokenQtys.liquidityTokenQty = (tokenQtys.liquidityTokenQty).plus(liquidityTokenQtyFromDecay);
 
-        console.log("calculateAddQuoteTokenLiquidityQuantities: liquidityTokenQtyFromDecay: ",liquidityTokenQtyFromDecay.toString());
-        console.log("SOFARSOGOOD- ");
-        console.log(" ");
+        
+        
+        
 
       } else {
         // we have less base token than expected (quote token decay) due to a rebase down
         // we first need to handle this by adding base tokens to offset this.
-        console.log("sdk: calculateAddLiquidityQuantities: call to calculateAddBaseTokenLiquidityQuantities (quoteTokenDecay): ");
-        console.log(' ');
+        
+        
         const fetchCalculateAddBaseTokenLiquidityQuantities = calculateAddBaseTokenLiquidityQuantities(
           baseTokenQtyDesiredBN,
           ZERO,  // there is no minimum for this particular call since we may use quote tokens later.
@@ -257,13 +255,12 @@ const BASIS_POINTS = BigNumber('10000');
 
       if( quoteTokenQtyFromDecay.isLessThan(quoteTokenQtyDesiredBN) && baseTokenQtyFromDecay.isLessThan(baseTokenQtyDesiredBN) ){
         // the user still has qty that they desire to contribute to the exchange for liquidity
-        console.log(' ');
-        console.log("sdk: the user still has qty that they desire to contribute to the exchange for liquidity: ")
-        console.log(' '); 
-        console.log("totalSupplyOfLiquidityTokensBN.plus(liquidityTokenQtyFromDecay): ", 
-        totalSupplyOfLiquidityTokensBN.toString(), " + ", liquidityTokenQtyFromDecay.toString());
-        console.log("call to calculateAddTokenPairLiquidityQuantities: ");
-        console.log(' ');
+        
+        
+        
+
+        
+        
         
         const fetchTokenQty = calculateAddTokenPairLiquidityQuantities(
           baseTokenQtyDesiredBN.minus(baseTokenQtyFromDecay),
@@ -274,8 +271,8 @@ const BASIS_POINTS = BigNumber('10000');
           totalSupplyOfLiquidityTokensBN.plus(liquidityTokenQtyFromDecay),
           internalBalances // NOTE: these balances have already been updated when we did the decay math.
         );
-        console.log(" ");
-        console.log("sdk: calculateAddLiquidityQuantities: fetchTokenQty: " + JSON.stringify(fetchTokenQty));
+        
+        
 
         tokenQtys.baseTokenQty = fetchTokenQty.baseTokenQty;
         tokenQtys.quoteTokenQty = fetchTokenQty.quoteTokenQty;
@@ -283,11 +280,11 @@ const BASIS_POINTS = BigNumber('10000');
 
         tokenQtys.baseTokenQty = (tokenQtys.baseTokenQty).plus(baseTokenQtyFromDecay);
         tokenQtys.quoteTokenQty = (tokenQtys.quoteTokenQty).plus(quoteTokenQtyFromDecay);
-        console.log(" ");
+        
         
 
         tokenQtys.liquidityTokenQty = (tokenQtys.liquidityTokenQty).plus(liquidityTokenQtyFromDecay);
-        console.log(" ");
+        
 
         if((tokenQtys.baseTokenQty).isLessThan(baseTokenQtyMinBN)){
           throw INSUFFICIENT_BASE_QTY;
@@ -298,13 +295,13 @@ const BASIS_POINTS = BigNumber('10000');
         
 
       }
-      console.log("return: calculateAddLiquidityQuantities: ", JSON.stringify(tokenQtys));
-      console.log(' ');
+      
+      
       return tokenQtys;
 
     } else {
       // the user is just doing a simple double asset entry / providing both base and quote. 
-      console.log("the user is just doing a simple double asset entry / providing both base and quote")
+      
       const fetchTokenQtys = calculateAddTokenPairLiquidityQuantities(
         baseTokenQtyDesiredBN,
         quoteTokenQtyDesiredBN,
@@ -318,7 +315,7 @@ const BASIS_POINTS = BigNumber('10000');
       tokenQtys.quoteTokenQty = fetchTokenQtys.quoteTokenQty;
       tokenQtys.liquidityTokenQty = fetchTokenQtys.liquidityTokenQty;
 
-      console.log("return: calculateAddLiquidityQuantities: tokenQtys: " + JSON.stringify(tokenQtys));
+      
       return tokenQtys;
 
       }
@@ -370,13 +367,7 @@ const BASIS_POINTS = BigNumber('10000');
   const baseTokenReserveQtyBN = BigNumber(_baseTokenReserveQty);
   const totalSupplyOfLiquidityTokensBN = BigNumber(_totalSupplyOfLiquidityTokens);
   const internalBalances = internalBalancesBNCleaner(_internalBalances);
-  console.log("sdk: calculateAddQuoteTokenLiquidityQuantities: inputs: foo", JSON.stringify(
-    {quoteTokenQtyDesiredBN,
-    quoteTokenQtyMinBN,
-    baseTokenReserveQtyBN,
-    totalSupplyOfLiquidityTokensBN,
-    internalBalances}
-  ));
+ 
 
   const inputs = {
     quoteTokenQtyDesiredBN, 
@@ -386,7 +377,7 @@ const BASIS_POINTS = BigNumber('10000');
     internalBalances};
 
   const baseTokenDecay = baseTokenReserveQtyBN.minus(internalBalances.baseTokenReserveQty);
-  console.log("sdk: calculateAddQuoteTokenLiquidityQuantities: ", JSON.stringify(inputs));
+  
  
 
   // omega - X/Y
@@ -419,7 +410,7 @@ const BASIS_POINTS = BigNumber('10000');
   internalBalances.baseTokenReserveQty = internalBalances.baseTokenReserveQty.plus(baseTokenQtyDecayChange);
   internalBalances.quoteTokenReserveQty = internalBalances.quoteTokenReserveQty.plus(quoteTokenQty);
 
-  console.log("call to calculateLiquidityTokenQtyForSingleAssetEntry: ");
+  
   const liquidityTokenQty = calculateLiquidityTokenQtyForSingleAssetEntry(
     totalSupplyOfLiquidityTokensBN, 
     quoteTokenQty, 
@@ -432,8 +423,8 @@ const BASIS_POINTS = BigNumber('10000');
     liquidityTokenQty : liquidityTokenQty
   };
     
-  console.log("return: calculateAddQuoteTokenLiquidityQuantities: ", JSON.stringify(quoteAndLiquidityTokenQty));
-  console.log(' ');
+  
+  
   return quoteAndLiquidityTokenQty;
 
 
@@ -473,15 +464,7 @@ const BASIS_POINTS = BigNumber('10000');
   const quoteTokenReserveQtyBN = BigNumber(_quoteTokenReserveQty);
   const totalSupplyOfLiquidityTokensBN = BigNumber(_totalSupplyOfLiquidityTokens);
   const internalBalances = internalBalancesBNCleaner(_internalBalances);
-  console.log("sdk: calculateAddTokenPairLiquidityQuantities: inputs: ", JSON.stringify({
-    baseTokenQtyDesiredBN,
-    quoteTokenQtyDesiredBN,
-    baseTokenQtyMinBN,
-    quoteTokenQtyMinBN,
-    quoteTokenReserveQtyBN,
-    totalSupplyOfLiquidityTokensBN,
-    internalBalances
-  }));
+  
 
   let baseTokenQty;
   let quoteTokenQty;
@@ -508,13 +491,13 @@ const BASIS_POINTS = BigNumber('10000');
     quoteTokenQty = quoteTokenQtyDesiredBN;
 
   }
-  console.log(' ');
-  console.log("call to calculateLiquidityTokenQtyForDoubleAssetEntry: ");
+  
+  
   liquidityTokenQty = calculateLiquidityTokenQtyForDoubleAssetEntry(totalSupplyOfLiquidityTokensBN, quoteTokenQty, quoteTokenReserveQtyBN);
 
   internalBalances.baseTokenReserveQty = baseTokenQty.plus(internalBalances.baseTokenReserveQty);
   internalBalances.quoteTokenReserveQty = quoteTokenQty.plus(internalBalances.quoteTokenReserveQty);
-  console.log("sdk: calculateAddTokenPairLiquidityQuantities: internalBalances: ", JSON.stringify(internalBalances));
+  
 
   const baseQuoteLiquidityTokenQty = {
     baseTokenQty: baseTokenQty,
@@ -522,7 +505,7 @@ const BASIS_POINTS = BigNumber('10000');
     liquidityTokenQty: liquidityTokenQty
   }
 
-  console.log("return: calculateAddTokenPairLiquidityQuantities: baseQuoteLiquidityTokenQty: ", JSON.stringify(baseQuoteLiquidityTokenQty));
+  
   return baseQuoteLiquidityTokenQty;
 };
 
@@ -691,12 +674,7 @@ const calculateFees = (feesInBasisPoints, swapAmount) => {
   const totalSupplyOfLiquidityTokensBN = BigNumber(_totalSupplyOfLiquidityTokens);
   const quoteTokenQtyBN = BigNumber(_quoteTokenQty);
   const quoteTokenReserveBalanceBN = BigNumber(_quoteTokenReserveBalance);
-  console.log(" ");
-  console.log("sdk:  calculateLiquidityTokenQtyForDoubleAssetEntry: inputs: ", JSON.stringify({
-    totalSupplyOfLiquidityTokensBN,
-    quoteTokenQtyBN,
-    quoteTokenReserveBalanceBN
-  }));
+
 
   /*
 
@@ -710,13 +688,13 @@ const calculateFees = (feesInBasisPoints, swapAmount) => {
   */
   const numerator = quoteTokenQtyBN.multipliedBy(totalSupplyOfLiquidityTokensBN).dp(18, ROUND_DOWN);
   const deltaLiquidityTokenQty = (numerator).dividedBy(quoteTokenReserveBalanceBN).dp(18, ROUND_DOWN);
-  console.log("deltaLiquidityTokenQty: ", deltaLiquidityTokenQty.toString());
+  
   const liquidityTokenQty = deltaLiquidityTokenQty.plus(totalSupplyOfLiquidityTokensBN);
-  console.log("liquidityTokenQty: deltaLiquidityTokenQty.plus(totalSupplyOfLiquidityTokensBN)", 
-  deltaLiquidityTokenQty.toString(), ' + ',   totalSupplyOfLiquidityTokensBN.toString());
+  
+ 
 
-  console.log("return: calculateLiquidityTokenQtyForDoubleAssetEntry: ", liquidityTokenQty.toString());
-  console.log(' ');
+  
+  
   return deltaLiquidityTokenQty;
 
 }
@@ -748,34 +726,23 @@ const calculateFees = (feesInBasisPoints, swapAmount) => {
   const tokenBDecayChangeBN = BigNumber(_tokenBDecayChange);
   const tokenBDecayBN = BigNumber(_tokenBDecay);
 
-  console.log("-----------------------");
-  console.log("sdk: calculateLiquidityTokenQtyForSingleAssetEntry: input", JSON.stringify(
-    {
-      totalSupplyOfLiquidityTokensBN,
-      tokenQtyAToAddBN,
-      internalTokenAReserveQtyBN,
-      tokenBDecayChangeBN,
-      tokenBDecayBN
-
-    }
-  ));
   
-  console.log("-- sdk: calculateLiquidityTokenQtyForSingleAssetEntry: calcs");
+  
   const aTokenDiv = tokenQtyAToAddBN.dividedBy(internalTokenAReserveQtyBN);
-  console.log("aTokenDiv: ", tokenQtyAToAddBN.toString(), " / ", internalTokenAReserveQtyBN.toString());
-  console.log("aTokenDiv: ", aTokenDiv.toString());
+  
+  
 
   const bTokenWADMul = tokenBDecayChangeBN;
-  console.log("bTokenWADMul: ", bTokenWADMul.toString());
+  
 
   const aAndBDecayMul = aTokenDiv.multipliedBy(bTokenWADMul);
-  console.log("aAndBdecayMul: ", aAndBDecayMul.toString());
+  
 
   const AAndBDecayMulDivByTokenBDecay = aAndBDecayMul.dividedBy(tokenBDecayBN);
-  console.log("AAndBDecayMulDivByTokenBDecay: ", AAndBDecayMulDivByTokenBDecay.toString());
+  
 
   const altWGamma = (AAndBDecayMulDivByTokenBDecay.dividedBy(BigNumber(2))).dp(18, ROUND_DOWN);
-  console.log("altWGamma: ", altWGamma.toString());
+  
 
  
 
@@ -788,23 +755,9 @@ const calculateFees = (feesInBasisPoints, swapAmount) => {
   //               Y'    *   alphaDecay'
 
   // */
-  // const deltaY = tokenQtyAToAddBN;
-  // const YDash = internalTokenAReserveQtyBN;
-  // const deltaX = tokenBDecayChangeBN;
-  // const alphaDecayDash = tokenBDecayBN;
-
-  // const gammaNumerator = (deltaY.multipliedBy(deltaX)).multipliedBy(BigNumber(2));
-  // console.log('gammaNumerator: ', gammaNumerator.toString());
-  // const gammaDenominator = (YDash.multipliedBy(alphaDecayDash));
-  // console.log("gammaDenominat: ", gammaDenominator.toString());
-  
-
-  // const gamma = gammaNumerator.dividedBy(gammaDenominator);
-  // console.log("gamma: ", gamma.toString());
 
 
   /*
-  12.500000000000000000
 
   # liquidityTokens - Ro
   # ΔRo = (Ro/(1 - γ)) * γ
@@ -815,8 +768,8 @@ const calculateFees = (feesInBasisPoints, swapAmount) => {
 
   */
   const liquidityTokenQty = (totalSupplyOfLiquidityTokensBN.multipliedBy(altWGamma)).dividedBy(BigNumber(1).minus(altWGamma)).dp(0, ROUND_DOWN);
-  console.log("return: calculateLiquidityTokenQtyForSingleAssetEntry: liquidityTokenQty: ", liquidityTokenQty.toString());
-  console.log('');
+  
+  
   return liquidityTokenQty;
 }
 
@@ -864,7 +817,7 @@ const calculateLPTokenAmount = (quoteTokenAmount, baseTokenAmount, quoteTokenRes
   };
   
 
-  console.log("sdk: calculateLPTokenAmount: inputs:", JSON.stringify(inputs));
+  
   
 
   
@@ -895,7 +848,7 @@ const calculateLPTokenAmount = (quoteTokenAmount, baseTokenAmount, quoteTokenRes
 const tokenQtys = calculateAddLiquidityQuantities(baseTokenAmountBN, quoteTokenAmountBN, baseTokenAmountLessSlippage, 
 quoteTokenAmountLessSlippage, baseTokenReserveQtyBN, quoteTokenReserveQtyBN, totalSupplyOfLiquidityTokensBN,  cleansedInternalBalances);
 
-console.log('return: calculateLPTokenAmount: ', JSON.stringify(tokenQtys))
+
 return tokenQtys.liquidityTokenQty;
 
  
@@ -980,23 +933,23 @@ const calculatePriceImpact = (inputTokenAmount, inputTokenReserveQty, outputToke
   }
 
   const initialPrice = calculateExchangeRate(inputTokenReserveQtyBN, outputTokenReserveQtyBN);
-  console.log("sdk: initialPrice: ", initialPrice.toString());
+  
 
   const outputTokenAmount = calculateOutputAmountLessFees(inputTokenAmountBN, inputTokenReserveQtyBN, outputTokenReserveQtyBN, slippagePercentBN, feeAmountBN);
 
   const inputTokenReserveQtyAfter = inputTokenReserveQtyBN.plus(inputTokenAmount);
-  console.log("sdk: inputTokenReserveQtyAfter: ", inputTokenReserveQtyAfter.toString());
+  
 
   const outputTokenReserveQtyAfter = outputTokenReserveQtyBN.minus(outputTokenAmount);
-  console.log("sdk: outputTokenReserveQtyAfter: ", outputTokenReserveQtyAfter.toString());
+  
 
   const finalPrice = calculateExchangeRate(inputTokenReserveQtyAfter, outputTokenReserveQtyAfter);
-  console.log("sdk: finalPrice: ", finalPrice.toString());
+  
 
   const priceDiff = finalPrice.minus(initialPrice);
   const priceDiffRatio = priceDiff.dividedBy(initialPrice);
   const priceImpact = priceDiffRatio.multipliedBy(BigNumber("100"));
-  console.log("sdk: priceImpact: ", priceImpact.toString());
+  
 
   return priceImpact;
 };
@@ -1199,17 +1152,15 @@ const calculateTokenAmountsFromLPTokens = (lpTokenQtyToRedeem, slippagePercent, 
 const isSufficientDecayPresent = (_baseTokenReserveQty, _internalBalances) => {
   const baseTokenReserveQtyBN = BigNumber(_baseTokenReserveQty);
   const internalBalances = internalBalancesBNCleaner(_internalBalances);
-  console.log("sdk: isSufficientDecayPresent: inputs: ", JSON.stringify({
-    baseTokenReserveQtyBN, internalBalances
-  }));
+
   
   
   const baseTokenReserveDifference = (baseTokenReserveQtyBN.minus(internalBalances.baseTokenReserveQty).abs());
-  console.log("sdk: isSufficientDecayPresent: baseTokenReserveDifference: " + baseTokenReserveDifference.toString());
+  
   const internalBalanceRatio = (internalBalances.baseTokenReserveQty).dividedBy(internalBalances.quoteTokenReserveQty);
 
   const decayPresentComparison = (baseTokenReserveDifference.dividedBy(internalBalanceRatio)).isGreaterThan(BigNumber('1'));
-  console.log("sdk: isSufficientDecayPresent: decayPresentComparison: ", decayPresentComparison);
+  
   return decayPresentComparison;
 }
 
