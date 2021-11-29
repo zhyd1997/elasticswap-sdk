@@ -416,7 +416,7 @@ describe("calculatePriceImpact", () => {
     const tokenAReserveQtyBeforeTrade = BigNumber(2000);
 
     const tokenAReserveQtyAfterTrade = tokenAReserveQtyBeforeTrade.plus(tokenSwapQty);
-    console.log("tst: tokenAReserveQtyAfterTrade: ", tokenAReserveQtyAfterTrade.toString());  
+      
 
     const tokenBReserveQtyBeforeTrade = BigNumber(3000);
 
@@ -424,18 +424,18 @@ describe("calculatePriceImpact", () => {
     const tokenBOutAmount = calculateOutputAmountLessFees(tokenSwapQty, tokenAReserveQtyAfterTrade,tokenBReserveQtyBeforeTrade, 0, 0);
     
     const tokenBQtyReserveAfterTrade = tokenBReserveQtyBeforeTrade.minus(tokenBOutAmount);
-    console.log("tst: tokenBQtyReserveAfterTrade: ", tokenBQtyReserveAfterTrade.toString());
+      
 
     const initialPrice = BigNumber(tokenAReserveQtyBeforeTrade).dividedBy(BigNumber(tokenBReserveQtyBeforeTrade));
-    console.log("tst: initialPrice: ", initialPrice.toString());
+      
 
     const finalPrice = BigNumber(tokenAReserveQtyAfterTrade).dividedBy(BigNumber(tokenBQtyReserveAfterTrade));
-    console.log("tst: finalPrice: ", finalPrice.toString());
+      
 
     const priceDiff = BigNumber(finalPrice).minus(BigNumber(initialPrice));
     const priceDiffRatio = priceDiff.dividedBy(BigNumber(initialPrice));
     const priceImpact = priceDiffRatio.multipliedBy(BigNumber(100));
-    console.log("tst: priceImpact: ", priceImpact.toString());
+      
 
     expect(
       calculatePriceImpact(
@@ -456,7 +456,7 @@ describe("calculatePriceImpact", () => {
     const tokenAReserveQtyBeforeTrade = BigNumber(2000);
 
     const tokenAReserveQtyAfterTrade = tokenAReserveQtyBeforeTrade.plus(tokenSwapQty);
-    console.log("tst: tokenAReserveQtyAfterTrade: ", tokenAReserveQtyAfterTrade.toString());  
+      
 
     const tokenBReserveQtyBeforeTrade = BigNumber(3000);
 
@@ -464,18 +464,18 @@ describe("calculatePriceImpact", () => {
     const tokenBOutAmount = calculateOutputAmountLessFees(tokenSwapQty, tokenAReserveQtyAfterTrade,tokenBReserveQtyBeforeTrade, 0, feesInBasisPoints);
     
     const tokenBQtyReserveAfterTrade = tokenBReserveQtyBeforeTrade.minus(tokenBOutAmount);
-    console.log("tst: tokenBQtyReserveAfterTrade: ", tokenBQtyReserveAfterTrade.toString());
+      
 
     const initialPrice = BigNumber(tokenAReserveQtyBeforeTrade).dividedBy(BigNumber(tokenBReserveQtyBeforeTrade));
-    console.log("tst: initialPrice: ", initialPrice.toString());
+      
 
     const finalPrice = BigNumber(tokenAReserveQtyAfterTrade).dividedBy(BigNumber(tokenBQtyReserveAfterTrade));
-    console.log("tst: finalPrice: ", finalPrice.toString());
+      
 
     const priceDiff = BigNumber(finalPrice).minus(BigNumber(initialPrice));
     const priceDiffRatio = priceDiff.dividedBy(BigNumber(initialPrice));
     const priceImpact = priceDiffRatio.multipliedBy(BigNumber(100));
-    console.log("tst: priceImpact: ", priceImpact.toString());
+      
 
     expect(
       calculatePriceImpact(
@@ -497,7 +497,7 @@ describe("calculatePriceImpact", () => {
     const tokenAReserveQtyBeforeTrade = BigNumber(2000);
 
     const tokenAReserveQtyAfterTrade = tokenAReserveQtyBeforeTrade.plus(tokenSwapQty);
-    console.log("tst: tokenAReserveQtyAfterTrade: ", tokenAReserveQtyAfterTrade.toString());  
+      
 
     const tokenBReserveQtyBeforeTrade = BigNumber(3000);
 
@@ -505,18 +505,18 @@ describe("calculatePriceImpact", () => {
     const tokenBOutAmount = calculateOutputAmountLessFees(tokenSwapQty, tokenAReserveQtyAfterTrade,tokenBReserveQtyBeforeTrade, slippage, feesInBasisPoints);
     
     const tokenBQtyReserveAfterTrade = tokenBReserveQtyBeforeTrade.minus(tokenBOutAmount);
-    console.log("tst: tokenBQtyReserveAfterTrade: ", tokenBQtyReserveAfterTrade.toString());
+      
 
     const initialPrice = BigNumber(tokenAReserveQtyBeforeTrade).dividedBy(BigNumber(tokenBReserveQtyBeforeTrade));
-    console.log("tst: initialPrice: ", initialPrice.toString());
+      
 
     const finalPrice = BigNumber(tokenAReserveQtyAfterTrade).dividedBy(BigNumber(tokenBQtyReserveAfterTrade));
-    console.log("tst: finalPrice: ", finalPrice.toString());
+      
 
     const priceDiff = BigNumber(finalPrice).minus(BigNumber(initialPrice));
     const priceDiffRatio = priceDiff.dividedBy(BigNumber(initialPrice));
     const priceImpact = priceDiffRatio.multipliedBy(BigNumber(100));
-    console.log("tst: priceImpact: ", priceImpact.toString());
+      
 
     expect(
       calculatePriceImpact(
@@ -536,7 +536,7 @@ describe("calculatePriceImpact", () => {
     const tokenAReserveQtyBeforeTrade = BigNumber(2000);
 
     const tokenAReserveQtyAfterTrade = tokenAReserveQtyBeforeTrade.plus(tokenSwapQty);
-    console.log("tst: tokenAReserveQtyAfterTrade: ", tokenAReserveQtyAfterTrade.toString());  
+      
 
     const tokenBReserveQtyBeforeTrade = BigNumber(3000);
 
@@ -544,18 +544,18 @@ describe("calculatePriceImpact", () => {
     const tokenBOutAmount = calculateOutputAmountLessFees(tokenSwapQty, tokenAReserveQtyAfterTrade,tokenBReserveQtyBeforeTrade, 0, 0);
     
     const tokenBQtyReserveAfterTrade = tokenBReserveQtyBeforeTrade.minus(tokenBOutAmount);
-    console.log("tst: tokenBQtyReserveAfterTrade: ", tokenBQtyReserveAfterTrade.toString());
+      
 
     const initialPrice = BigNumber(tokenAReserveQtyBeforeTrade).dividedBy(BigNumber(tokenBReserveQtyBeforeTrade));
-    console.log("tst: initialPrice: ", initialPrice.toString());
+      
 
     const finalPrice = BigNumber(tokenAReserveQtyAfterTrade).dividedBy(BigNumber(tokenBQtyReserveAfterTrade));
-    console.log("tst: finalPrice: ", finalPrice.toString());
+      
 
     const priceDiff = BigNumber(finalPrice).minus(BigNumber(initialPrice));
     const priceDiffRatio = priceDiff.dividedBy(BigNumber(initialPrice));
     const priceImpact = priceDiffRatio.multipliedBy(BigNumber(100));
-    console.log("tst: priceImpact: ", priceImpact.toString());
+      
 
     expect(() => 
       calculatePriceImpact(
@@ -735,21 +735,21 @@ describe("calculateLPTokenAmount", () => {
     const decay = baseTokenReserveQty.minus(baseTokenInternalBalance);
 
     const aTokenDiv = quoteTokenAmountToRemoveDecay.dividedBy(baseTokenReserveQty);
-    console.log("aTokenDiv: ", quoteTokenAmountToRemoveDecay.toString(), " / ", baseTokenReserveQty.toString());
-    console.log("aTokenDiv: ", aTokenDiv.toString());
+      
+      
     const bTokenWADMul = decay;
-    console.log("bTokenWADMul: ", bTokenWADMul.toString());
+      
 
     const aAndBDecayMul = aTokenDiv.multipliedBy(bTokenWADMul);
-    console.log("aAndBdecayMul: ", aAndBDecayMul.toString());
+      
 
     const AAndBDecayMulDivByTokenBDecay = aAndBDecayMul.dividedBy(decay);
-    console.log("AAndBDecayMulDivByTokenBDecay: ", AAndBDecayMulDivByTokenBDecay.toString());
+      
 
     const altWGamma = (AAndBDecayMulDivByTokenBDecay.dividedBy(BigNumber(2))).dp(18, ROUND_DOWN);
-    console.log("test: altWGamma: ", altWGamma.toString());
-    console.log('call to sdk: ');
-    console.log(' ');
+      
+      
+      
   
     // const LPExpectedAmount = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
     const liquidityTokenQty = (totalSupplyOfLiquidityTokens.multipliedBy(altWGamma)).dividedBy(BigNumber(1).minus(altWGamma)).dp(0, ROUND_DOWN);
@@ -758,10 +758,10 @@ describe("calculateLPTokenAmount", () => {
       quoteTokenReserveQty, baseTokenReserveQty, slippage,
        totalSupplyOfLiquidityTokens, internalBalances).toNumber(); 
      
-    console.log(' ');
-    console.log('bask from sdk: ');   
-    console.log("expectedAnswer", expectedAnswer.toString());
-    console.log("actualAnswer", liquidityTokenQty.toString());   
+      
+      
+      
+      
 
     expect(expectedAnswer).to.equal(liquidityTokenQty.toNumber());
 
@@ -793,21 +793,21 @@ describe("calculateLPTokenAmount", () => {
     const slippage = ZERO;
 
     const aTokenDiv = baseTokenReserveQty.dividedBy(baseTokenInternalBalance);
-    console.log("aTokenDiv: ", baseTokenReserveQty.toString(), " / ", baseTokenInternalBalance.toString());
-    console.log("aTokenDiv: ", aTokenDiv.toString());
+      
+      
     const bTokenWADMul = quoteTokenDecay;
-    console.log("bTokenWADMul: ", bTokenWADMul.toString());
+      
 
     const aAndBDecayMul = aTokenDiv.multipliedBy(bTokenWADMul);
-    console.log("aAndBdecayMul: ", aAndBDecayMul.toString());
+      
 
     const AAndBDecayMulDivByTokenBDecay = aAndBDecayMul.dividedBy(quoteTokenDecay);
-    console.log("AAndBDecayMulDivByTokenBDecay: ", AAndBDecayMulDivByTokenBDecay.toString());
+      
 
     const altWGamma = (AAndBDecayMulDivByTokenBDecay.dividedBy(BigNumber(2))).dp(18, ROUND_DOWN);
-    console.log("test: altWGamma: ", altWGamma.toString());
-    console.log('call to sdk: ');
-    console.log(' ');
+      
+      
+      
   
     // const LPExpectedAmount = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
     const liquidityTokenQty = (totalSupplyOfLiquidityTokens.multipliedBy(altWGamma)).dividedBy(BigNumber(1).minus(altWGamma)).dp(0, ROUND_DOWN);
@@ -816,10 +816,10 @@ describe("calculateLPTokenAmount", () => {
       quoteTokenReserveQty, baseTokenReserveQty, slippage,
        totalSupplyOfLiquidityTokens, internalBalances).toNumber(); 
      
-    console.log(' ');
-    console.log('bask from sdk: ');   
-    console.log("expectedAnswer", expectedAnswer.toString());
-    console.log("actualAnswer", liquidityTokenQty.toString());   
+      
+      
+      
+      
 
     expect(expectedAnswer).to.equal(liquidityTokenQty.toNumber());
 
@@ -854,21 +854,21 @@ describe("calculateLPTokenAmount", () => {
     const slippage = BigNumber(5);
 
     const aTokenDiv = baseTokenReserveQty.dividedBy(baseTokenInternalBalance);
-    console.log("aTokenDiv: ", baseTokenReserveQty.toString(), " / ", baseTokenInternalBalance.toString());
-    console.log("aTokenDiv: ", aTokenDiv.toString());
+      
+      
     const bTokenWADMul = quoteTokenDecay;
-    console.log("bTokenWADMul: ", bTokenWADMul.toString());
+      
 
     const aAndBDecayMul = aTokenDiv.multipliedBy(bTokenWADMul);
-    console.log("aAndBdecayMul: ", aAndBDecayMul.toString());
+      
 
     const AAndBDecayMulDivByTokenBDecay = aAndBDecayMul.dividedBy(quoteTokenDecay);
-    console.log("AAndBDecayMulDivByTokenBDecay: ", AAndBDecayMulDivByTokenBDecay.toString());
+      
 
     const altWGamma = (AAndBDecayMulDivByTokenBDecay.dividedBy(BigNumber(2))).dp(18, ROUND_DOWN);
-    console.log("test: altWGamma: ", altWGamma.toString());
-    console.log('call to sdk: ');
-    console.log(' ');
+      
+      
+      
   
     // const LPExpectedAmount = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
     const liquidityTokenQty = (totalSupplyOfLiquidityTokens.multipliedBy(altWGamma)).dividedBy(BigNumber(1).minus(altWGamma)).dp(0, ROUND_DOWN);
@@ -877,10 +877,10 @@ describe("calculateLPTokenAmount", () => {
       quoteTokenReserveQty, baseTokenReserveQty, slippage,
        totalSupplyOfLiquidityTokens, internalBalances).toNumber(); 
      
-    console.log(' ');
-    console.log('bask from sdk: ');   
-    console.log("expectedAnswer", expectedAnswer.toString());
-    console.log("actualAnswer", liquidityTokenQty.toString());   
+      
+      
+      
+      
 
     expect(expectedAnswer).to.equal(liquidityTokenQty.toNumber());
 
@@ -916,21 +916,21 @@ describe("calculateLPTokenAmount", () => {
     const decay = baseTokenReserveQty.minus(baseTokenInternalBalance);
 
     const aTokenDiv = quoteTokenAmountToRemoveDecay.dividedBy(baseTokenReserveQty);
-    console.log("aTokenDiv: ", quoteTokenAmountToRemoveDecay.toString(), " / ", baseTokenReserveQty.toString());
-    console.log("aTokenDiv: ", aTokenDiv.toString());
+      
+      
     const bTokenWADMul = decay;
-    console.log("bTokenWADMul: ", bTokenWADMul.toString());
+      
 
     const aAndBDecayMul = aTokenDiv.multipliedBy(bTokenWADMul);
-    console.log("aAndBdecayMul: ", aAndBDecayMul.toString());
+      
 
     const AAndBDecayMulDivByTokenBDecay = aAndBDecayMul.dividedBy(decay);
-    console.log("AAndBDecayMulDivByTokenBDecay: ", AAndBDecayMulDivByTokenBDecay.toString());
+      
 
     const altWGamma = (AAndBDecayMulDivByTokenBDecay.dividedBy(BigNumber(2))).dp(18, ROUND_DOWN);
-    console.log("test: altWGamma: ", altWGamma.toString());
-    console.log('call to sdk: ');
-    console.log(' ');
+      
+      
+      
   
     // const LPExpectedAmount = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
     const liquidityTokenQty = (totalSupplyOfLiquidityTokens.multipliedBy(altWGamma)).dividedBy(BigNumber(1).minus(altWGamma)).dp(0, ROUND_DOWN);
@@ -939,10 +939,10 @@ describe("calculateLPTokenAmount", () => {
       quoteTokenReserveQty, baseTokenReserveQty, slippage,
        totalSupplyOfLiquidityTokens, internalBalances).toNumber(); 
      
-    console.log(' ');
-    console.log('bask from sdk: ');   
-    console.log("expectedAnswer", expectedAnswer.toString());
-    console.log("actualAnswer", liquidityTokenQty.toString());   
+      
+      
+      
+      
 
     expect(expectedAnswer).to.equal(liquidityTokenQty.toNumber());
 
@@ -983,26 +983,26 @@ describe("calculateLPTokenAmount", () => {
 
     // calcs for SAE part:
     const aTokenDiv = quoteTokenAmountToRemoveDecay.dividedBy(baseTokenReserveQty);
-    console.log("aTokenDiv: ", quoteTokenAmountToRemoveDecay.toString(), " / ", baseTokenReserveQty.toString());
-    console.log("aTokenDiv: ", aTokenDiv.toString());
+      
+      
     const bTokenWADMul = decay;
-    console.log("bTokenWADMul: ", bTokenWADMul.toString());
+      
 
     const aAndBDecayMul = aTokenDiv.multipliedBy(bTokenWADMul);
-    console.log("aAndBdecayMul: ", aAndBDecayMul.toString());
+      
 
     const AAndBDecayMulDivByTokenBDecay = aAndBDecayMul.dividedBy(decay);
-    console.log("AAndBDecayMulDivByTokenBDecay: ", AAndBDecayMulDivByTokenBDecay.toString());
+      
 
     const altWGamma = (AAndBDecayMulDivByTokenBDecay.dividedBy(BigNumber(2))).dp(18, ROUND_DOWN);
-    console.log("test: altWGamma: ", altWGamma.toString());
+      
     
   
     // const LPExpectedAmount = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
     const liquidityTokenQtyForSAE = (initialTotalSupplyOfLiquidityTokens.multipliedBy(altWGamma)).dividedBy(BigNumber(1).minus(altWGamma)).dp(0, ROUND_DOWN);
     const liquidityTokenQtyAfterSAE = initialTotalSupplyOfLiquidityTokens.plus(liquidityTokenQtyForSAE);
-    console.log("test: calculateLPTokenAmount: initialTotalSupplyOfLiquidityTokens.plus(liquidityTokenQtyForSAE) ",
-    initialTotalSupplyOfLiquidityTokens.toString(), " + ",  liquidityTokenQtyForSAE.toString());
+      
+    
 
     const quoteTokenQtyAfterSAE = quoteTokenReserveQty.plus(quoteTokenAmountToRemoveDecay);
 
@@ -1010,16 +1010,16 @@ describe("calculateLPTokenAmount", () => {
     const liquidityTokenQtyAfterDAE = liquidityTokenForDAE.plus(liquidityTokenQtyAfterSAE).dp(18, ROUND_DOWN);
     const answer = liquidityTokenQtyAfterDAE.minus(initialTotalSupplyOfLiquidityTokens);
      
-    console.log('call to sdk: ');
-    console.log(' ');
+      
+      
     const expectedAnswer = calculateLPTokenAmount(quoteTokenAmountDesired, baseTokenAmountDesired, 
       quoteTokenReserveQty, baseTokenReserveQty, slippage,
        initialTotalSupplyOfLiquidityTokens, internalBalances).toNumber(); 
      
-    console.log(' ');
-    console.log('bask from sdk: ');   
-    console.log("expectedAnswer", expectedAnswer.toString());
-    console.log("actualAnswer", liquidityTokenQtyAfterDAE.toString());   
+      
+      
+      
+      
 
     expect(expectedAnswer).to.equal(answer.toNumber());
   });
@@ -1059,26 +1059,26 @@ describe("calculateLPTokenAmount", () => {
 
     // calcs for SAE part:
     const aTokenDiv = quoteTokenAmountToRemoveDecay.dividedBy(baseTokenReserveQty);
-    console.log("aTokenDiv: ", quoteTokenAmountToRemoveDecay.toString(), " / ", baseTokenReserveQty.toString());
-    console.log("aTokenDiv: ", aTokenDiv.toString());
+      
+      
     const bTokenWADMul = decay;
-    console.log("bTokenWADMul: ", bTokenWADMul.toString());
+      
 
     const aAndBDecayMul = aTokenDiv.multipliedBy(bTokenWADMul);
-    console.log("aAndBdecayMul: ", aAndBDecayMul.toString());
+      
 
     const AAndBDecayMulDivByTokenBDecay = aAndBDecayMul.dividedBy(decay);
-    console.log("AAndBDecayMulDivByTokenBDecay: ", AAndBDecayMulDivByTokenBDecay.toString());
+      
 
     const altWGamma = (AAndBDecayMulDivByTokenBDecay.dividedBy(BigNumber(2))).dp(18, ROUND_DOWN);
-    console.log("test: altWGamma: ", altWGamma.toString());
+      
     
   
     // const LPExpectedAmount = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
     const liquidityTokenQtyForSAE = (initialTotalSupplyOfLiquidityTokens.multipliedBy(altWGamma)).dividedBy(BigNumber(1).minus(altWGamma)).dp(0, ROUND_DOWN);
     const liquidityTokenQtyAfterSAE = initialTotalSupplyOfLiquidityTokens.plus(liquidityTokenQtyForSAE);
-    console.log("test: calculateLPTokenAmount: initialTotalSupplyOfLiquidityTokens.plus(liquidityTokenQtyForSAE) ",
-    initialTotalSupplyOfLiquidityTokens.toString(), " + ",  liquidityTokenQtyForSAE.toString());
+      
+    
 
     const quoteTokenQtyAfterSAE = quoteTokenReserveQty.plus(quoteTokenAmountToRemoveDecay);
 
@@ -1086,16 +1086,16 @@ describe("calculateLPTokenAmount", () => {
     const liquidityTokenQtyAfterDAE = liquidityTokenForDAE.plus(liquidityTokenQtyAfterSAE).dp(18, ROUND_DOWN);
     const answer = liquidityTokenQtyAfterDAE.minus(initialTotalSupplyOfLiquidityTokens);
      
-    console.log('call to sdk: ');
-    console.log(' ');
+      
+      
     const expectedAnswer = calculateLPTokenAmount(quoteTokenAmountDesired, baseTokenAmountDesired, 
       quoteTokenReserveQty, baseTokenReserveQty, slippage,
        initialTotalSupplyOfLiquidityTokens, internalBalances).toNumber(); 
      
-    console.log(' ');
-    console.log('bask from sdk: ');   
-    console.log("expectedAnswer", expectedAnswer.toString());
-    console.log("actualAnswer", liquidityTokenQtyAfterDAE.toString());   
+      
+      
+      
+      
 
     expect(expectedAnswer).to.equal(answer.toNumber());
   });
@@ -1139,21 +1139,21 @@ describe("calculateLPTokenAmount", () => {
     const slippage = ZERO;
 
     const aTokenDiv = baseTokenReserveQty.dividedBy(baseTokenInternalBalance);
-    console.log("aTokenDiv: ", baseTokenReserveQty.toString(), " / ", baseTokenInternalBalance.toString());
-    console.log("aTokenDiv: ", aTokenDiv.toString());
+      
+      
     const bTokenWADMul = quoteTokenDecay;
-    console.log("bTokenWADMul: ", bTokenWADMul.toString());
+      
 
     const aAndBDecayMul = aTokenDiv.multipliedBy(bTokenWADMul);
-    console.log("aAndBdecayMul: ", aAndBDecayMul.toString());
+      
 
     const AAndBDecayMulDivByTokenBDecay = aAndBDecayMul.dividedBy(quoteTokenDecay);
-    console.log("AAndBDecayMulDivByTokenBDecay: ", AAndBDecayMulDivByTokenBDecay.toString());
+      
 
     const altWGamma = (AAndBDecayMulDivByTokenBDecay.dividedBy(BigNumber(2))).dp(18, ROUND_DOWN);
-    console.log("test: altWGamma: ", altWGamma.toString());
-    console.log('call to sdk: ');
-    console.log(' ');
+      
+      
+      
   
     // const LPExpectedAmount = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
     const liquidityTokenQtyForSAE = (initialTotalSupplyOfLiquidityTokens.multipliedBy(altWGamma)).dividedBy(BigNumber(1).minus(altWGamma)).dp(0, ROUND_DOWN);
@@ -1165,16 +1165,16 @@ describe("calculateLPTokenAmount", () => {
     const liquidityTokenQtyAfterDAE = liquidityTokenForDAE.plus(liquidityTokenQtyAfterSAE).dp(18, ROUND_DOWN);
     const answer = liquidityTokenQtyAfterDAE.minus(initialTotalSupplyOfLiquidityTokens);
      
-    console.log('call to sdk: ');
-    console.log(' ');
+      
+      
     const expectedAnswer = calculateLPTokenAmount(quoteTokenAmountDesired, baseTokenAmountDesired, 
       quoteTokenReserveQty, baseTokenReserveQty, slippage,
        initialTotalSupplyOfLiquidityTokens, internalBalances).toNumber(); 
      
-    console.log(' ');
-    console.log('bask from sdk: ');   
-    console.log("expectedAnswer", expectedAnswer.toString());
-    console.log("actualAnswer", liquidityTokenQtyAfterDAE.toString());   
+      
+      
+      
+      
 
     expect(expectedAnswer).to.equal(answer.toNumber());
 
@@ -1221,21 +1221,21 @@ describe("calculateLPTokenAmount", () => {
     const slippage = BigNumber(5);
 
     const aTokenDiv = baseTokenReserveQty.dividedBy(baseTokenInternalBalance);
-    console.log("aTokenDiv: ", baseTokenReserveQty.toString(), " / ", baseTokenInternalBalance.toString());
-    console.log("aTokenDiv: ", aTokenDiv.toString());
+      
+      
     const bTokenWADMul = quoteTokenDecay;
-    console.log("bTokenWADMul: ", bTokenWADMul.toString());
+      
 
     const aAndBDecayMul = aTokenDiv.multipliedBy(bTokenWADMul);
-    console.log("aAndBdecayMul: ", aAndBDecayMul.toString());
+      
 
     const AAndBDecayMulDivByTokenBDecay = aAndBDecayMul.dividedBy(quoteTokenDecay);
-    console.log("AAndBDecayMulDivByTokenBDecay: ", AAndBDecayMulDivByTokenBDecay.toString());
+      
 
     const altWGamma = (AAndBDecayMulDivByTokenBDecay.dividedBy(BigNumber(2))).dp(18, ROUND_DOWN);
-    console.log("test: altWGamma: ", altWGamma.toString());
-    console.log('call to sdk: ');
-    console.log(' ');
+      
+      
+      
   
     // const LPExpectedAmount = (quoteTokenAmount.dividedBy(quoteTokenReserveQty)).multipliedBy(totalSupplyOfLiquidityTokens);
     const liquidityTokenQtyForSAE = (initialTotalSupplyOfLiquidityTokens.multipliedBy(altWGamma)).dividedBy(BigNumber(1).minus(altWGamma)).dp(0, ROUND_DOWN);
@@ -1247,16 +1247,16 @@ describe("calculateLPTokenAmount", () => {
     const liquidityTokenQtyAfterDAE = liquidityTokenForDAE.plus(liquidityTokenQtyAfterSAE).dp(18, ROUND_DOWN);
     const answer = liquidityTokenQtyAfterDAE.minus(initialTotalSupplyOfLiquidityTokens);
      
-    console.log('call to sdk: ');
-    console.log(' ');
+      
+      
     const expectedAnswer = calculateLPTokenAmount(quoteTokenAmountDesired, baseTokenAmountDesired, 
       quoteTokenReserveQty, baseTokenReserveQty, slippage,
        initialTotalSupplyOfLiquidityTokens, internalBalances).toNumber(); 
      
-    console.log(' ');
-    console.log('bask from sdk: ');   
-    console.log("expectedAnswer", expectedAnswer.toString());
-    console.log("actualAnswer", liquidityTokenQtyAfterDAE.toString());   
+      
+      
+      
+      
 
     expect(expectedAnswer).to.equal(answer.toNumber());
 
@@ -1321,7 +1321,7 @@ describe("calculateTokenAmountsFromLPTokens", () => {
       quoteTokenReserveQty,
       totalLPTokenSupply
     );
-    console.log(JSON.stringify(answer), JSON.stringify(expected));
+      
 
     expect((expected.quoteTokenReceived).toNumber()).to.equal((answer.quoteTokenReceived).toNumber());
     expect((expected.baseTokenReceived).toNumber()).to.equal((answer.baseTokenReceived).toNumber());
@@ -1347,7 +1347,7 @@ describe("calculateTokenAmountsFromLPTokens", () => {
       quoteTokenReserveQty,
       totalLPTokenSupply
     );
-    console.log(JSON.stringify(answer), JSON.stringify(expected));
+      
 
     expect((expected.quoteTokenReceived).toNumber()).to.equal((answer.quoteTokenReceived).toNumber());
     expect((expected.baseTokenReceived).toNumber()).to.equal((answer.baseTokenReceived).toNumber());
