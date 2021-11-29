@@ -767,7 +767,7 @@ describe("calculateLPTokenAmount", () => {
 
   });
 
-  it("should calculateLPTokenAmount correctly when there is liquidity initially and then quoteToken decay (betaDecay) (Single Asset Entry)", () => {
+  it.only("should calculateLPTokenAmount correctly when there is liquidity initially and then quoteToken decay (betaDecay) (Single Asset Entry)", () => {
     const quoteTokenInternalBalance = BigNumber("100");
     const baseTokenInternalBalance = BigNumber("100");
     const kLastInternalBalance = BigNumber("10000");
@@ -778,36 +778,29 @@ describe("calculateLPTokenAmount", () => {
       kLast: kLastInternalBalance,
     }
     const totalSupplyOfLiquidityTokens = BigNumber("100");
-
     // let there be a quoteToken rebase of 50 (by baseToken rebasing down), causing baseTokenDecay (alphaDecay)
     const quoteTokenReserveQty = BigNumber("100"); 
     const baseTokenReserveQty = BigNumber("50");  
-
     // quote token desired to absolve decay => ZERO (SAE)
     const quoteTokenAmountToRemoveDecay = BigNumber("50");
-
     // Only SAE here
     // confirm the "decay" is equal to the re-based amount times the previous iOmega (B/A). (this is betaDecay)
-    const iOmega = quoteTokenInternalBalance.dividedBy(baseTokenInternalBalance);
-    const quoteTokenDecay = (baseTokenInternalBalance.minus(baseTokenReserveQty)).multipliedBy(iOmega);
-
+    const iOmega = quoteTokenInternalBalance.dividedBy(baseTokenInternalBalance); // 100/100
+    const quoteTokenDecay = (baseTokenInternalBalance.minus(baseTokenReserveQty)).multipliedBy(iOmega); // (100 - 50)*1 = 50
     // here decay and decay change are the same
-    const baseTokenAmountToRemoveDecay = quoteTokenDecay;
+    const baseTokenAmountToRemoveDecay = ZERO;
     const slippage = ZERO;
-
-    
-    
 
     const aTokenDiv = baseTokenReserveQty.dividedBy(baseTokenInternalBalance);
     console.log("aTokenDiv: ", baseTokenReserveQty.toString(), " / ", baseTokenInternalBalance.toString());
     console.log("aTokenDiv: ", aTokenDiv.toString());
-    const bTokenWADMul = decay;
+    const bTokenWADMul = quoteTokenDecay;
     console.log("bTokenWADMul: ", bTokenWADMul.toString());
 
     const aAndBDecayMul = aTokenDiv.multipliedBy(bTokenWADMul);
     console.log("aAndBdecayMul: ", aAndBDecayMul.toString());
 
-    const AAndBDecayMulDivByTokenBDecay = aAndBDecayMul.dividedBy(decay);
+    const AAndBDecayMulDivByTokenBDecay = aAndBDecayMul.dividedBy(quoteTokenDecay);
     console.log("AAndBDecayMulDivByTokenBDecay: ", AAndBDecayMulDivByTokenBDecay.toString());
 
     const altWGamma = (AAndBDecayMulDivByTokenBDecay.dividedBy(BigNumber(2))).dp(18, ROUND_DOWN);

@@ -59,7 +59,7 @@ const BASIS_POINTS = BigNumber('10000');
 ) => {
 
   // cleanse input 
-  const baseTokenQtyDesiredBN = BigNumber(_baseTokenQtyDesiredBN);
+  const baseTokenQtyDesiredBN = BigNumber(_baseTokenQtyDesired);
   const baseTokenQtyMinBN = BigNumber(_baseTokenQtyMin);
   const baseTokenReserveQtyBN = BigNumber(_baseTokenReserveQty);
   const totalSupplyOfLiquidityTokensBN = BigNumber(_totalSupplyOfLiquidityTokens);
@@ -68,7 +68,8 @@ const BASIS_POINTS = BigNumber('10000');
     baseTokenQtyDesiredBN, baseTokenQtyMinBN, baseTokenReserveQtyBN, totalSupplyOfLiquidityTokensBN, internalBalances
   }));
 
-  const maxBaseTokenQty = internalBalances.baseTokenReserveQty.minus(baseTokenReserveQtyBN);
+  const maxBaseTokenQty = (internalBalances.baseTokenReserveQty).minus(baseTokenReserveQtyBN);
+  console.log("sdk: calculateAddBaseTokenLiquidityQuantities: maxBaseTokenQty: ", maxBaseTokenQty.toString());
   if(baseTokenQtyMinBN.isGreaterThanOrEqualTo(maxBaseTokenQty)){
     throw INSUFFICIENT_DECAY;
   }
@@ -198,6 +199,8 @@ const BASIS_POINTS = BigNumber('10000');
     
     // confirm that we have no beta or alpha decay present
     // if we do, we need to resolve that first
+    console.log("sdk: calculateAddLiquidityQuantities: call to isSufficientDecayPresent: ");
+    console.log(" ");
     if( isSufficientDecayPresent( baseTokenReserveQtyBN, internalBalances) ) {
       // decay is present and needs to be dealt with by the caller.
       console.log("sdk: decay is present and needs to be dealt with by the caller: ");
@@ -1196,12 +1199,17 @@ const calculateTokenAmountsFromLPTokens = (lpTokenQtyToRedeem, slippagePercent, 
 const isSufficientDecayPresent = (_baseTokenReserveQty, _internalBalances) => {
   const baseTokenReserveQtyBN = BigNumber(_baseTokenReserveQty);
   const internalBalances = internalBalancesBNCleaner(_internalBalances);
+  console.log("sdk: isSufficientDecayPresent: inputs: ", JSON.stringify({
+    baseTokenReserveQtyBN, internalBalances
+  }));
   
-  const baseTokenReserveDifference = baseTokenReserveQtyBN.minus(internalBalances.baseTokenReserveQty);
+  
+  const baseTokenReserveDifference = (baseTokenReserveQtyBN.minus(internalBalances.baseTokenReserveQty).abs());
+  console.log("sdk: isSufficientDecayPresent: baseTokenReserveDifference: " + baseTokenReserveDifference.toString());
   const internalBalanceRatio = (internalBalances.baseTokenReserveQty).dividedBy(internalBalances.quoteTokenReserveQty);
 
   const decayPresentComparison = (baseTokenReserveDifference.dividedBy(internalBalanceRatio)).isGreaterThan(BigNumber('1'));
-
+  console.log("sdk: isSufficientDecayPresent: decayPresentComparison: ", decayPresentComparison);
   return decayPresentComparison;
 }
 
