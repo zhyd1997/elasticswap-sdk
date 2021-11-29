@@ -14,7 +14,13 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const deployResult = await deploy('Exchange', {
     from: admin,
     contract: Exchange,
-    args: ['ETMFUSD LP Token', 'ETMFUSD', baseTokenAddress, quoteTokenAddress, exchangeFactoryAddress],
+    args: [
+      'ETMFUSD LP Token',
+      'ETMFUSD',
+      baseTokenAddress,
+      quoteTokenAddress,
+      exchangeFactoryAddress,
+    ],
     libraries: {
       MathLib: mathLib.address,
     },

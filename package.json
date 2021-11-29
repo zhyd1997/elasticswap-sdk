@@ -15,13 +15,12 @@
     "analyzer": "yarn stats && yarn webpack-bundle-analyzer stats.json",
     "build": "npx webpack -c ./webpack.config.production.js",
     "dev": "yarn lint && npx webpack -c ./webpack.config.js --watch",
-    "lint": "yarn prettier && npx eslint src/*.js src/**/*.js src/**/**/*.js src/**/**/**/*.js test/**/*.mjs",
+    "lint": "yarn prettier && npx eslint src/*.mjs src/**/*.mjs test/**/*.mjs test/**/*.js",
     "prerelease": "yarn build",
-    "prettier": "npx prettier --write src/*.js --write src/**/*.js --write src/**/**/*.js --write src/**/**/**/*.js",
+    "prettier": "npx prettier --write src/*.mjs --write src/**/*.mjs --write test/**/*.mjs --write test/**/*.js",
     "release": "npm publish --access=public",
     "stats": "npx webpack -c ./webpack.config.js --json > stats.json",
-    "test:only": "mocha --timeout 10000 --exit -r esm './**/*.test.mjs'",
-    "test": "yarn build && yarn test:only"
+    "test": "mocha -timeout 10000 -exit './test/**/**.test.mjs' --experimental-json-modules"
   },
   "devDependencies": {
     "@babel/cli": "^7.15.7",
@@ -49,7 +48,6 @@
   "dependencies": {
     "@elastic-dao/elasticswap": "0.0.4",
     "@elastic-dao/sdk": "^0.10.3",
-    "@pie-dao/utils": "^1.0.0",
     "bignumber.js": "^9.0.1",
     "bnc-notify": "^1.9.1",
     "ethers": "^5.5.1",

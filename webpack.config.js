@@ -3,11 +3,11 @@ const path = require('path');
 module.exports = (env, argv) => ({
   mode: 'development',
   entry: {
-    'index': ['./src/index.js'],
+    'index': ['./src/index.mjs'],
   },
   output: {
     path: path.join(__dirname, '/dist'),
-    filename: '[name].js',
+    filename: '[name].mjs',
     library: 'SDK',
     libraryTarget: 'umd',
     globalObject: 'this',

@@ -1,10 +1,12 @@
-import Base from '../Base';
+import ERC20Contract from '@elastic-dao/elasticswap/artifacts/@openzeppelin/contracts/token/ERC20/ERC20.sol/ERC20.json';
+import Base from '../Base.mjs';
 
 export default class ERC20 extends Base {
   constructor(sdk, address) {
     super(sdk);
     this._address = address;
     this._contract = sdk.contract({
+      abi: ERC20Contract.abi,
       address,
       readonly: false,
     });
@@ -12,6 +14,7 @@ export default class ERC20 extends Base {
 
   static contract(sdk, address, readonly = false) {
     return sdk.contract({
+      abi: ERC20Contract.abi,
       address,
       readonly,
     });
@@ -52,7 +55,8 @@ export default class ERC20 extends Base {
       accountAddress,
       this.sanitizeOverrides(overrides, true),
     );
-    return balance;
+
+    return this.toBigNumber(balance.toString());
   }
 
   async allowance(ownerAddress, spenderAddress, overrides = {}) {

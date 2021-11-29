@@ -1,5 +1,5 @@
-import { isPOJO } from '@pie-dao/utils';
-import Base from './Base';
+import { isPOJO } from './utils/utils.mjs';
+import Base from './Base.mjs';
 
 const localData = {
   ignore: {},

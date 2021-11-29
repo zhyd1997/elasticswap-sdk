@@ -1,15 +1,89 @@
 import { ethers } from 'ethers';
-import {
-  isAddress,
-  isFunction,
-  isNumber,
-  isPOJO,
-  validateIsBigNumber,
-  validateIsNumber,
-} from '@pie-dao/utils';
 import BigNumber from 'bignumber.js';
 
 const prefix = '@elastic-swap/sdk';
+
+const buildError = ({
+  message,
+  customPrefix = '@elasticswap/sdk - validations',
+}) => `${customPrefix}: ${message}`;
+
+//
+// Validations
+//
+
+export const isAddress = (thing) =>
+  thing &&
+  isString(thing) &&
+  ethers.utils.isHexString(thing) &&
+  thing.length === 42;
+
+export const isBigNumber = (thing) =>
+  thing && BigNumber.isBigNumber(thing) && !thing.isNaN();
+
+export const isFunction = (thing) =>
+  thing && {}.toString.call(thing) === '[object Function]';
+
+export const isNumber = (thing) => !Number.isNaN(thing);
+
+export const isPOJO = (thing) => {
+  if (thing == null || typeof thing !== 'object') {
+    return false;
+  }
+  const proto = Object.getPrototypeOf(thing);
+  if (proto == null) {
+    return true; // `Object.create(null)`
+  }
+  return proto === Object.prototype;
+};
+
+export const isString = (thing) =>
+  typeof thing === 'string' || thing instanceof String;
+
+const validate = (result, options) => {
+  const { level = 'error', message, customPrefix, throwError = true } = options;
+
+  if (result) {
+    return true;
+  }
+
+  const error = buildError({ message, customPrefix });
+
+  if (throwError) {
+    throw new TypeError(error);
+  }
+
+  console[level](error);
+  return false;
+};
+
+export const validateIsBigNumber = (thing, options = {}) => {
+  const defaultMessage = 'not a BigNumber';
+  return validate(isBigNumber(thing), {
+    ...options,
+    message: options.message || defaultMessage,
+  });
+};
+
+export const validateIsNumber = (thing, options = {}) => {
+  const defaultMessage = 'not a number';
+  return validate(isNumber(thing), {
+    ...options,
+    message: options.message || defaultMessage,
+  });
+};
+
+export const validateIsAddress = (thing, options = {}) => {
+  const defaultMessage = 'not an Ethereum address';
+  return validate(isAddress(thing), {
+    ...options,
+    message: options.message || defaultMessage,
+  });
+};
+
+//
+// Formatting and sanitization
+//
 
 export const amountFormatter = ({
   amount,
@@ -70,6 +144,36 @@ export const amountFormatter = ({
   }
 
   return base;
+};
+
+/*
+Rounding Types:
+  ROUND_UP: 0 - Rounds away from zero
+  ROUND_DOWN: 1 - Rounds towards zero
+  ROUND_CEIL: 2 - Rounds towards Infinity
+  ROUND_FLOOR: 3 - Rounds towards -Infinity
+  ROUND_HALF_UP: 4 - Rounds towards nearest neighbour.
+  If equidistant, rounds away from zero
+  ROUND_HALF_DOWN: 5 - Rounds towards nearest neighbour.
+  If equidistant, rounds towards zero
+  ROUND_HALF_EVEN: 6 - Rounds towards nearest neighbour.
+  If equidistant, rounds towards even neighbour
+  ROUND_HALF_CEIL: 7 - Rounds towards nearest neighbour.
+  If equidistant, rounds towards Infinity
+  ROUND_HALF_FLOOR: 8 - Rounds towards nearest neighbour.
+  If equidistant, rounds towards -Infinity
+*/
+
+export const round = (value, type = 1, decimalPlaces) => {
+  const config = {
+    DECIMAL_PLACES: decimalPlaces,
+    ROUDING_MODE: type,
+  };
+
+  const BN = BigNumber.clone(config);
+
+  const roundedNumber = new BN(value, 10);
+  return roundedNumber;
 };
 
 export const sanitizeOverrides = (requested = {}, readonlyMethod = false) => {
@@ -153,6 +257,42 @@ export const sanitizeOverrides = (requested = {}, readonlyMethod = false) => {
   return overrides;
 };
 
+export const shortenAddress = (address, digits = 4) => {
+  validateIsAddress(address, { prefix: '@elasticswap/sdk - shortenAddress' });
+
+  const a = address.substring(0, digits + 2);
+  const b = address.substring(42 - digits);
+
+  return `${a}...${b}`;
+};
+
+export const truncate = (str, opts = {}) => {
+  if (!str) {
+    return '';
+  }
+
+  const ending = opts.ending || '...';
+  const length = opts.length || 40;
+  const truncateNumber = opts.truncateNumber || false;
+  const decimalPlaces = opts.decimalPlaces || 0;
+
+  if (truncateNumber) {
+    // When trucating a number, it must be passed as a string
+    const re = new RegExp(`^-?\\d+(?:.\\d{0,${decimalPlaces || -1}})?`);
+    return str.match(re)[0];
+  }
+
+  if (str.length > length) {
+    return str.substring(0, length - ending.length) + ending;
+  }
+
+  return str;
+};
+
+//
+// Type converters
+//
+
 export const swapBigNumber = (obj) => {
   const swappedObj = {};
   const keys = Object.keys(obj);
@@ -207,59 +347,6 @@ export const upTo = (n) => {
     arr.push(i);
   }
   return arr;
-};
-
-export const truncate = (str, opts = {}) => {
-  if (!str) {
-    return '';
-  }
-
-  const ending = opts.ending || '...';
-  const length = opts.length || 40;
-  const truncateNumber = opts.truncateNumber || false;
-  const decimalPlaces = opts.decimalPlaces || 0;
-
-  if (truncateNumber) {
-    // When trucating a number, it must be passed as a string
-    const re = new RegExp(`^-?\\d+(?:.\\d{0,${decimalPlaces || -1}})?`);
-    return str.match(re)[0];
-  }
-
-  if (str.length > length) {
-    return str.substring(0, length - ending.length) + ending;
-  }
-
-  return str;
-};
-
-/*
-Rounding Types:
-  ROUND_UP: 0 - Rounds away from zero
-  ROUND_DOWN: 1 - Rounds towards zero
-  ROUND_CEIL: 2 - Rounds towards Infinity
-  ROUND_FLOOR: 3 - Rounds towards -Infinity
-  ROUND_HALF_UP: 4 - Rounds towards nearest neighbour.
-  If equidistant, rounds away from zero
-  ROUND_HALF_DOWN: 5 - Rounds towards nearest neighbour.
-  If equidistant, rounds towards zero
-  ROUND_HALF_EVEN: 6 - Rounds towards nearest neighbour.
-  If equidistant, rounds towards even neighbour
-  ROUND_HALF_CEIL: 7 - Rounds towards nearest neighbour.
-  If equidistant, rounds towards Infinity
-  ROUND_HALF_FLOOR: 8 - Rounds towards nearest neighbour.
-  If equidistant, rounds towards -Infinity
-*/
-
-export const round = (value, type = 1, decimalPlaces) => {
-  const config = {
-    DECIMAL_PLACES: decimalPlaces,
-    ROUDING_MODE: type,
-  };
-
-  const BN = BigNumber.clone(config);
-
-  const roundedNumber = new BN(value, 10);
-  return roundedNumber;
 };
 
 export default {

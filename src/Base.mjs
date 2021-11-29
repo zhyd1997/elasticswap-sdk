@@ -5,8 +5,8 @@ import {
   toBigNumber,
   toEthersBigNumber,
   toNumber,
-} from './utils/utils';
-import Subscribable from './Subscribable';
+} from './utils/utils.mjs';
+import Subscribable from './Subscribable.mjs';
 
 export default class Base extends Subscribable {
   constructor(sdk) {

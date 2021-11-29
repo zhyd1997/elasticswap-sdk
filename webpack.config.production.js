@@ -4,11 +4,11 @@ const TerserPlugin = require('terser-webpack-plugin');
 module.exports = (env, argv) => ({
   mode: 'production',
   entry: {
-    'index': ['./src/index.js'],
+    'index': ['./src/index.mjs'],
   },
   output: {
     path: path.join(__dirname, '/dist'),
-    filename: '[name].js',
+    filename: '[name].mjs',
     library: 'SDK',
     libraryTarget: 'umd',
     globalObject: 'this',

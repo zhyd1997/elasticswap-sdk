@@ -1,5 +1,5 @@
-import Base from './Base';
-import Cache from './Cache';
+import Base from './Base.mjs';
+import Cache from './Cache.mjs';
 
 export default class Cachable extends Base {
   constructor(sdk, { persist = true } = {}) {
