@@ -1,9 +1,12 @@
 /* eslint class-methods-use-this: 0 */
 
+import { ethers } from 'ethers';
 import ExchangeFactorySolidity from '@elastic-dao/elasticswap/artifacts/src/contracts/ExchangeFactory.sol/ExchangeFactory.json';
 import BaseEvents from '../BaseEvents.mjs';
-import { toKey } from '../utils/utils.mjs';
+import ErrorHandling from '../ErrorHandling.mjs';
+import Exchange from './Exchange.mjs';
 import QueryFilterable from '../QueryFilterable.mjs';
+import { validateIsString, validateIsAddress, toKey } from '../utils/utils.mjs';
 
 class Events extends BaseEvents {
   async NewExchange() {
@@ -25,15 +28,30 @@ export default class ExchangeFactory extends QueryFilterable {
       readonly: false,
     });
 
+    this._errorHandling = new ErrorHandling('exchangeFactory');
+    this._exchangesByAddress = {}; // mapping indexed by base token and then quote token
+
     // this.getNewExchangeEvents();
     // start listening to events emitted from the contract for the `NewExchange` event.
     // create a callback function that responds to the event.
     // callback function would create the Exchange class (from the SDK) and store it
     // in a mapping here.
     // this._exchangesByAddress[baseTokenAddress][quoteTokenAddress] = new exchange();
+
+    // this.events.NewExchange().then((obj) => {
+    //   console.log('EVENT:', obj);
+    // });
+  }
+
+  get readonlyContract() {
+    return this._contract;
   }
 
   get address() {
+    return this._address;
+  }
+
+  get id() {
     return this._address;
   }
 
@@ -53,16 +71,103 @@ export default class ExchangeFactory extends QueryFilterable {
     // return this._exchangesByAddress[baseTokenAddress];
   }
 
-  getExchangeAddress(baseTokenAddress, quoteTokenAddress) {
+  async getExchange(baseTokenAddress, quoteTokenAddress) {
+    // TODO: this should really used a cached mapping that we build from the events.
     // return this._exchangesByAddress[baseTokenAddress][quoteTokenAddress];
+    validateIsAddress(baseTokenAddress);
+    validateIsAddress(quoteTokenAddress);
+
+    if (
+      baseTokenAddress.toLowerCase() ===
+      ethers.constants.AddressZero.toLowerCase()
+    ) {
+      throw this._errorHandling.error('BASE_TOKEN_IS_ZERO_ADDRESS');
+    }
+
+    if (
+      quoteTokenAddress.toLowerCase() ===
+      ethers.constants.AddressZero.toLowerCase()
+    ) {
+      throw this._errorHandling.error('QUOTE_TOKEN_IS_ZERO_ADDRESS');
+    }
+
+    if (baseTokenAddress.toLowerCase() === quoteTokenAddress.toLowerCase()) {
+      throw this._errorHandling.error('BASE_TOKEN_SAME_AS_QUOTE');
+    }
+
+    // check if we already have this exchange object
+    if (this._exchangesByAddress[baseTokenAddress]) {
+      if (this._exchangesByAddress[baseTokenAddress][quoteTokenAddress]) {
+        return this._exchangesByAddress[baseTokenAddress][quoteTokenAddress];
+      }
+    } else {
+      // we need to create the mapping for this base token
+      this._exchangesByAddress[baseTokenAddress] = {};
+    }
+
+    // create the new exchange, save it to our mapping and return to user.
+    const exchangeAddress = await this.contract.exchangeAddressByTokenAddress(
+      baseTokenAddress,
+      quoteTokenAddress,
+    );
+    const exchange = new Exchange(
+      this.sdk,
+      exchangeAddress,
+      baseTokenAddress,
+      quoteTokenAddress,
+    );
+    this._exchangesByAddress[baseTokenAddress][quoteTokenAddress] = exchange;
+    return exchange;
   }
 
-  async createNewExchange(baseTokenAddress, quoteTokenAddress) {
-    // check to ensure the exchange doesn't exist already
-    // check locally and also check solidity
-    // this._contract.exchangeAddressByTokenAddress(baseTokenAdress, quotTokenAddress) (if the exchange doesn't exist, this will return the 0 address ethers.constants.ZERO_ADDRESS);
-    // if no exchange exists than check that base token !- quote token
-    // and that baseToken != ethers.constants.ZERO_ADDRESS and quoteToken != ethers.constants.ZERO_ADDRESS
+  async createNewExchange(
+    name,
+    symbol,
+    baseTokenAddress,
+    quoteTokenAddress,
+    overrides = {},
+  ) {
+    validateIsString(name);
+    validateIsString(symbol);
+    validateIsAddress(baseTokenAddress);
+    validateIsAddress(quoteTokenAddress);
+
+    if (
+      baseTokenAddress.toLowerCase() ===
+      ethers.constants.AddressZero.toLowerCase()
+    ) {
+      throw this._errorHandling.error('BASE_TOKEN_IS_ZERO_ADDRESS');
+    }
+
+    if (
+      quoteTokenAddress.toLowerCase() ===
+      ethers.constants.AddressZero.toLowerCase()
+    ) {
+      throw this._errorHandling.error('QUOTE_TOKEN_IS_ZERO_ADDRESS');
+    }
+
+    if (baseTokenAddress.toLowerCase() === quoteTokenAddress.toLowerCase()) {
+      throw this._errorHandling.error('BASE_TOKEN_SAME_AS_QUOTE');
+    }
+
+    // confirm this exchange pair does not exist yet.
+    const exchangeAddress = await this.contract.exchangeAddressByTokenAddress(
+      baseTokenAddress,
+      quoteTokenAddress,
+    );
+
+    if (exchangeAddress !== ethers.constants.AddressZero) {
+      throw this._errorHandling.error('PAIR_ALREADY_EXISTS');
+    }
+
+    const txStatus = await this.contract.createNewExchange(
+      name,
+      symbol,
+      baseTokenAddress,
+      quoteTokenAddress,
+      this.sanitizeOverrides(overrides),
+    );
+    return txStatus;
   }
 
   async getNewExchangeEvents(overrides = {}) {
@@ -73,11 +178,12 @@ export default class ExchangeFactory extends QueryFilterable {
 
     const results = await this.queryFilter(
       'NewExchange',
-      12056930, // TODO: FIX ME
+      1, // TODO: FIX ME
       endingBlock,
     );
 
-    results.forEach((event) => createExchangeFromEvent(event));
+    // results.forEach((event) => createExchangeFromEvent(event));
+    return results;
   }
 
   createExchangeFromEvent(event) {
@@ -99,3 +205,10 @@ export default class ExchangeFactory extends QueryFilterable {
     return tx;
   }
 }
+
+// Questions for Dan
+// 1. Readonly contracts?
+// 2. event call backs?
+// 3. caching
+// 4. handling tx returns (refreshing dao)
+// 5. changing wallet signers and recreating contracts? IE if we cache the exchanges and then the users changes signers

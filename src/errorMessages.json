@@ -28,5 +28,27 @@
         "code": "16"
       }
     }
+  },
+  "exchangeFactory": {
+    "classCode": "1",
+    "classCommonName": "ExchangeFactory",
+    "exceptions": {
+      "BASE_TOKEN_IS_ZERO_ADDRESS": {
+        "message": "BASE_TOKEN_IS_ZERO_ADDRESS",
+        "code": "17"
+      },
+      "QUOTE_TOKEN_IS_ZERO_ADDRESS": {
+        "message": "QUOTE_TOKEN_IS_ZERO_ADDRESS",
+        "code": "18"
+      },
+      "BASE_TOKEN_SAME_AS_QUOTE": {
+        "message": "BASE_TOKEN_SAME_AS_QUOTE",
+        "code": "19"
+      },
+      "PAIR_ALREADY_EXISTS": {
+        "message": "PAIR_ALREADY_EXISTS",
+        "code": "20"
+      }
+    }
   }
 }

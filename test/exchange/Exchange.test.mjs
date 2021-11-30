@@ -4,6 +4,7 @@ import fetch from 'node-fetch';
 import hardhat from 'hardhat';
 import * as elasticSwapSDK from '../../src/index.mjs';
 import LocalStorageAdapterMock from '../adapters/LocalStorageAdapterMock.mjs';
+import { expectThrowsAsync } from '../testHelpers.mjs';
 
 const { ethers, deployments } = hardhat;
 const { expect, assert } = chai;
@@ -18,17 +19,6 @@ let accounts;
 let liquidityFee;
 let liquidityFeeInBasisPoints;
 let exchangeClass;
-
-const expectThrowsAsync = async (method, errorMessage) => {
-  let error = null;
-  try {
-    await method();
-  } catch (err) {
-    error = err;
-  }
-  expect(error).to.be.an('Error');
-  if (errorMessage) expect(error.message).to.equal(errorMessage);
-};
 
 describe('Exchange', () => {
   beforeEach(async () => {

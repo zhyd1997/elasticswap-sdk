@@ -57,6 +57,14 @@ const validate = (result, options) => {
   return false;
 };
 
+export const validateIsAddress = (thing, options = {}) => {
+  const defaultMessage = 'not an Ethereum address';
+  return validate(isAddress(thing), {
+    ...options,
+    message: options.message || defaultMessage,
+  });
+};
+
 export const validateIsBigNumber = (thing, options = {}) => {
   const defaultMessage = 'not a BigNumber';
   return validate(isBigNumber(thing), {
@@ -73,9 +81,9 @@ export const validateIsNumber = (thing, options = {}) => {
   });
 };
 
-export const validateIsAddress = (thing, options = {}) => {
-  const defaultMessage = 'not an Ethereum address';
-  return validate(isAddress(thing), {
+export const validateIsString = (thing, options = {}) => {
+  const defaultMessage = 'not a string';
+  return validate(isString(thing), {
     ...options,
     message: options.message || defaultMessage,
   });
