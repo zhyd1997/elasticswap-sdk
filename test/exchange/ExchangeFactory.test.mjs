@@ -146,5 +146,69 @@ describe('ExchangeFactory', () => {
         'Origin: exchangeFactory, Code: 20, Message: PAIR_ALREADY_EXISTS, Path: unknown.',
       );
     });
+
+    it('Will fail to create exchange with bad addresses', async () => {
+      const randomAccount = accounts[5];
+      await sdk.changeSigner(randomAccount);
+      const exchangeFactory = new elasticSwapSDK.ExchangeFactory(
+        sdk,
+        ExchangeFactory.address,
+      );
+
+      await expectThrowsAsync(
+        exchangeFactory.createNewExchange.bind(
+          exchangeFactory,
+          'TestPair',
+          'ELP',
+          baseToken.address,
+          baseToken.address,
+        ),
+        'Origin: exchangeFactory, Code: 19, Message: BASE_TOKEN_SAME_AS_QUOTE, Path: unknown.',
+      );
+
+      await expectThrowsAsync(
+        exchangeFactory.createNewExchange.bind(
+          exchangeFactory,
+          'TestPair',
+          'ELP',
+          baseToken.address,
+          'not an address',
+        ),
+        '@elasticswap/sdk - validations: not an Ethereum address',
+      );
+
+      await expectThrowsAsync(
+        exchangeFactory.createNewExchange.bind(
+          exchangeFactory,
+          'TestPair',
+          'ELP',
+          'not an address',
+          baseToken.address,
+        ),
+        '@elasticswap/sdk - validations: not an Ethereum address',
+      );
+
+      await expectThrowsAsync(
+        exchangeFactory.createNewExchange.bind(
+          exchangeFactory,
+          'TestPair',
+          'ELP',
+          baseToken.address,
+          ethers.constants.AddressZero,
+        ),
+        'Origin: exchangeFactory, Code: 18, Message: QUOTE_TOKEN_IS_ZERO_ADDRESS, Path: unknown.',
+      );
+
+      await expectThrowsAsync(
+        exchangeFactory.createNewExchange.bind(
+          exchangeFactory,
+          'TestPair',
+          'ELP',
+          ethers.constants.AddressZero,
+          baseToken.address,
+        ),
+        'Origin: exchangeFactory, Code: 17, Message: BASE_TOKEN_IS_ZERO_ADDRESS, Path: unknown.',
+      );
+    });
   });
 });
