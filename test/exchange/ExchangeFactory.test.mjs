@@ -15,6 +15,8 @@ describe('ExchangeFactory', () => {
   let sdk;
   let baseToken;
   let quoteToken;
+  let ExchangeFactory;
+  let accounts;
 
   before(async () => {
     const env = {
@@ -29,7 +31,7 @@ describe('ExchangeFactory', () => {
     });
 
     await deployments.fixture();
-    const accounts = await ethers.getSigners();
+    accounts = await ethers.getSigners();
 
     const BaseToken = await deployments.get('BaseToken');
     baseToken = new ethers.Contract(
@@ -46,10 +48,14 @@ describe('ExchangeFactory', () => {
     );
   });
 
+  beforeEach(async () => {
+    await deployments.fixture();
+    ExchangeFactory = await deployments.get('ExchangeFactory');
+  });
+
   describe('Constructor', () => {
     it('can be created via constructor', async () => {
       await deployments.fixture();
-      const ExchangeFactory = await deployments.get('ExchangeFactory');
       const exchangeFactory = new elasticSwapSDK.ExchangeFactory(
         sdk,
         ExchangeFactory.address,
@@ -61,10 +67,6 @@ describe('ExchangeFactory', () => {
 
   describe('getFeeAddress', () => {
     it('returns expected fee address', async () => {
-      const accounts = await ethers.getSigners();
-
-      await deployments.fixture();
-      const ExchangeFactory = await deployments.get('ExchangeFactory');
       const exchangeFactory = new elasticSwapSDK.ExchangeFactory(
         sdk,
         ExchangeFactory.address,
@@ -84,11 +86,7 @@ describe('ExchangeFactory', () => {
 
   describe('createNewExchange', () => {
     it('Can create a new exchange', async () => {
-      const accounts = await ethers.getSigners();
       const randomAccount = accounts[5];
-
-      await deployments.fixture();
-      const ExchangeFactory = await deployments.get('ExchangeFactory');
       await sdk.changeSigner(randomAccount);
 
       const exchangeFactory = new elasticSwapSDK.ExchangeFactory(
@@ -122,14 +120,9 @@ describe('ExchangeFactory', () => {
       assert.notEqual(exchangeAddress, ethers.constants.AddressZero);
     });
 
-    it('Will fail to create the same exchange twice', async () => {
-      const accounts = await ethers.getSigners();
+    it('Will fail to create a duplicate exchange', async () => {
       const randomAccount = accounts[5];
-
-      await deployments.fixture();
-      const ExchangeFactory = await deployments.get('ExchangeFactory');
       await sdk.changeSigner(randomAccount);
-
       const exchangeFactory = new elasticSwapSDK.ExchangeFactory(
         sdk,
         ExchangeFactory.address,
