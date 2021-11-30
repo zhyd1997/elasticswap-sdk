@@ -23,10 +23,13 @@ let exchangeClass;
 describe('Exchange', () => {
   beforeEach(async () => {
     accounts = await ethers.getSigners();
+    await deployments.fixture();
 
+    const ExchangeFactory = await deployments.get('ExchangeFactory');
+    const { chainId } = await hardhat.ethers.provider.getNetwork()
     const env = {
-      networkId: 99999,
-      exchangeFactoryAddress: '0x8C2251e028043e38f58Ac64c00E1F940D305Aa62',
+      networkId: chainId,
+      exchangeFactoryAddress: ExchangeFactory.address,
     };
 
     sdk = new elasticSwapSDK.SDK({
@@ -38,7 +41,6 @@ describe('Exchange', () => {
       storageAdapter,
     });
 
-    await deployments.fixture();
 
     const BaseToken = await deployments.get('BaseToken');
     baseToken = new ethers.Contract(

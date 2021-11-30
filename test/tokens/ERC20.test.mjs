@@ -15,10 +15,14 @@ describe('ERC20', () => {
   let sdk;
 
   before(async () => {
+    await deployments.fixture();
+    const ExchangeFactory = await deployments.get('ExchangeFactory');
+    const { chainId } = await hardhat.ethers.provider.getNetwork()
     const env = {
-      networkId: 99999,
-      exchangeFactoryAddress: '0x8C2251e028043e38f58Ac64c00E1F940D305Aa62',
+      networkId: chainId,
+      exchangeFactoryAddress: ExchangeFactory.address,
     };
+
     const accounts = await ethers.getSigners();
     sdk = new elasticSwap.SDK({
       env,
