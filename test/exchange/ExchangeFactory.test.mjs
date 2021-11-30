@@ -85,7 +85,7 @@ describe('ExchangeFactory', () => {
   });
 
   describe('createNewExchange', () => {
-    it('Can create a new exchange', async () => {
+    it.only('Can create a new exchange', async () => {
       const randomAccount = accounts[5];
       await sdk.changeSigner(randomAccount);
 
@@ -112,12 +112,18 @@ describe('ExchangeFactory', () => {
         baseToken.address,
         quoteToken.address,
       );
+
       const exchangeAddress =
         await exchangeFactoryContract.exchangeAddressByTokenAddress(
           baseToken.address,
           quoteToken.address,
         );
       assert.notEqual(exchangeAddress, ethers.constants.AddressZero);
+      const exchange = await exchangeFactory.getExchange(
+        baseToken.address,
+        quoteToken.address,
+      );
+      assert.equal(exchangeAddress, exchange.address);
     });
 
     it('Will fail to create a duplicate exchange', async () => {

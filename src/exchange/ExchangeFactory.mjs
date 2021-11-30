@@ -1,9 +1,9 @@
 /* eslint class-methods-use-this: 0 */
 
-import BaseEvents from '../BaseEvents.mjs';
-import ErrorHandling from '../ErrorHandling.mjs';
 import { ethers } from 'ethers';
 import ExchangeFactorySolidity from '@elastic-dao/elasticswap/artifacts/src/contracts/ExchangeFactory.sol/ExchangeFactory.json';
+import BaseEvents from '../BaseEvents.mjs';
+import ErrorHandling from '../ErrorHandling.mjs';
 import Exchange from './Exchange.mjs';
 import QueryFilterable from '../QueryFilterable.mjs';
 import { validateIsString, validateIsAddress, toKey } from '../utils/utils.mjs';
@@ -29,7 +29,7 @@ export default class ExchangeFactory extends QueryFilterable {
     });
 
     this._errorHandling = new ErrorHandling('exchangeFactory');
-    this._exchangesByAddress = {}; //mapping indexed by base token and then quote token
+    this._exchangesByAddress = {}; // mapping indexed by base token and then quote token
 
     // this.getNewExchangeEvents();
     // start listening to events emitted from the contract for the `NewExchange` event.
@@ -38,9 +38,9 @@ export default class ExchangeFactory extends QueryFilterable {
     // in a mapping here.
     // this._exchangesByAddress[baseTokenAddress][quoteTokenAddress] = new exchange();
 
-    this.events.NewExchange().then((obj) => {
-      console.log('EVENT:', obj);
-    });
+    // this.events.NewExchange().then((obj) => {
+    //   console.log('EVENT:', obj);
+    // });
   }
 
   get readonlyContract() {
@@ -209,5 +209,6 @@ export default class ExchangeFactory extends QueryFilterable {
 // Questions for Dan
 // 1. Readonly contracts?
 // 2. event call backs?
-// 3. cacheing
+// 3. caching
 // 4. handling tx returns (refreshing dao)
+// 5. changing wallet signers and recreating contracts? IE if we cache the exchanges and then the users changes signers
