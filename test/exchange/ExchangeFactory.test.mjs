@@ -4,6 +4,7 @@ import fetch from 'node-fetch';
 import hardhat from 'hardhat';
 import * as elasticSwapSDK from '../../src/index.mjs';
 import LocalStorageAdapterMock from '../adapters/LocalStorageAdapterMock.mjs';
+import { expectThrowsAsync } from '../testHelpers.mjs';
 
 const { ethers, deployments } = hardhat;
 const { assert } = chai;
@@ -82,7 +83,7 @@ describe('ExchangeFactory', () => {
   });
 
   describe('createNewExchange', () => {
-    only('Can create a new exchange', async () => {
+    it('Can create a new exchange', async () => {
       const accounts = await ethers.getSigners();
       const randomAccount = accounts[5];
 
@@ -119,6 +120,38 @@ describe('ExchangeFactory', () => {
           quoteToken.address,
         );
       assert.notEqual(exchangeAddress, ethers.constants.AddressZero);
+    });
+
+    it('Will fail to create the same exchange twice', async () => {
+      const accounts = await ethers.getSigners();
+      const randomAccount = accounts[5];
+
+      await deployments.fixture();
+      const ExchangeFactory = await deployments.get('ExchangeFactory');
+      await sdk.changeSigner(randomAccount);
+
+      const exchangeFactory = new elasticSwapSDK.ExchangeFactory(
+        sdk,
+        ExchangeFactory.address,
+      );
+
+      await exchangeFactory.createNewExchange(
+        'TestPair',
+        'ELP',
+        baseToken.address,
+        quoteToken.address,
+      );
+
+      await expectThrowsAsync(
+        exchangeFactory.createNewExchange.bind(
+          exchangeFactory,
+          'TestPair',
+          'ELP',
+          baseToken.address,
+          quoteToken.address,
+        ),
+        'Origin: exchangeFactory, Code: 20, Message: PAIR_ALREADY_EXISTS, Path: unknown.',
+      );
     });
   });
 });

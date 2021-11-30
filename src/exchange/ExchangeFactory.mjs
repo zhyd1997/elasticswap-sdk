@@ -5,6 +5,7 @@ import { ethers } from 'ethers';
 import BaseEvents from '../BaseEvents.mjs';
 import { validateIsString, validateIsAddress, toKey } from '../utils/utils.mjs';
 import QueryFilterable from '../QueryFilterable.mjs';
+import ErrorHandling from '../ErrorHandling.mjs';
 
 class Events extends BaseEvents {
   async NewExchange() {
@@ -25,6 +26,8 @@ export default class ExchangeFactory extends QueryFilterable {
       address,
       readonly: false,
     });
+
+    this._errorHandling = new ErrorHandling('exchangeFactory');
 
     // this.getNewExchangeEvents();
     // start listening to events emitted from the contract for the `NewExchange` event.
@@ -78,18 +81,18 @@ export default class ExchangeFactory extends QueryFilterable {
       baseTokenAddress.toLowerCase() ===
       ethers.constants.AddressZero.toLowerCase()
     ) {
-      throw this.errorHandling.error('BASE_TOKEN_IS_ZERO_ADDRESS');
+      throw this._errorHandling.error('BASE_TOKEN_IS_ZERO_ADDRESS');
     }
 
     if (
       quoteTokenAddress.toLowerCase() ===
       ethers.constants.AddressZero.toLowerCase()
     ) {
-      throw this.errorHandling.error('QUOTE_TOKEN_IS_ZERO_ADDRESS');
+      throw this._errorHandling.error('QUOTE_TOKEN_IS_ZERO_ADDRESS');
     }
 
     if (baseTokenAddress.toLowerCase() === quoteTokenAddress.toLowerCase()) {
-      throw this.errorHandling.error('BASE_TOKEN_SAME_AS_QUOTE');
+      throw this._errorHandling.error('BASE_TOKEN_SAME_AS_QUOTE');
     }
 
     // confirm this exchange pair does not exist yet.
@@ -99,7 +102,7 @@ export default class ExchangeFactory extends QueryFilterable {
     );
 
     if (exchangeAddress !== ethers.constants.AddressZero) {
-      throw this.errorHandling.error(`PAIR_ALREADY_EXISTS: ${exchangeAddress}`);
+      throw this._errorHandling.error('PAIR_ALREADY_EXISTS');
     }
 
     const txStatus = await this.contract.createNewExchange(
