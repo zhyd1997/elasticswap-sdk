@@ -26,7 +26,7 @@ describe('Exchange', () => {
     await deployments.fixture();
 
     const ExchangeFactory = await deployments.get('ExchangeFactory');
-    const { chainId } = await hardhat.ethers.provider.getNetwork()
+    const { chainId } = await hardhat.ethers.provider.getNetwork();
     const env = {
       networkId: chainId,
       exchangeFactoryAddress: ExchangeFactory.address,
@@ -40,7 +40,6 @@ describe('Exchange', () => {
       signer: accounts[0],
       storageAdapter,
     });
-
 
     const BaseToken = await deployments.get('BaseToken');
     baseToken = new ethers.Contract(
