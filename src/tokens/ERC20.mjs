@@ -1,5 +1,5 @@
-import ERC20Contract from '@elastic-dao/elasticswap/artifacts/@openzeppelin/contracts/token/ERC20/ERC20.sol/ERC20.json';
-import Base from '../Base';
+import ERC20Contract from '@elasticswap/elasticswap/artifacts/@openzeppelin/contracts/token/ERC20/ERC20.sol/ERC20.json';
+import Base from '../Base.mjs';
 
 export default class ERC20 extends Base {
   constructor(sdk, address) {

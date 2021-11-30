@@ -19,6 +19,7 @@ module.exports = {
   rules: {
     'function-paren-newline': 0,
     'implicit-arrow-linebreak': 0,
+    'import/extensions': 0,
     'max-classes-per-file': 0,
     'no-async-promise-executor': 0,
     'no-console': 0,

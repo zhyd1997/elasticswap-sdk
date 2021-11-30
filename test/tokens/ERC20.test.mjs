@@ -2,26 +2,34 @@
 import chai from 'chai';
 import fetch from 'node-fetch';
 import hardhat from 'hardhat';
-import elasticSwap from '../../dist/index.js';
+import * as elasticSwap from '../../src/index.mjs';
+import LocalStorageAdapterMock from '../adapters/LocalStorageAdapterMock.mjs';
 
 const { toBigNumber } = elasticSwap.utils;
 const { ethers, deployments } = hardhat;
 const { assert } = chai;
 
+const storageAdapter = new LocalStorageAdapterMock();
+
 describe('ERC20', () => {
   let sdk;
 
   before(async () => {
+    await deployments.fixture();
+    const ExchangeFactory = await deployments.get('ExchangeFactory');
+    const { chainId } = await hardhat.ethers.provider.getNetwork()
     const env = {
-      networkId: 99999,
-      exchangeFactoryAddress: '0x8C2251e028043e38f58Ac64c00E1F940D305Aa62',
+      networkId: chainId,
+      exchangeFactoryAddress: ExchangeFactory.address,
     };
+
     const accounts = await ethers.getSigners();
     sdk = new elasticSwap.SDK({
       env,
       customFetch: fetch,
       provider: hardhat.ethers.provider,
       signer: accounts[0],
+      storageAdapter,
     });
   });
 
@@ -48,10 +56,12 @@ describe('ERC20', () => {
       });
       const erc20Contract = new elasticSwap.ERC20(sdk, quoteToken.address);
 
-      let expectedBalance = await quoteTokenContract.balanceOf(accounts[0].address);
+      let expectedBalance = await quoteTokenContract.balanceOf(
+        accounts[0].address,
+      );
       expectedBalance = toBigNumber(expectedBalance.toString());
-      const balance = await erc20Contract.balanceOf(accounts[0].address);
-
+      let balance = await erc20Contract.balanceOf(accounts[0].address);
+      balance = toBigNumber(balance.toString());
       assert.isTrue(expectedBalance.eq(balance));
     });
 
@@ -66,10 +76,12 @@ describe('ERC20', () => {
         abi: quoteToken.abi,
       });
       const erc20Contract = new elasticSwap.ERC20(sdk, quoteToken.address);
-      let expectedBalance = await quoteTokenContract.balanceOf(accounts[1].address);
+      let expectedBalance = await quoteTokenContract.balanceOf(
+        accounts[1].address,
+      );
       expectedBalance = toBigNumber(expectedBalance.toString());
-      const balance = await erc20Contract.balanceOf(accounts[1].address);
-
+      let balance = await erc20Contract.balanceOf(accounts[1].address);
+      balance = toBigNumber(balance.toString());
       assert.isTrue(expectedBalance.eq(balance));
     });
   });
@@ -90,20 +102,18 @@ describe('ERC20', () => {
       const erc20 = new elasticSwap.ERC20(sdk, quoteTokenMock.address);
 
       // checking initial approvals
-      const startingApproval = await quoteTokenContract
-        .allowance(
-          accounts[0].address,
-          spenderAddress,
-        );
+      const startingApproval = await quoteTokenContract.allowance(
+        accounts[0].address,
+        spenderAddress,
+      );
 
       const approvalAmount = 50000;
       await erc20.approve(spenderAddress, approvalAmount);
 
-      const endingApproval = await quoteTokenContract
-        .allowance(
-          accounts[0].address,
-          spenderAddress,
-        );
+      const endingApproval = await quoteTokenContract.allowance(
+        accounts[0].address,
+        spenderAddress,
+      );
 
       assert.isTrue(startingApproval.eq(0));
       assert.isTrue(endingApproval.eq(approvalAmount));

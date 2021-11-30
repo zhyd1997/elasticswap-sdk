@@ -1,4 +1,4 @@
-import Base from './Base';
+import Base from './Base.mjs';
 
 export default class EventLogCollection extends Base {
   constructor(sdk, target, eventName) {

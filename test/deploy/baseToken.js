@@ -1,4 +1,4 @@
-const ElasticMock = require('@elastic-dao/elasticswap/artifacts/src/contracts/mocks/ElasticMock.sol/ElasticMock.json');
+const ElasticMock = require('@elasticswap/elasticswap/artifacts/src/contracts/mocks/ElasticMock.sol/ElasticMock.json');
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deploy, log } = deployments;

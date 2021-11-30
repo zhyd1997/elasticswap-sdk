@@ -1,0 +1,54 @@
+{
+  "exchange": {
+    "classCode": "1",
+    "classCommonName": "Exchange",
+    "exceptions": {
+      "NOT_ENOUGH_BASE_TOKEN_BALANCE": {
+        "message": "NOT_ENOUGH_BASE_TOKEN_BALANCE",
+        "code": "11"
+      },
+      "NOT_ENOUGH_QUOTE_TOKEN_BALANCE": {
+        "message": "NOT_ENOUGH_QUOTE_TOKEN_BALANCE",
+        "code": "12"
+      },
+      "TRANSFER_NOT_APPROVED": {
+        "message": "TRANSFER_NOT_APPROVED_BY_USER",
+        "code": "13"
+      },
+      "TIMESTAMP_EXPIRED": {
+        "message": "TIMESTAMP_EXPIRED",
+        "code": "14"
+      },
+      "TOKEN_QTY_DESIRED_LESS_OR_EQUAL_THAN_MINIMUM": {
+        "message": "TOKEN_QTY_DESIRED_LESS_OR_EQUAL_THAN_MINIMUM",
+        "code": "15"
+      },
+      "NOT_ENOUGH_LP_TOKEN_BALANCE": {
+        "message": "NOT_ENOUGH_LP_TOKEN_BALANCE",
+        "code": "16"
+      }
+    }
+  },
+  "exchangeFactory": {
+    "classCode": "1",
+    "classCommonName": "ExchangeFactory",
+    "exceptions": {
+      "BASE_TOKEN_IS_ZERO_ADDRESS": {
+        "message": "BASE_TOKEN_IS_ZERO_ADDRESS",
+        "code": "17"
+      },
+      "QUOTE_TOKEN_IS_ZERO_ADDRESS": {
+        "message": "QUOTE_TOKEN_IS_ZERO_ADDRESS",
+        "code": "18"
+      },
+      "BASE_TOKEN_SAME_AS_QUOTE": {
+        "message": "BASE_TOKEN_SAME_AS_QUOTE",
+        "code": "19"
+      },
+      "PAIR_ALREADY_EXISTS": {
+        "message": "PAIR_ALREADY_EXISTS",
+        "code": "20"
+      }
+    }
+  }
+}

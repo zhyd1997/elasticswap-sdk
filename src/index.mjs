@@ -1,13 +1,14 @@
 /* eslint consistent-return: 0 */
 
 import { ethers } from 'ethers';
-import { shortenAddress, validateIsAddress } from '@pie-dao/utils';
 import Notify from 'bnc-notify';
-import ERC20Contract from '@elastic-dao/elasticswap/artifacts/@openzeppelin/contracts/token/ERC20/ERC20.sol/ERC20.json';
-import Subscribable from './Subscribable';
-import ExchangeFactoryClass from './exchange/ExchangeFactory';
-import ExchangeClass from './exchange/Exchange';
-import ERC20Class from './tokens/ERC20';
+import ERC20Contract from '@elasticswap/elasticswap/artifacts/@openzeppelin/contracts/token/ERC20/ERC20.sol/ERC20.json';
+import Subscribable from './Subscribable.mjs';
+import ExchangeFactoryClass from './exchange/ExchangeFactory.mjs';
+import ExchangeClass from './exchange/Exchange.mjs';
+import ERC20Class from './tokens/ERC20.mjs';
+import ErrorHandlingClass from './ErrorHandling.mjs';
+import LocalStorageAdapter from './adapters/LocalStorageAdapter.mjs';
 
 import {
   amountFormatter,
@@ -17,9 +18,11 @@ import {
   toKey,
   toNumber,
   upTo,
+  shortenAddress,
   truncate,
+  validateIsAddress,
   round,
-} from './utils/utils';
+} from './utils/utils.mjs';
 
 export const utils = {
   amountFormatter,
@@ -33,17 +36,19 @@ export const utils = {
   round,
 };
 
-const prefix = '@elastic-dao/elasticswap-sdk';
+const prefix = '@elasticswap/sdk';
 
 export const ExchangeFactory = ExchangeFactoryClass;
 export const Exchange = ExchangeClass;
 export const ERC20 = ERC20Class;
+export const ErrorHandling = ErrorHandlingClass;
 
 export class SDK extends Subscribable {
-  constructor({ account, customFetch, env, provider, signer }) {
+  constructor({ account, customFetch, env, provider, signer, storageAdapter }) {
     super();
     this.provider = provider || ethers.getDefaultProvider();
     this._contract = ({ address, abi }) => new ethers.Contract(address, abi);
+    this._storageAdapter = storageAdapter || new LocalStorageAdapter();
     this.signer = signer;
     this.account = account;
     this.env = env;
@@ -74,7 +79,7 @@ export class SDK extends Subscribable {
       this._fetch = window.fetch.bind(window);
     } else {
       throw new Error(
-        '@elastic-dao/elasticswap-sdk: SDK constructor unable to find fetch. ' +
+        '@elasticswap/sdk: SDK constructor unable to find fetch. ' +
           "Please provide a compatible implementation via the 'customFetch' parameter.",
       );
     }
@@ -108,6 +113,10 @@ export class SDK extends Subscribable {
 
   get fetch() {
     return this._fetch;
+  }
+
+  get storageAdapter() {
+    return this._storageAdapter;
   }
 
   async balanceOf(address) {
