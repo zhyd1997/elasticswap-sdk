@@ -1,8 +1,8 @@
 {
   "name": "@elasticswap/sdk",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Official SDK for ElasticSwap",
-  "main": "dist/index.mjs",
+  "main": "dist/index.js",
   "repository": "https://github.com/elasticswap/elasticswap-sdk",
   "author": "ElasticSwap",
   "license": "GPL-3.0",

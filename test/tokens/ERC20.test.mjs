@@ -17,7 +17,7 @@ describe('ERC20', () => {
   before(async () => {
     await deployments.fixture();
     const ExchangeFactory = await deployments.get('ExchangeFactory');
-    const { chainId } = await hardhat.ethers.provider.getNetwork()
+    const { chainId } = await hardhat.ethers.provider.getNetwork();
     const env = {
       networkId: chainId,
       exchangeFactoryAddress: ExchangeFactory.address,

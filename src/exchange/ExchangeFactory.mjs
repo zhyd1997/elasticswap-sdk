@@ -63,13 +63,13 @@ export default class ExchangeFactory extends QueryFilterable {
     return this._contract.feeAddress();
   }
 
-  getExchanges() {
-    // return all exchanges
-  }
+  // getExchanges() {
+  //   // return all exchanges
+  // }
 
-  getExchangeAddress(baseTokenAddress) {
-    // return this._exchangesByAddress[baseTokenAddress];
-  }
+  // getExchangeAddress(baseTokenAddress) {
+  //   // return this._exchangesByAddress[baseTokenAddress];
+  // }
 
   async getExchange(baseTokenAddress, quoteTokenAddress) {
     // TODO: this should really used a cached mapping that we build from the events.
@@ -211,4 +211,5 @@ export default class ExchangeFactory extends QueryFilterable {
 // 2. event call backs?
 // 3. caching
 // 4. handling tx returns (refreshing dao)
-// 5. changing wallet signers and recreating contracts? IE if we cache the exchanges and then the users changes signers
+// 5. changing wallet signers and recreating contracts?
+// IE if we cache the exchanges and then the users changes signers

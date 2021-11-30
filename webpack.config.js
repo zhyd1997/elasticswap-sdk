@@ -7,7 +7,7 @@ module.exports = (env, argv) => ({
   },
   output: {
     path: path.join(__dirname, '/dist'),
-    filename: '[name].mjs',
+    filename: '[name].js',
     library: 'SDK',
     libraryTarget: 'umd',
     globalObject: 'this',
