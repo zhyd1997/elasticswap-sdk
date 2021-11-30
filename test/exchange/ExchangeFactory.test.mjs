@@ -85,7 +85,7 @@ describe('ExchangeFactory', () => {
   });
 
   describe('createNewExchange', () => {
-    it.only('Can create a new exchange', async () => {
+    it('Can create a new exchange', async () => {
       const randomAccount = accounts[5];
       await sdk.changeSigner(randomAccount);
 

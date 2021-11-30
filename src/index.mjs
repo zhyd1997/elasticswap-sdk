@@ -2,7 +2,7 @@
 
 import { ethers } from 'ethers';
 import Notify from 'bnc-notify';
-import ERC20Contract from '@elastic-dao/elasticswap/artifacts/@openzeppelin/contracts/token/ERC20/ERC20.sol/ERC20.json';
+import ERC20Contract from '@elasticswap/elasticswap/artifacts/@openzeppelin/contracts/token/ERC20/ERC20.sol/ERC20.json';
 import Subscribable from './Subscribable.mjs';
 import ExchangeFactoryClass from './exchange/ExchangeFactory.mjs';
 import ExchangeClass from './exchange/Exchange.mjs';
@@ -36,7 +36,7 @@ export const utils = {
   round,
 };
 
-const prefix = '@elastic-dao/elasticswap-sdk';
+const prefix = '@elasticswap/sdk';
 
 export const ExchangeFactory = ExchangeFactoryClass;
 export const Exchange = ExchangeClass;

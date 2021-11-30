@@ -1,4 +1,4 @@
-const Exchange = require('@elastic-dao/elasticswap/artifacts/src/contracts/Exchange.sol/Exchange.json');
+const Exchange = require('@elasticswap/elasticswap/artifacts/src/contracts/Exchange.sol/Exchange.json');
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deploy, log } = deployments;

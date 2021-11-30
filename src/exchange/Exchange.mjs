@@ -1,4 +1,4 @@
-import ExchangeSolidity from '@elastic-dao/elasticswap/artifacts/src/contracts/Exchange.sol/Exchange.json';
+import ExchangeSolidity from '@elasticswap/elasticswap/artifacts/src/contracts/Exchange.sol/Exchange.json';
 import ERC20 from '../tokens/ERC20.mjs';
 import Base from '../Base.mjs';
 import ErrorHandling from '../ErrorHandling.mjs';

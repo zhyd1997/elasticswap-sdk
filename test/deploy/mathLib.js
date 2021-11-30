@@ -1,4 +1,4 @@
-const MathLib = require('@elastic-dao/elasticswap/artifacts/src/libraries/MathLib.sol/MathLib.json');
+const MathLib = require('@elasticswap/elasticswap/artifacts/src/libraries/MathLib.sol/MathLib.json');
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deploy, log } = deployments;
