@@ -1,11 +1,12 @@
 /* eslint class-methods-use-this: 0 */
 
-import ExchangeFactorySolidity from '@elastic-dao/elasticswap/artifacts/src/contracts/ExchangeFactory.sol/ExchangeFactory.json';
-import { ethers } from 'ethers';
 import BaseEvents from '../BaseEvents.mjs';
-import { validateIsString, validateIsAddress, toKey } from '../utils/utils.mjs';
-import QueryFilterable from '../QueryFilterable.mjs';
 import ErrorHandling from '../ErrorHandling.mjs';
+import { ethers } from 'ethers';
+import ExchangeFactorySolidity from '@elastic-dao/elasticswap/artifacts/src/contracts/ExchangeFactory.sol/ExchangeFactory.json';
+import Exchange from './Exchange.mjs';
+import QueryFilterable from '../QueryFilterable.mjs';
+import { validateIsString, validateIsAddress, toKey } from '../utils/utils.mjs';
 
 class Events extends BaseEvents {
   async NewExchange() {
@@ -28,6 +29,7 @@ export default class ExchangeFactory extends QueryFilterable {
     });
 
     this._errorHandling = new ErrorHandling('exchangeFactory');
+    this._exchangesByAddress = {}; //mapping indexed by base token and then quote token
 
     // this.getNewExchangeEvents();
     // start listening to events emitted from the contract for the `NewExchange` event.
@@ -35,6 +37,14 @@ export default class ExchangeFactory extends QueryFilterable {
     // callback function would create the Exchange class (from the SDK) and store it
     // in a mapping here.
     // this._exchangesByAddress[baseTokenAddress][quoteTokenAddress] = new exchange();
+
+    this.events.NewExchange().then((obj) => {
+      console.log('EVENT:', obj);
+    });
+  }
+
+  get readonlyContract() {
+    return this._contract;
   }
 
   get address() {
@@ -61,8 +71,53 @@ export default class ExchangeFactory extends QueryFilterable {
     // return this._exchangesByAddress[baseTokenAddress];
   }
 
-  getExchangeAddress(baseTokenAddress, quoteTokenAddress) {
+  async getExchange(baseTokenAddress, quoteTokenAddress) {
+    // TODO: this should really used a cached mapping that we build from the events.
     // return this._exchangesByAddress[baseTokenAddress][quoteTokenAddress];
+    validateIsAddress(baseTokenAddress);
+    validateIsAddress(quoteTokenAddress);
+
+    if (
+      baseTokenAddress.toLowerCase() ===
+      ethers.constants.AddressZero.toLowerCase()
+    ) {
+      throw this._errorHandling.error('BASE_TOKEN_IS_ZERO_ADDRESS');
+    }
+
+    if (
+      quoteTokenAddress.toLowerCase() ===
+      ethers.constants.AddressZero.toLowerCase()
+    ) {
+      throw this._errorHandling.error('QUOTE_TOKEN_IS_ZERO_ADDRESS');
+    }
+
+    if (baseTokenAddress.toLowerCase() === quoteTokenAddress.toLowerCase()) {
+      throw this._errorHandling.error('BASE_TOKEN_SAME_AS_QUOTE');
+    }
+
+    // check if we already have this exchange object
+    if (this._exchangesByAddress[baseTokenAddress]) {
+      if (this._exchangesByAddress[baseTokenAddress][quoteTokenAddress]) {
+        return this._exchangesByAddress[baseTokenAddress][quoteTokenAddress];
+      }
+    } else {
+      // we need to create the mapping for this base token
+      this._exchangesByAddress[baseTokenAddress] = {};
+    }
+
+    // create the new exchange, save it to our mapping and return to user.
+    const exchangeAddress = await this.contract.exchangeAddressByTokenAddress(
+      baseTokenAddress,
+      quoteTokenAddress,
+    );
+    const exchange = new Exchange(
+      this.sdk,
+      exchangeAddress,
+      baseTokenAddress,
+      quoteTokenAddress,
+    );
+    this._exchangesByAddress[baseTokenAddress][quoteTokenAddress] = exchange;
+    return exchange;
   }
 
   async createNewExchange(
@@ -150,3 +205,9 @@ export default class ExchangeFactory extends QueryFilterable {
     return tx;
   }
 }
+
+// Questions for Dan
+// 1. Readonly contracts?
+// 2. event call backs?
+// 3. cacheing
+// 4. handling tx returns (refreshing dao)
