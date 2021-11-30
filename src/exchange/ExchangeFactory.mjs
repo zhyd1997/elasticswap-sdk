@@ -1,8 +1,9 @@
 /* eslint class-methods-use-this: 0 */
 
 import ExchangeFactorySolidity from '@elastic-dao/elasticswap/artifacts/src/contracts/ExchangeFactory.sol/ExchangeFactory.json';
+import { ethers } from 'ethers';
 import BaseEvents from '../BaseEvents.mjs';
-import { toKey } from '../utils/utils.mjs';
+import { validateIsString, validateIsAddress, toKey } from '../utils/utils.mjs';
 import QueryFilterable from '../QueryFilterable.mjs';
 
 class Events extends BaseEvents {
@@ -37,6 +38,10 @@ export default class ExchangeFactory extends QueryFilterable {
     return this._address;
   }
 
+  get id() {
+    return this._address;
+  }
+
   get contract() {
     return this._contract;
   }
@@ -57,12 +62,54 @@ export default class ExchangeFactory extends QueryFilterable {
     // return this._exchangesByAddress[baseTokenAddress][quoteTokenAddress];
   }
 
-  async createNewExchange(baseTokenAddress, quoteTokenAddress) {
-    // check to ensure the exchange doesn't exist already
-    // check locally and also check solidity
-    // this._contract.exchangeAddressByTokenAddress(baseTokenAdress, quotTokenAddress) (if the exchange doesn't exist, this will return the 0 address ethers.constants.ZERO_ADDRESS);
-    // if no exchange exists than check that base token !- quote token
-    // and that baseToken != ethers.constants.ZERO_ADDRESS and quoteToken != ethers.constants.ZERO_ADDRESS
+  async createNewExchange(
+    name,
+    symbol,
+    baseTokenAddress,
+    quoteTokenAddress,
+    overrides = {},
+  ) {
+    validateIsString(name);
+    validateIsString(symbol);
+    validateIsAddress(baseTokenAddress);
+    validateIsAddress(quoteTokenAddress);
+
+    if (
+      baseTokenAddress.toLowerCase() ===
+      ethers.constants.AddressZero.toLowerCase()
+    ) {
+      throw this.errorHandling.error('BASE_TOKEN_IS_ZERO_ADDRESS');
+    }
+
+    if (
+      quoteTokenAddress.toLowerCase() ===
+      ethers.constants.AddressZero.toLowerCase()
+    ) {
+      throw this.errorHandling.error('QUOTE_TOKEN_IS_ZERO_ADDRESS');
+    }
+
+    if (baseTokenAddress.toLowerCase() === quoteTokenAddress.toLowerCase()) {
+      throw this.errorHandling.error('BASE_TOKEN_SAME_AS_QUOTE');
+    }
+
+    // confirm this exchange pair does not exist yet.
+    const exchangeAddress = await this.contract.exchangeAddressByTokenAddress(
+      baseTokenAddress,
+      quoteTokenAddress,
+    );
+
+    if (exchangeAddress !== ethers.constants.AddressZero) {
+      throw this.errorHandling.error(`PAIR_ALREADY_EXISTS: ${exchangeAddress}`);
+    }
+
+    const txStatus = await this.contract.createNewExchange(
+      name,
+      symbol,
+      baseTokenAddress,
+      quoteTokenAddress,
+      this.sanitizeOverrides(overrides),
+    );
+    return txStatus;
   }
 
   async getNewExchangeEvents(overrides = {}) {
@@ -73,11 +120,12 @@ export default class ExchangeFactory extends QueryFilterable {
 
     const results = await this.queryFilter(
       'NewExchange',
-      12056930, // TODO: FIX ME
+      1, // TODO: FIX ME
       endingBlock,
     );
 
-    results.forEach((event) => createExchangeFromEvent(event));
+    // results.forEach((event) => createExchangeFromEvent(event));
+    return results;
   }
 
   createExchangeFromEvent(event) {

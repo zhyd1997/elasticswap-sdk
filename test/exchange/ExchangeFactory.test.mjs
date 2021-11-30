@@ -12,6 +12,8 @@ const storageAdapter = new LocalStorageAdapterMock();
 
 describe('ExchangeFactory', () => {
   let sdk;
+  let baseToken;
+  let quoteToken;
 
   before(async () => {
     const env = {
@@ -24,6 +26,23 @@ describe('ExchangeFactory', () => {
       provider: hardhat.ethers.provider,
       storageAdapter,
     });
+
+    await deployments.fixture();
+    const accounts = await ethers.getSigners();
+
+    const BaseToken = await deployments.get('BaseToken');
+    baseToken = new ethers.Contract(
+      BaseToken.address,
+      BaseToken.abi,
+      accounts[0],
+    );
+
+    const QuoteToken = await deployments.get('QuoteToken');
+    quoteToken = new ethers.Contract(
+      QuoteToken.address,
+      QuoteToken.abi,
+      accounts[0],
+    );
   });
 
   describe('Constructor', () => {
@@ -59,6 +78,47 @@ describe('ExchangeFactory', () => {
         await exchangeFactoryContract.feeAddress(),
         await exchangeFactory.getFeeAddress(),
       );
+    });
+  });
+
+  describe('createNewExchange', () => {
+    only('Can create a new exchange', async () => {
+      const accounts = await ethers.getSigners();
+      const randomAccount = accounts[5];
+
+      await deployments.fixture();
+      const ExchangeFactory = await deployments.get('ExchangeFactory');
+      await sdk.changeSigner(randomAccount);
+
+      const exchangeFactory = new elasticSwapSDK.ExchangeFactory(
+        sdk,
+        ExchangeFactory.address,
+      );
+
+      const exchangeFactoryContract = new ethers.Contract(
+        ExchangeFactory.address,
+        ExchangeFactory.abi,
+        accounts[0],
+      );
+      const zeroAddress =
+        await exchangeFactoryContract.exchangeAddressByTokenAddress(
+          baseToken.address,
+          quoteToken.address,
+        );
+      assert.equal(zeroAddress, ethers.constants.AddressZero);
+
+      await exchangeFactory.createNewExchange(
+        'TestPair',
+        'ELP',
+        baseToken.address,
+        quoteToken.address,
+      );
+      const exchangeAddress =
+        await exchangeFactoryContract.exchangeAddressByTokenAddress(
+          baseToken.address,
+          quoteToken.address,
+        );
+      assert.notEqual(exchangeAddress, ethers.constants.AddressZero);
     });
   });
 });
