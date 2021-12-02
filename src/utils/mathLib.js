@@ -47,7 +47,7 @@ const BASIS_POINTS = BigNumber('10000');
   const baseTokenQtyMinBN = BigNumber(_baseTokenQtyMin);
   const baseTokenReserveQtyBN = BigNumber(_baseTokenReserveQty);
   const totalSupplyOfLiquidityTokensBN = BigNumber(_totalSupplyOfLiquidityTokens);
-  const internalBalances = internalBalancesBNCleaner(_internalBalances);
+  const internalBalances = internalBalancesBNConverter(_internalBalances);
  
 
   const maxBaseTokenQty = (internalBalances.baseTokenReserveQty).minus(baseTokenReserveQtyBN);
@@ -139,24 +139,13 @@ const BASIS_POINTS = BigNumber('10000');
   const baseTokenReserveQtyBN = BigNumber(_baseTokenReserveQty);
   const quoteTokenReserveQtyBN = BigNumber(_quoteTokenReserveQty);
   let totalSupplyOfLiquidityTokensBN = BigNumber(_totalSupplyOfLiquidityTokens);
-  const internalBalances = internalBalancesBNCleaner(_internalBalances);
+  const internalBalances = internalBalancesBNConverter(_internalBalances);
 
   let tokenQtys = {
     baseTokenQty: ZERO,
     quoteTokenQty: ZERO,
     liquidityTokenQty: ZERO,
     liquidityTokenFeeQty: ZERO,
-  };
-  const inputs = {
-    baseTokenQtyDesiredBN,
-    quoteTokenQtyDesiredBN,
-    baseTokenQtyMinBN,
-    quoteTokenQtyMinBN,
-    baseTokenReserveQtyBN,
-    quoteTokenReserveQtyBN,
-    totalSupplyOfLiquidityTokensBN,
-    internalBalances
-
   };
 
   if(totalSupplyOfLiquidityTokensBN.isGreaterThan(ZERO)){
@@ -317,13 +306,7 @@ const BASIS_POINTS = BigNumber('10000');
   const quoteTokenQtyMinBN = BigNumber(_quoteTokenQtyMin);
   const baseTokenReserveQtyBN = BigNumber(_baseTokenReserveQty);
   const totalSupplyOfLiquidityTokensBN = BigNumber(_totalSupplyOfLiquidityTokens);
-  const internalBalances = internalBalancesBNCleaner(_internalBalances);
-  const inputs = {
-    quoteTokenQtyDesiredBN, 
-    quoteTokenQtyMinBN, 
-    baseTokenReserveQtyBN,
-    totalSupplyOfLiquidityTokensBN,
-    internalBalances};
+  const internalBalances = internalBalancesBNConverter(_internalBalances);
 
   const baseTokenDecay = baseTokenReserveQtyBN.minus(internalBalances.baseTokenReserveQty);
   
@@ -354,7 +337,6 @@ const BASIS_POINTS = BigNumber('10000');
   // x += alphaDecayChange
   // y += deltaBeta
 
-  // doubt: not required as this is a lib?
   internalBalances.baseTokenReserveQty = internalBalances.baseTokenReserveQty.plus(baseTokenQtyDecayChange);
   internalBalances.quoteTokenReserveQty = internalBalances.quoteTokenReserveQty.plus(quoteTokenQty);
 
@@ -405,7 +387,7 @@ const BASIS_POINTS = BigNumber('10000');
   const quoteTokenQtyMinBN = BigNumber(_quoteTokenQtyMin);
   const quoteTokenReserveQtyBN = BigNumber(_quoteTokenReserveQty);
   const totalSupplyOfLiquidityTokensBN = BigNumber(_totalSupplyOfLiquidityTokens);
-  const internalBalances = internalBalancesBNCleaner(_internalBalances);
+  const internalBalances = internalBalancesBNConverter(_internalBalances);
   
 
   let baseTokenQty;
@@ -470,7 +452,7 @@ const BASIS_POINTS = BigNumber('10000');
     const baseTokenQtyMinBN = BigNumber(_baseTokenQtyMin);
     const baseTokenReserveQtyBN = BigNumber(_baseTokenReserveQty);
     const liquidityFeeInBasisPointsBN = BigNumber(_liquidityFeeInBasisPoints);
-    const internalBalances = internalBalancesBNCleaner(_internalBalances);
+    const internalBalances = internalBalancesBNConverter(_internalBalances);
 
     let baseTokenQty = ZERO;
 
@@ -578,7 +560,7 @@ const calculateFees = (feesInBasisPoints, swapAmount) => {
 ) => {
   // cleanse inputs
   const totalSupplyOfLiquidityTokensBN = BigNumber(_totalSupplyOfLiquidityTokens);
-  const internalBalances = internalBalancesBNCleaner(_internalBalances);
+  const internalBalances = internalBalancesBNConverter(_internalBalances);
 
   const rootK = ((internalBalances.baseTokenReserveQty).multipliedBy(internalBalances.quoteTokenReserveQty)).sqrt();
   const rootKLast = (internalBalances.kLast).sqrt();
@@ -717,18 +699,8 @@ const calculateLPTokenAmount = (quoteTokenAmount, baseTokenAmount, quoteTokenRes
   const baseTokenReserveQtyBN = BigNumber(baseTokenReserveQty);
   const slippageBN = BigNumber(slippage);
   const totalSupplyOfLiquidityTokensBN = BigNumber(totalSupplyOfLiquidityTokens);
-  const cleansedInternalBalances = internalBalancesBNCleaner(internalBalances);
+  const cleansedInternalBalances = internalBalancesBNConverter(internalBalances);
 
-  const inputs = {
-    quoteTokenAmountBN,
-    baseTokenAmountBN,
-    quoteTokenReserveQtyBN,
-    baseTokenReserveQtyBN,
-    slippageBN,
-    totalSupplyOfLiquidityTokensBN,
-    cleansedInternalBalances
-
-  };
   // NaN cases
   if(quoteTokenAmountBN.isNaN() || baseTokenAmountBN.isNaN() || quoteTokenReserveQtyBN.isNaN() 
     || baseTokenReserveQtyBN.isNaN() || slippageBN.isNaN() || totalSupplyOfLiquidityTokensBN.isNaN()) {
@@ -938,7 +910,7 @@ const calculateQuoteTokenQty = (
   const baseTokenQtyBN = BigNumber(_baseTokenQtyMin);
   const quoteTokenQtyMinBN = BigNumber(_quoteTokenQty);
   const liquidityFeeInBasisPointsBN = BigNumber(_liquidityFeeInBasisPoints);
-  const internalBalances = internalBalancesBNCleaner(_internalBalances);
+  const internalBalances = internalBalancesBNConverter(_internalBalances);
 
   let quoteTokenQty = ZERO;
 
@@ -1048,7 +1020,7 @@ const calculateTokenAmountsFromLPTokens = (lpTokenQtyToRedeem, slippagePercent, 
 // todo: logic check on _internalbalances
 const isSufficientDecayPresent = (_baseTokenReserveQty, _internalBalances) => {
   const baseTokenReserveQtyBN = BigNumber(_baseTokenReserveQty);
-  const internalBalances = internalBalancesBNCleaner(_internalBalances);
+  const internalBalances = internalBalancesBNConverter(_internalBalances);
   const baseTokenReserveDifference = (baseTokenReserveQtyBN.minus(internalBalances.baseTokenReserveQty).abs());
   const internalBalanceRatio = (internalBalances.baseTokenReserveQty).dividedBy(internalBalances.quoteTokenReserveQty);
   const decayPresentComparison = (baseTokenReserveDifference.dividedBy(internalBalanceRatio)).isGreaterThan(BigNumber('1'));
@@ -1057,7 +1029,7 @@ const isSufficientDecayPresent = (_baseTokenReserveQty, _internalBalances) => {
 
 
 // helper function
-const internalBalancesBNCleaner = (_internalBalances) => {
+const internalBalancesBNConverter = (_internalBalances) => {
   _internalBalances.baseTokenReserveQty = BigNumber( _internalBalances.baseTokenReserveQty);
   _internalBalances.quoteTokenReserveQty = BigNumber(_internalBalances.quoteTokenReserveQty);
   _internalBalances.kLast = BigNumber( _internalBalances.kLast);
