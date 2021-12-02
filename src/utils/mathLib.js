@@ -24,33 +24,33 @@ const BASIS_POINTS = BigNumber('10000');
 /**
  * @dev used to calculate the qty of base tokens required and liquidity tokens (deltaRo) to be issued
  * in order to add liquidity and remove base token decay.
- * @param _baseTokenQtyDesired the amount of base token the user wants to contribute
- * @param _baseTokenQtyMin the minimum amount of base token the user wants to contribute (allows for slippage)
- * @param _baseTokenReserveQty the external base token reserve qty prior to this transaction
- * @param _totalSupplyOfLiquidityTokens the total supply of our exchange's liquidity tokens (aka Ro)
- * @param _internalBalances internal balances struct from our exchange's internal accounting
+ * @param baseTokenQtyDesired the amount of base token the user wants to contribute
+ * @param baseTokenQtyMin the minimum amount of base token the user wants to contribute (allows for slippage)
+ * @param baseTokenReserveQty the external base token reserve qty prior to this transaction
+ * @param totalSupplyOfLiquidityTokens the total supply of our exchange's liquidity tokens (aka Ro)
+ * @param internalBalances internal balances struct from our exchange's internal accounting
  *
  * @return {baseTokenQty, liquidityTokenQty}
  * baseTokenQty - qty of base token the user must supply
  * liquidityTokenQty - qty of liquidity tokens to be issued in exchange
  */
  const calculateAddBaseTokenLiquidityQuantities = (
-  _baseTokenQtyDesired,
-  _baseTokenQtyMin,
-  _baseTokenReserveQty,
-  _totalSupplyOfLiquidityTokens,
-  _internalBalances
+  baseTokenQtyDesired,
+  baseTokenQtyMin,
+  baseTokenReserveQty,
+  totalSupplyOfLiquidityTokens,
+  internalBalances
 ) => {
 
   // cleanse input 
-  const baseTokenQtyDesiredBN = BigNumber(_baseTokenQtyDesired);
-  const baseTokenQtyMinBN = BigNumber(_baseTokenQtyMin);
-  const baseTokenReserveQtyBN = BigNumber(_baseTokenReserveQty);
-  const totalSupplyOfLiquidityTokensBN = BigNumber(_totalSupplyOfLiquidityTokens);
-  const internalBalances = internalBalancesBNConverter(_internalBalances);
+  const baseTokenQtyDesiredBN = BigNumber(baseTokenQtyDesired);
+  const baseTokenQtyMinBN = BigNumber(baseTokenQtyMin);
+  const baseTokenReserveQtyBN = BigNumber(baseTokenReserveQty);
+  const totalSupplyOfLiquidityTokensBN = BigNumber(totalSupplyOfLiquidityTokens);
+  const internalBalancesBN = internalBalancesBNConverter(internalBalances);
  
 
-  const maxBaseTokenQty = (internalBalances.baseTokenReserveQty).minus(baseTokenReserveQtyBN);
+  const maxBaseTokenQty = (internalBalancesBN.baseTokenReserveQty).minus(baseTokenReserveQtyBN);
   
   if(baseTokenQtyMinBN.isGreaterThanOrEqualTo(maxBaseTokenQty)){
     throw INSUFFICIENT_DECAY;
@@ -65,7 +65,7 @@ const BASIS_POINTS = BigNumber('10000');
   }
 
   // determine the quote token qty decay change quoted on our current ratios
-  const internalQuoteToBaseTokenRatio = (internalBalances.quoteTokenReserveQty).dividedBy(internalBalances.baseTokenReserveQty);
+  const internalQuoteToBaseTokenRatio = (internalBalancesBN.quoteTokenReserveQty).dividedBy(internalBalancesBN.baseTokenReserveQty);
 
 
   const quoteTokenQtyDecayChange = baseTokenQty.multipliedBy(internalQuoteToBaseTokenRatio);
@@ -90,7 +90,7 @@ const BASIS_POINTS = BigNumber('10000');
   const liquidityTokenQty = calculateLiquidityTokenQtyForSingleAssetEntry(
     totalSupplyOfLiquidityTokensBN,
     baseTokenQty,
-    internalBalances.baseTokenReserveQty,
+    internalBalancesBN.baseTokenReserveQty,
     quoteTokenQtyDecayChange,
     quoteTokenDecay
   );
@@ -105,14 +105,14 @@ const BASIS_POINTS = BigNumber('10000');
 
 /**
  * @dev used to calculate the qty of tokens a user will need to contribute and be issued in order to add liquidity
- * @param _baseTokenQtyDesired the amount of base token the user wants to contribute
- * @param _quoteTokenQtyDesired the amount of quote token the user wants to contribute
- * @param _baseTokenQtyMin the minimum amount of base token the user wants to contribute (allows for slippage)
- * @param _quoteTokenQtyMin the minimum amount of quote token the user wants to contribute (allows for slippage)
- * @param _baseTokenReserveQty the external base token reserve qty prior to this transaction
- * @param _quoteTokenReserveQty the external quote token reserve qty prior to this transaction
- * @param _totalSupplyOfLiquidityTokens the total supply of our exchange's liquidity tokens (aka Ro)
- * @param _internalBalances internal balances struct from our exchange's internal accounting
+ * @param baseTokenQtyDesired the amount of base token the user wants to contribute
+ * @param quoteTokenQtyDesired the amount of quote token the user wants to contribute
+ * @param baseTokenQtyMin the minimum amount of base token the user wants to contribute (allows for slippage)
+ * @param quoteTokenQtyMin the minimum amount of quote token the user wants to contribute (allows for slippage)
+ * @param baseTokenReserveQty the external base token reserve qty prior to this transaction
+ * @param quoteTokenReserveQty the external quote token reserve qty prior to this transaction
+ * @param totalSupplyOfLiquidityTokens the total supply of our exchange's liquidity tokens (aka Ro)
+ * @param internalBalances internal balances struct from our exchange's internal accounting
  * internalBalances = {
  *  baseTokenReserveQty: ZERO,
  *  quoteTokenReserveQty: ZERO,
@@ -121,25 +121,25 @@ const BASIS_POINTS = BigNumber('10000');
  * @return tokenQtys = {baseTokenQty, quoteTokenQty, liquidityTokenQty} - qty of tokens needed to complete transaction 
  */
  const calculateAddLiquidityQuantities = (
-  _baseTokenQtyDesired,
-  _quoteTokenQtyDesired,
-  _baseTokenQtyMin,
-  _quoteTokenQtyMin,
-  _baseTokenReserveQty,
-  _quoteTokenReserveQty,
-  _totalSupplyOfLiquidityTokens,
-  _internalBalances
+  baseTokenQtyDesired,
+  quoteTokenQtyDesired,
+  baseTokenQtyMin,
+  quoteTokenQtyMin,
+  baseTokenReserveQty,
+  quoteTokenReserveQty,
+  totalSupplyOfLiquidityTokens,
+  internalBalances
 ) => {
 
   // cleanse input
-  const baseTokenQtyDesiredBN = BigNumber(_baseTokenQtyDesired);
-  const quoteTokenQtyDesiredBN = BigNumber(_quoteTokenQtyDesired);
-  const baseTokenQtyMinBN = BigNumber(_baseTokenQtyMin);
-  const quoteTokenQtyMinBN = BigNumber(_quoteTokenQtyMin);
-  const baseTokenReserveQtyBN = BigNumber(_baseTokenReserveQty);
-  const quoteTokenReserveQtyBN = BigNumber(_quoteTokenReserveQty);
-  let totalSupplyOfLiquidityTokensBN = BigNumber(_totalSupplyOfLiquidityTokens);
-  const internalBalances = internalBalancesBNConverter(_internalBalances);
+  const baseTokenQtyDesiredBN = BigNumber(baseTokenQtyDesired);
+  const quoteTokenQtyDesiredBN = BigNumber(quoteTokenQtyDesired);
+  const baseTokenQtyMinBN = BigNumber(baseTokenQtyMin);
+  const quoteTokenQtyMinBN = BigNumber(quoteTokenQtyMin);
+  const baseTokenReserveQtyBN = BigNumber(baseTokenReserveQty);
+  const quoteTokenReserveQtyBN = BigNumber(quoteTokenReserveQty);
+  let totalSupplyOfLiquidityTokensBN = BigNumber(totalSupplyOfLiquidityTokens);
+  const internalBalancesBN = internalBalancesBNConverter(internalBalances);
 
   let tokenQtys = {
     baseTokenQty: ZERO,
@@ -153,7 +153,7 @@ const BASIS_POINTS = BigNumber('10000');
     
     tokenQtys.liquidityTokenFeeQty = calculateLiquidityTokenFees(
       totalSupplyOfLiquidityTokensBN,
-      internalBalances
+      internalBalancesBN
     );
 
     // we need to take this amount (that will be minted) into account for below calculations
@@ -163,7 +163,7 @@ const BASIS_POINTS = BigNumber('10000');
     // if we do, we need to resolve that first
     
     
-    if( isSufficientDecayPresent( baseTokenReserveQtyBN, internalBalances) ) {
+    if( isSufficientDecayPresent( baseTokenReserveQtyBN, internalBalancesBN) ) {
       // decay is present and needs to be dealt with by the caller.
       
 
@@ -171,7 +171,7 @@ const BASIS_POINTS = BigNumber('10000');
       let quoteTokenQtyFromDecay = ZERO;
       let liquidityTokenQtyFromDecay = ZERO;
       
-      if( baseTokenReserveQtyBN.isGreaterThan(internalBalances.baseTokenReserveQty)){
+      if( baseTokenReserveQtyBN.isGreaterThan(internalBalancesBN.baseTokenReserveQty)){
         // we have more base token than expected (base token decay) due to rebase up
         // we first need to handle this situation by requiring this user
         // to add quote tokens
@@ -180,7 +180,7 @@ const BASIS_POINTS = BigNumber('10000');
           ZERO,  // there is no minimum for this particular call since we may use quote tokens later.
           baseTokenReserveQtyBN,
           totalSupplyOfLiquidityTokensBN,
-          internalBalances
+          internalBalancesBN
         );
         quoteTokenQtyFromDecay = fetchCalculateAddQuoteTokenLiquidityQuantities.quoteTokenQty;
         liquidityTokenQtyFromDecay = fetchCalculateAddQuoteTokenLiquidityQuantities.liquidityTokenQty;
@@ -197,7 +197,7 @@ const BASIS_POINTS = BigNumber('10000');
           ZERO,  // there is no minimum for this particular call since we may use quote tokens later.
           baseTokenReserveQtyBN,
           totalSupplyOfLiquidityTokensBN,
-          internalBalances
+          internalBalancesBN
         );
         
         // {baseTokenQty, liquidityTokenQty}
@@ -219,7 +219,7 @@ const BASIS_POINTS = BigNumber('10000');
           ZERO,
           quoteTokenReserveQtyBN.plus(quoteTokenQtyFromDecay),
           totalSupplyOfLiquidityTokensBN.plus(liquidityTokenQtyFromDecay),
-          internalBalances // NOTE: these balances have already been updated when we did the decay math.
+          internalBalancesBN // NOTE: these balances have already been updated when we did the decay math.
         );
 
         tokenQtys.baseTokenQty = fetchTokenQty.baseTokenQty;
@@ -250,7 +250,7 @@ const BASIS_POINTS = BigNumber('10000');
         quoteTokenQtyMinBN,
         quoteTokenReserveQtyBN,
         totalSupplyOfLiquidityTokensBN,
-        internalBalances
+        internalBalancesBN
       );
       tokenQtys.baseTokenQty = fetchTokenQtys.baseTokenQty;
       tokenQtys.quoteTokenQty = fetchTokenQtys.quoteTokenQty;
@@ -273,8 +273,8 @@ const BASIS_POINTS = BigNumber('10000');
     tokenQtys.quoteTokenQty = quoteTokenQtyDesiredBN;
     tokenQtys.liquidityTokenQty = (baseTokenQtyDesiredBN.multipliedBy(quoteTokenQtyDesiredBN)).sqrt();
 
-    internalBalances.baseTokenReserveQty = internalBalances.baseTokenReserveQty.plus(tokenQtys.baseTokenQty);
-    internalBalances.quoteTokenReserveQty = internalBalances.quoteTokenReserveQty.plus(tokenQtys.quoteTokenQty);
+    internalBalancesBN.baseTokenReserveQty = internalBalancesBN.baseTokenReserveQty.plus(tokenQtys.baseTokenQty);
+    internalBalancesBN.quoteTokenReserveQty = internalBalancesBN.quoteTokenReserveQty.plus(tokenQtys.quoteTokenQty);
     return tokenQtys;
   }
 
@@ -283,11 +283,11 @@ const BASIS_POINTS = BigNumber('10000');
 /**
  * @dev used to calculate the qty of quote token required and liquidity tokens (deltaRo) to be issued
  * in order to add liquidity and remove base token decay.
- * @param _quoteTokenQtyDesired the amount of quote token the user wants to contribute
- * @param _quoteTokenQtyMin the minimum amount of quote token the user wants to contribute (allows for slippage)
- * @param _baseTokenReserveQty the external base token reserve qty prior to this transaction
- * @param _totalSupplyOfLiquidityTokens the total supply of our exchange's liquidity tokens (aka Ro)
- * @param _internalBalances internal balances struct from our exchange's internal accounting
+ * @param quoteTokenQtyDesired the amount of quote token the user wants to contribute
+ * @param quoteTokenQtyMin the minimum amount of quote token the user wants to contribute (allows for slippage)
+ * @param baseTokenReserveQty the external base token reserve qty prior to this transaction
+ * @param totalSupplyOfLiquidityTokens the total supply of our exchange's liquidity tokens (aka Ro)
+ * @param internalBalances internal balances struct from our exchange's internal accounting
  *
  *
  * @returns {quoteTokenQty, liquidityTokenQty}
@@ -295,25 +295,25 @@ const BASIS_POINTS = BigNumber('10000');
  * liquidityTokenQty -  qty of liquidity tokens to be issued in exchange
  */
  const calculateAddQuoteTokenLiquidityQuantities = (
-  _quoteTokenQtyDesired,
-  _quoteTokenQtyMin,
-  _baseTokenReserveQty,
-  _totalSupplyOfLiquidityTokens,
-  _internalBalances ) => {
+  quoteTokenQtyDesired,
+  quoteTokenQtyMin,
+  baseTokenReserveQty,
+  totalSupplyOfLiquidityTokens,
+  internalBalances ) => {
   
   // cleanse input
-  const quoteTokenQtyDesiredBN = BigNumber(_quoteTokenQtyDesired);
-  const quoteTokenQtyMinBN = BigNumber(_quoteTokenQtyMin);
-  const baseTokenReserveQtyBN = BigNumber(_baseTokenReserveQty);
-  const totalSupplyOfLiquidityTokensBN = BigNumber(_totalSupplyOfLiquidityTokens);
-  const internalBalances = internalBalancesBNConverter(_internalBalances);
+  const quoteTokenQtyDesiredBN = BigNumber(quoteTokenQtyDesired);
+  const quoteTokenQtyMinBN = BigNumber(quoteTokenQtyMin);
+  const baseTokenReserveQtyBN = BigNumber(baseTokenReserveQty);
+  const totalSupplyOfLiquidityTokensBN = BigNumber(totalSupplyOfLiquidityTokens);
+  const internalBalancesBN = internalBalancesBNConverter(internalBalances);
 
-  const baseTokenDecay = baseTokenReserveQtyBN.minus(internalBalances.baseTokenReserveQty);
+  const baseTokenDecay = baseTokenReserveQtyBN.minus(internalBalancesBN.baseTokenReserveQty);
   
  
 
   // omega - X/Y
-  const internalBaseTokenToQuoteTokenRatio = internalBalances.baseTokenReserveQty.dividedBy(internalBalances.quoteTokenReserveQty);
+  const internalBaseTokenToQuoteTokenRatio = internalBalancesBN.baseTokenReserveQty.dividedBy(internalBalancesBN.quoteTokenReserveQty);
 
   // alphaDecay / omega (A/B)
   const maxQuoteTokenQty = baseTokenDecay.dividedBy(internalBaseTokenToQuoteTokenRatio);
@@ -337,14 +337,14 @@ const BASIS_POINTS = BigNumber('10000');
   // x += alphaDecayChange
   // y += deltaBeta
 
-  internalBalances.baseTokenReserveQty = internalBalances.baseTokenReserveQty.plus(baseTokenQtyDecayChange);
-  internalBalances.quoteTokenReserveQty = internalBalances.quoteTokenReserveQty.plus(quoteTokenQty);
+  internalBalancesBN.baseTokenReserveQty = internalBalancesBN.baseTokenReserveQty.plus(baseTokenQtyDecayChange);
+  internalBalancesBN.quoteTokenReserveQty = internalBalancesBN.quoteTokenReserveQty.plus(quoteTokenQty);
 
   
   const liquidityTokenQty = calculateLiquidityTokenQtyForSingleAssetEntry(
     totalSupplyOfLiquidityTokensBN, 
     quoteTokenQty, 
-    internalBalances.quoteTokenReserveQty, 
+    internalBalancesBN.quoteTokenReserveQty, 
     baseTokenQtyDecayChange, 
     baseTokenDecay );
 
@@ -359,42 +359,42 @@ const BASIS_POINTS = BigNumber('10000');
 /**
  * @dev calculates the qty of base and quote tokens required and liquidity tokens (deltaRo) to be issued
  * in order to add liquidity when no decay is present.
- * @param _baseTokenQtyDesired the amount of base token the user wants to contribute
- * @param _quoteTokenQtyDesired the amount of quote token the user wants to contribute
- * @param _baseTokenQtyMin the minimum amount of base token the user wants to contribute (allows for slippage)
- * @param _quoteTokenQtyMin the minimum amount of quote token the user wants to contribute (allows for slippage)
- * @param _quoteTokenReserveQty the external quote token reserve qty prior to this transaction
- * @param _totalSupplyOfLiquidityTokens the total supply of our exchange's liquidity tokens (aka Ro)
- * @param _internalBalances internal balances struct from our exchange's internal accounting
+ * @param baseTokenQtyDesired the amount of base token the user wants to contribute
+ * @param quoteTokenQtyDesired the amount of quote token the user wants to contribute
+ * @param baseTokenQtyMin the minimum amount of base token the user wants to contribute (allows for slippage)
+ * @param quoteTokenQtyMin the minimum amount of quote token the user wants to contribute (allows for slippage)
+ * @param quoteTokenReserveQty the external quote token reserve qty prior to this transaction
+ * @param totalSupplyOfLiquidityTokens the total supply of our exchange's liquidity tokens (aka Ro)
+ * @param internalBalances internal balances struct from our exchange's internal accounting
  *
  * @return baseTokenQty qty of base token the user must supply
  * @return quoteTokenQty qty of quote token the user must supply
  * @return liquidityTokenQty qty of liquidity tokens to be issued in exchange
  */
  const calculateAddTokenPairLiquidityQuantities = (
-  _baseTokenQtyDesired,
-  _quoteTokenQtyDesired,
-  _baseTokenQtyMin,
-  _quoteTokenQtyMin,
-  _quoteTokenReserveQty,
-  _totalSupplyOfLiquidityTokens,
-  _internalBalances
+  baseTokenQtyDesired,
+  quoteTokenQtyDesired,
+  baseTokenQtyMin,
+  quoteTokenQtyMin,
+  quoteTokenReserveQty,
+  totalSupplyOfLiquidityTokens,
+  internalBalances
 ) => {
   // cleanse input
-  const baseTokenQtyDesiredBN = BigNumber(_baseTokenQtyDesired);
-  const quoteTokenQtyDesiredBN = BigNumber(_quoteTokenQtyDesired);
-  const baseTokenQtyMinBN = BigNumber(_baseTokenQtyMin);
-  const quoteTokenQtyMinBN = BigNumber(_quoteTokenQtyMin);
-  const quoteTokenReserveQtyBN = BigNumber(_quoteTokenReserveQty);
-  const totalSupplyOfLiquidityTokensBN = BigNumber(_totalSupplyOfLiquidityTokens);
-  const internalBalances = internalBalancesBNConverter(_internalBalances);
+  const baseTokenQtyDesiredBN = BigNumber(baseTokenQtyDesired);
+  const quoteTokenQtyDesiredBN = BigNumber(quoteTokenQtyDesired);
+  const baseTokenQtyMinBN = BigNumber(baseTokenQtyMin);
+  const quoteTokenQtyMinBN = BigNumber(quoteTokenQtyMin);
+  const quoteTokenReserveQtyBN = BigNumber(quoteTokenReserveQty);
+  const totalSupplyOfLiquidityTokensBN = BigNumber(totalSupplyOfLiquidityTokens);
+  const internalBalancesBN = internalBalancesBNConverter(internalBalances);
   
 
   let baseTokenQty;
   let quoteTokenQty;
   let liquidityTokenQty;
 
-  const requiredQuoteTokenQty = calculateQty(baseTokenQtyDesiredBN, internalBalances.baseTokenReserveQty, internalBalances.quoteTokenReserveQty);
+  const requiredQuoteTokenQty = calculateQty(baseTokenQtyDesiredBN, internalBalancesBN.baseTokenReserveQty, internalBalancesBN.quoteTokenReserveQty);
 
   if(requiredQuoteTokenQty.isLessThanOrEqualTo(quoteTokenQtyDesiredBN)){
     // user has to provide less than their desired amount
@@ -407,7 +407,7 @@ const BASIS_POINTS = BigNumber('10000');
   } else {
 
     // we need to check the opposite way.
-    const requiredBaseTokenQty = calculateQty(quoteTokenQtyDesiredBN, internalBalances.quoteTokenReserveQty, internalBalances.baseTokenReserveQty);
+    const requiredBaseTokenQty = calculateQty(quoteTokenQtyDesiredBN, internalBalancesBN.quoteTokenReserveQty, internalBalancesBN.baseTokenReserveQty);
     if(requiredBaseTokenQty.isLessThan(baseTokenQtyMinBN)){
       throw INSUFFICIENT_BASE_QTY;
     }
@@ -418,8 +418,8 @@ const BASIS_POINTS = BigNumber('10000');
   
   liquidityTokenQty = calculateLiquidityTokenQtyForDoubleAssetEntry(totalSupplyOfLiquidityTokensBN, quoteTokenQty, quoteTokenReserveQtyBN);
 
-  internalBalances.baseTokenReserveQty = baseTokenQty.plus(internalBalances.baseTokenReserveQty);
-  internalBalances.quoteTokenReserveQty = quoteTokenQty.plus(internalBalances.quoteTokenReserveQty);
+  internalBalancesBN.baseTokenReserveQty = baseTokenQty.plus(internalBalancesBN.baseTokenReserveQty);
+  internalBalancesBN.quoteTokenReserveQty = quoteTokenQty.plus(internalBalancesBN.quoteTokenReserveQty);
 
   const baseQuoteLiquidityTokenQty = {
     baseTokenQty: baseTokenQty,
@@ -432,38 +432,38 @@ const BASIS_POINTS = BigNumber('10000');
 
  /**
    * @dev calculates the qty of base tokens a user will receive for swapping their quote tokens (less fees)
-   * @param _quoteTokenQty the amount of quote tokens the user wants to swap
-   * @param _baseTokenQtyMin the minimum about of base tokens they are willing to receive in return (slippage)
-   * @param _baseTokenReserveQty the external base token reserve qty prior to this transaction
-   * @param _liquidityFeeInBasisPoints the current total liquidity fee represented as an integer of basis points
-   * @param _internalBalances internal balances struct from our exchange's internal accounting
+   * @param quoteTokenQty the amount of quote tokens the user wants to swap
+   * @param baseTokenQtyMin the minimum about of base tokens they are willing to receive in return (slippage)
+   * @param baseTokenReserveQty the external base token reserve qty prior to this transaction
+   * @param liquidityFeeInBasisPoints the current total liquidity fee represented as an integer of basis points
+   * @param internalBalances internal balances struct from our exchange's internal accounting
    *
    * @return baseTokenQty qty of base token the user will receive back
    */
   const calculateBaseTokenQty = (
-    _quoteTokenQty,
-    _baseTokenQtyMin,
-    _baseTokenReserveQty,
-    _liquidityFeeInBasisPoints,
-    _internalBalances
+    quoteTokenQty,
+    baseTokenQtyMin,
+    baseTokenReserveQty,
+    liquidityFeeInBasisPoints,
+    internalBalances
   ) => {
     // cleanse inputs
-    const quoteTokenQtyBN = BigNumber(_quoteTokenQty);
-    const baseTokenQtyMinBN = BigNumber(_baseTokenQtyMin);
-    const baseTokenReserveQtyBN = BigNumber(_baseTokenReserveQty);
-    const liquidityFeeInBasisPointsBN = BigNumber(_liquidityFeeInBasisPoints);
-    const internalBalances = internalBalancesBNConverter(_internalBalances);
+    const quoteTokenQtyBN = BigNumber(quoteTokenQty);
+    const baseTokenQtyMinBN = BigNumber(baseTokenQtyMin);
+    const baseTokenReserveQtyBN = BigNumber(baseTokenReserveQty);
+    const liquidityFeeInBasisPointsBN = BigNumber(liquidityFeeInBasisPoints);
+    const internalBalancesBN = internalBalancesBNConverter(internalBalances);
 
     let baseTokenQty = ZERO;
 
-    if(baseTokenReserveQtyBN.isLessThan(ZERO) && (internalBalances.baseTokenReserveQty).isLessThan(ZERO)){
+    if(baseTokenReserveQtyBN.isLessThan(ZERO) && (internalBalancesBN.baseTokenReserveQty).isLessThan(ZERO)){
       throw INSUFFICIENT_BASE_TOKEN_QTY;
     }
 
     // check to see if we have experienced quote token Decay / a rebase down event
-    if( baseTokenReserveQtyBN.isLessThan(internalBalances.baseTokenReserveQty) ) {
+    if( baseTokenReserveQtyBN.isLessThan(internalBalancesBN.baseTokenReserveQty) ) {
       // we have less reserves than our current price curve will expect, we need to adjust the curve
-      const pricingRatio = (internalBalances.baseTokenReserveQty).dividedBy(internalBalances.quoteTokenReserveQty);
+      const pricingRatio = (internalBalancesBN.baseTokenReserveQty).dividedBy(internalBalancesBN.quoteTokenReserveQty);
       //    ^ is Omega
 
       const impliedQuoteTokenQty = baseTokenReserveQtyBN.dividedBy(pricingRatio);
@@ -473,8 +473,8 @@ const BASIS_POINTS = BigNumber('10000');
       // we have the same or more reserves, no need to alter the curve.
       baseTokenQty = calculateQtyToReturnAfterFees(
         quoteTokenQtyBN, 
-        internalBalances.quoteTokenReserveQty,
-        internalBalances.baseTokenReserveQty,
+        internalBalancesBN.quoteTokenReserveQty,
+        internalBalancesBN.baseTokenReserveQty,
         liquidityFeeInBasisPointsBN 
         );
     };
@@ -482,8 +482,8 @@ const BASIS_POINTS = BigNumber('10000');
     if( baseTokenQty.isLessThanOrEqualTo(baseTokenQtyMinBN)) {
       throw INSUFFICIENT_BASE_TOKEN_QTY;
     }
-    internalBalances.baseTokenReserveQty = internalBalances.baseTokenReserveQty.minus(baseTokenQty);
-    internalBalances.quoteTokenReserveQty = internalBalances.quoteTokenReserveQty.plus(quoteTokenQtyBN);
+    internalBalancesBN.baseTokenReserveQty = internalBalancesBN.baseTokenReserveQty.minus(baseTokenQty);
+    internalBalancesBN.quoteTokenReserveQty = internalBalancesBN.quoteTokenReserveQty.plus(quoteTokenQtyBN);
 
 
     return baseTokenQty;
@@ -549,21 +549,21 @@ const calculateFees = (feesInBasisPoints, swapAmount) => {
 /**
  * @dev calculates the qty of liquidity tokens that should be sent to the DAO due to the growth in K from trading.
  * The DAO takes 1/6 of the total fees (30BP total fee, 25 BP to lps and 5 BP to the DAO)
- * @param _totalSupplyOfLiquidityTokens the total supply of our exchange's liquidity tokens (aka Ro)
- * @param _internalBalances internal balances struct from our exchange's internal accounting
+ * @param totalSupplyOfLiquidityTokens the total supply of our exchange's liquidity tokens (aka Ro)
+ * @param internalBalances internal balances struct from our exchange's internal accounting
  *
  * @return liquidityTokenFeeQty qty of tokens to be minted to the fee address for the growth in K
  */ 
  const calculateLiquidityTokenFees = (
-  _totalSupplyOfLiquidityTokens,
-  _internalBalances
+  totalSupplyOfLiquidityTokens,
+  internalBalances
 ) => {
   // cleanse inputs
-  const totalSupplyOfLiquidityTokensBN = BigNumber(_totalSupplyOfLiquidityTokens);
-  const internalBalances = internalBalancesBNConverter(_internalBalances);
+  const totalSupplyOfLiquidityTokensBN = BigNumber(totalSupplyOfLiquidityTokens);
+  const internalBalancesBN = internalBalancesBNConverter(internalBalances);
 
-  const rootK = ((internalBalances.baseTokenReserveQty).multipliedBy(internalBalances.quoteTokenReserveQty)).sqrt();
-  const rootKLast = (internalBalances.kLast).sqrt();
+  const rootK = ((internalBalancesBN.baseTokenReserveQty).multipliedBy(internalBalancesBN.quoteTokenReserveQty)).sqrt();
+  const rootKLast = (internalBalancesBN.kLast).sqrt();
 
   let liquidityTokenFeeQty = ZERO;
   
@@ -581,20 +581,20 @@ const calculateFees = (feesInBasisPoints, swapAmount) => {
 /**
  * @dev used to calculate the qty of liquidity tokens (deltaRo) we will be issued to a supplier
  * of a single asset entry when decay is present.
- * @param _totalSupplyOfLiquidityTokens the total supply of our exchange's liquidity tokens (aka Ro)
- * @param _quoteTokenQty the amount of quote token the user it adding to the pool (deltaB or deltaY)
- * @param _quoteTokenReserveBalance the total balance (external) of quote tokens in our pool (Beta)
+ * @param totalSupplyOfLiquidityTokens the total supply of our exchange's liquidity tokens (aka Ro)
+ * @param quoteTokenQty the amount of quote token the user it adding to the pool (deltaB or deltaY)
+ * @param quoteTokenReserveBalance the total balance (external) of quote tokens in our pool (Beta)
  *
  * @return liquidityTokenQty qty of liquidity tokens to be issued in exchange
  */
  const calculateLiquidityTokenQtyForDoubleAssetEntry = (
-  _totalSupplyOfLiquidityTokens,
-  _quoteTokenQty,
-  _quoteTokenReserveBalance ) => {
+  totalSupplyOfLiquidityTokens,
+  quoteTokenQty,
+  quoteTokenReserveBalance ) => {
   // cleanse the input 
-  const totalSupplyOfLiquidityTokensBN = BigNumber(_totalSupplyOfLiquidityTokens);
-  const quoteTokenQtyBN = BigNumber(_quoteTokenQty);
-  const quoteTokenReserveBalanceBN = BigNumber(_quoteTokenReserveBalance);
+  const totalSupplyOfLiquidityTokensBN = BigNumber(totalSupplyOfLiquidityTokens);
+  const quoteTokenQtyBN = BigNumber(quoteTokenQty);
+  const quoteTokenReserveBalanceBN = BigNumber(quoteTokenReserveBalance);
 
   /*
 
@@ -618,27 +618,27 @@ const calculateFees = (feesInBasisPoints, swapAmount) => {
 /**
  * @dev used to calculate the qty of liquidity tokens (deltaRo) we will be issued to a supplier
  * of a single asset entry when decay is present.
- * @param _totalSupplyOfLiquidityTokens the total supply of our exchange's liquidity tokens (aka Ro)
- * @param _tokenQtyAToAdd the amount of tokens being added by the caller to remove the current decay
- * @param _internalTokenAReserveQty the internal balance (X or Y) of token A as a result of this transaction
- * @param _tokenBDecayChange the change that will occur in the decay in the opposite token as a result of
+ * @param totalSupplyOfLiquidityTokens the total supply of our exchange's liquidity tokens (aka Ro)
+ * @param tokenQtyAToAdd the amount of tokens being added by the caller to remove the current decay
+ * @param internalTokenAReserveQty the internal balance (X or Y) of token A as a result of this transaction
+ * @param tokenBDecayChange the change that will occur in the decay in the opposite token as a result of
  * this transaction
- * @param _tokenBDecay the amount of decay in tokenB
+ * @param tokenBDecay the amount of decay in tokenB
  *
  * @return liquidityTokenQty qty of liquidity tokens to be issued in exchange
  */
  const calculateLiquidityTokenQtyForSingleAssetEntry    = (
-  _totalSupplyOfLiquidityTokens,
-  _tokenQtyAToAdd,
-  _internalTokenAReserveQty,
-  _tokenBDecayChange,
-  _tokenBDecay ) => {
+  totalSupplyOfLiquidityTokens,
+  tokenQtyAToAdd,
+  internalTokenAReserveQty,
+  tokenBDecayChange,
+  tokenBDecay ) => {
   // cleanse input to BN
-  const totalSupplyOfLiquidityTokensBN = BigNumber(_totalSupplyOfLiquidityTokens);
-  const tokenQtyAToAddBN = BigNumber(_tokenQtyAToAdd);
-  const internalTokenAReserveQtyBN = BigNumber(_internalTokenAReserveQty);
-  const tokenBDecayChangeBN = BigNumber(_tokenBDecayChange);
-  const tokenBDecayBN = BigNumber(_tokenBDecay);
+  const totalSupplyOfLiquidityTokensBN = BigNumber(totalSupplyOfLiquidityTokens);
+  const tokenQtyAToAddBN = BigNumber(tokenQtyAToAdd);
+  const internalTokenAReserveQtyBN = BigNumber(internalTokenAReserveQty);
+  const tokenBDecayChangeBN = BigNumber(tokenBDecayChange);
+  const tokenBDecayBN = BigNumber(tokenBDecay);
   const aTokenDiv = tokenQtyAToAddBN.dividedBy(internalTokenAReserveQtyBN);
   const bTokenWADMul = tokenBDecayChangeBN;
   const aAndBDecayMul = aTokenDiv.multipliedBy(bTokenWADMul);
@@ -699,7 +699,7 @@ const calculateLPTokenAmount = (quoteTokenAmount, baseTokenAmount, quoteTokenRes
   const baseTokenReserveQtyBN = BigNumber(baseTokenReserveQty);
   const slippageBN = BigNumber(slippage);
   const totalSupplyOfLiquidityTokensBN = BigNumber(totalSupplyOfLiquidityTokens);
-  const cleansedInternalBalances = internalBalancesBNConverter(internalBalances);
+  const cleansedinternalBalancesBN = internalBalancesBNConverter(internalBalances);
 
   // NaN cases
   if(quoteTokenAmountBN.isNaN() || baseTokenAmountBN.isNaN() || quoteTokenReserveQtyBN.isNaN() 
@@ -725,7 +725,7 @@ const calculateLPTokenAmount = (quoteTokenAmount, baseTokenAmount, quoteTokenRes
 
 
 const tokenQtys = calculateAddLiquidityQuantities(baseTokenAmountBN, quoteTokenAmountBN, baseTokenAmountLessSlippage, 
-quoteTokenAmountLessSlippage, baseTokenReserveQtyBN, quoteTokenReserveQtyBN, totalSupplyOfLiquidityTokensBN,  cleansedInternalBalances);
+quoteTokenAmountLessSlippage, baseTokenReserveQtyBN, quoteTokenReserveQtyBN, totalSupplyOfLiquidityTokensBN,  cleansedinternalBalancesBN);
 return tokenQtys.liquidityTokenQty;
 }
 
@@ -828,16 +828,16 @@ const calculatePriceImpact = (inputTokenAmount, inputTokenReserveQty, outputToke
  /**
  * @dev used to calculate the qty of token a liquidity provider
  * must add in order to maintain the current reserve ratios
- * @param _tokenAQty base or quote token qty to be supplied by the liquidity provider
- * @param _tokenAReserveQty current reserve qty of the base or quote token (same token as tokenA)
- * @param _tokenBReserveQty current reserve qty of the other base or quote token (not tokenA)
+ * @param tokenAQty base or quote token qty to be supplied by the liquidity provider
+ * @param tokenAReserveQty current reserve qty of the base or quote token (same token as tokenA)
+ * @param tokenBReserveQty current reserve qty of the other base or quote token (not tokenA)
  * @return tokenBQty
  */
-const calculateQty = (_tokenAQty, _tokenAReserveQty, _tokenBReserveQty) => {
+const calculateQty = (tokenAQty, tokenAReserveQty, tokenBReserveQty) => {
   // cleanse input 
-  const tokenAQtyBN = BigNumber(_tokenAQty);
-  const tokenAReserveQtyBN = BigNumber(_tokenAReserveQty);
-  const tokenBReserveQtyBN = BigNumber(_tokenBReserveQty);
+  const tokenAQtyBN = BigNumber(tokenAQty);
+  const tokenAReserveQtyBN = BigNumber(tokenAReserveQty);
+  const tokenBReserveQtyBN = BigNumber(tokenBReserveQty);
 
   if(tokenAQtyBN.isLessThanOrEqualTo(ZERO) ){
     throw INSUFFICIENT_QTY;
@@ -855,23 +855,23 @@ const calculateQty = (_tokenAQty, _tokenAReserveQty, _tokenBReserveQty) => {
 /**
  * @dev used to calculate the qty of token a trader will receive (less fees)
  * given the qty of token A they are providing
- * @param _tokenASwapQty base or quote token qty to be swapped by the trader
- * @param _tokenAReserveQty current reserve qty of the base or quote token (same token as tokenA)
- * @param _tokenBReserveQty current reserve qty of the other base or quote token (not tokenA)
- * @param _liquidityFeeInBasisPoints fee to liquidity providers represented in basis points
+ * @param tokenASwapQty base or quote token qty to be swapped by the trader
+ * @param tokenAReserveQty current reserve qty of the base or quote token (same token as tokenA)
+ * @param tokenBReserveQty current reserve qty of the other base or quote token (not tokenA)
+ * @param liquidityFeeInBasisPoints fee to liquidity providers represented in basis points
  * @return qtyToReturn
  */
 const calculateQtyToReturnAfterFees = (
-  _tokenASwapQty,
-  _tokenAReserveQty,
-  _tokenBReserveQty,
-  _liquidityFeeInBasisPoints ) => {
+  tokenASwapQty,
+  tokenAReserveQty,
+  tokenBReserveQty,
+  liquidityFeeInBasisPoints ) => {
   
   // cleanse inputs
-  const tokenASwapQtyBN = BigNumber(_tokenASwapQty);
-  const tokenAReserveQtyBN = BigNumber(_tokenAReserveQty);
-  const tokenBReserveQtyBN = BigNumber(_tokenBReserveQty);
-  const liquidityFeeInBasisPointsBN = BigNumber(_liquidityFeeInBasisPoints);
+  const tokenASwapQtyBN = BigNumber(tokenASwapQty);
+  const tokenAReserveQtyBN = BigNumber(tokenAReserveQty);
+  const tokenBReserveQtyBN = BigNumber(tokenBReserveQty);
+  const liquidityFeeInBasisPointsBN = BigNumber(liquidityFeeInBasisPoints);
 
 
   const differenceInBP = BASIS_POINTS.minus(liquidityFeeInBasisPointsBN);
@@ -892,25 +892,25 @@ const calculateQtyToReturnAfterFees = (
 
 /**
  * @dev calculates the qty of quote tokens a user will receive for swapping their base tokens (less fees)
- * @param _baseTokenQty the amount of bases tokens the user wants to swap
- * @param _quoteTokenQtyMin the minimum about of quote tokens they are willing to receive in return (slippage)
- * @param _liquidityFeeInBasisPoints the current total liquidity fee represented as an integer of basis points
- * @param _internalBalances internal balances struct from our exchange's internal accounting
+ * @param baseTokenQty the amount of bases tokens the user wants to swap
+ * @param quoteTokenQtyMin the minimum about of quote tokens they are willing to receive in return (slippage)
+ * @param liquidityFeeInBasisPoints the current total liquidity fee represented as an integer of basis points
+ * @param internalBalances internal balances struct from our exchange's internal accounting
  *
  * @return quoteTokenQty qty of quote token the user will receive back
  */
 const calculateQuoteTokenQty = (
-  _baseTokenQty,
-  _quoteTokenQtyMin,
-  _liquidityFeeInBasisPoints,
-  _internalBalances
+  baseTokenQty,
+  quoteTokenQtyMin,
+  liquidityFeeInBasisPoints,
+  internalBalances
 ) => {
 
   // cleanse input
-  const baseTokenQtyBN = BigNumber(_baseTokenQtyMin);
-  const quoteTokenQtyMinBN = BigNumber(_quoteTokenQty);
-  const liquidityFeeInBasisPointsBN = BigNumber(_liquidityFeeInBasisPoints);
-  const internalBalances = internalBalancesBNConverter(_internalBalances);
+  const baseTokenQtyBN = BigNumber(baseTokenQty);
+  const quoteTokenQtyMinBN = BigNumber(quoteTokenQtyMin);
+  const liquidityFeeInBasisPointsBN = BigNumber(liquidityFeeInBasisPoints);
+  const internalBalancesBN = internalBalancesBNConverter(internalBalances);
 
   let quoteTokenQty = ZERO;
 
@@ -920,8 +920,8 @@ const calculateQuoteTokenQty = (
 
   quoteTokenQty = calculateQtyToReturnAfterFees(
     baseTokenQtyBN,
-    internalBalances.baseTokenReserveQty,
-    internalBalances.quoteTokenReserveQty,
+    internalBalancesBN.baseTokenReserveQty,
+    internalBalancesBN.quoteTokenReserveQty,
     liquidityFeeInBasisPointsBN
   );
 
@@ -929,8 +929,8 @@ const calculateQuoteTokenQty = (
     throw INSUFFICIENT_QUOTE_TOKEN_QTY;
   }
 
-  internalBalances.baseTokenReserveQty = (internalBalances.baseTokenReserveQty).plus(baseTokenQtyBN);
-  internalBalances.quoteTokenReserveQty = (internalBalances.quoteTokenReserveQty).minus(quoteTokenQty);
+  internalBalancesBN.baseTokenReserveQty = (internalBalancesBN.baseTokenReserveQty).plus(baseTokenQtyBN);
+  internalBalancesBN.quoteTokenReserveQty = (internalBalancesBN.quoteTokenReserveQty).minus(quoteTokenQty);
 
   return quoteTokenQty;
 };  
@@ -1009,32 +1009,32 @@ const calculateTokenAmountsFromLPTokens = (lpTokenQtyToRedeem, slippagePercent, 
 /**
  * @dev defines the amount of decay needed in order for us to require a user to handle the
  * decay prior to a double asset entry as the equivalent of 1 unit of quote token
- * @param _baseTokenReserveQty current reserve qty of the baseToken
- * @param _internalBalances the internal balance Struct
+ * @param baseTokenReserveQty current reserve qty of the baseToken
+ * @param internalBalances the internal balance Struct
  * internalBalances = {
  *  baseTokenReserveQty: ,
  *  quoteTokenReserveQty: ,
  *  kLast: 
  * }
  */
-// todo: logic check on _internalbalances
-const isSufficientDecayPresent = (_baseTokenReserveQty, _internalBalances) => {
-  const baseTokenReserveQtyBN = BigNumber(_baseTokenReserveQty);
-  const internalBalances = internalBalancesBNConverter(_internalBalances);
-  const baseTokenReserveDifference = (baseTokenReserveQtyBN.minus(internalBalances.baseTokenReserveQty).abs());
-  const internalBalanceRatio = (internalBalances.baseTokenReserveQty).dividedBy(internalBalances.quoteTokenReserveQty);
+// todo: logic check on internalbalances
+const isSufficientDecayPresent = (baseTokenReserveQty, internalBalances) => {
+  const baseTokenReserveQtyBN = BigNumber(baseTokenReserveQty);
+  const internalBalancesBN = internalBalancesBNConverter(internalBalances);
+  const baseTokenReserveDifference = (baseTokenReserveQtyBN.minus(internalBalancesBN.baseTokenReserveQty).abs());
+  const internalBalanceRatio = (internalBalancesBN.baseTokenReserveQty).dividedBy(internalBalancesBN.quoteTokenReserveQty);
   const decayPresentComparison = (baseTokenReserveDifference.dividedBy(internalBalanceRatio)).isGreaterThan(BigNumber('1'));
   return decayPresentComparison;
 }
 
 
 // helper function
-const internalBalancesBNConverter = (_internalBalances) => {
-  _internalBalances.baseTokenReserveQty = BigNumber( _internalBalances.baseTokenReserveQty);
-  _internalBalances.quoteTokenReserveQty = BigNumber(_internalBalances.quoteTokenReserveQty);
-  _internalBalances.kLast = BigNumber( _internalBalances.kLast);
+const internalBalancesBNConverter = (internalBalances) => {
+  internalBalances.baseTokenReserveQty = BigNumber( internalBalances.baseTokenReserveQty);
+  internalBalances.quoteTokenReserveQty = BigNumber(internalBalances.quoteTokenReserveQty);
+  internalBalances.kLast = BigNumber( internalBalances.kLast);
 
-  return _internalBalances;
+  return internalBalances;
 
 }
 
