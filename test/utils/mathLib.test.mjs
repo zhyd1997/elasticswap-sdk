@@ -1,7 +1,7 @@
 /* eslint import/extensions: 0 */
 import { expect } from 'chai';
 import BigNumber from 'bignumber.js';
-import mathLib from '../../src/utils/mathLib.js';
+import mathLib from '../../src/utils/mathLib.mjs';
 
 // const { assert } = chai;
 const { ROUND_DOWN } = BigNumber;

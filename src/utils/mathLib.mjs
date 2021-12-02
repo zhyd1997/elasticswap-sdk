@@ -1,24 +1,25 @@
-const BigNumber = require("bignumber.js");
-const {ROUND_DOWN} = require("bignumber.js");
+// const BigNumber = require("bignumber.js");
+import BigNumber from "bignumber.js";
+const {ROUND_DOWN} = BigNumber;
 
-const ZERO = BigNumber('0');
-const INSUFFICIENT_BASE_QTY = new Error("MathLib: INSUFFICIENT_BASE_QTY");
-const INSUFFICIENT_BASE_TOKEN_QTY = new Error( "MathLib: INSUFFICIENT_BASE_TOKEN_QTY");
-const INSUFFICIENT_BASE_QTY_DESIRED = new Error("MathLib: INSUFFICIENT_BASE_QTY_DESIRED");
-const INSUFFICIENT_CHANGE_IN_DECAY = new Error( "MathLib: INSUFFICIENT_CHANGE_IN_DECAY");
-const INSUFFICIENT_DECAY = new Error("MathLib: INSUFFICIENT_DECAY");
-const INSUFFICIENT_LIQUIDITY = new Error("MathLib: INSUFFICIENT_LIQUIDITY");
-const INSUFFICIENT_QTY = new Error("MathLib: INSUFFICIENT_QTY");
-const INSUFFICIENT_QUOTE_QTY = new Error("MathLib: INSUFFICIENT_QUOTE_QTY");
-const INSUFFICIENT_QUOTE_QTY_DESIRED = new Error("MathLib: INSUFFICIENT_QUOTE_QTY_DESIRED");
-const INSUFFICIENT_QUOTE_TOKEN_QTY = new Error( "MathLib: INSUFFICIENT_QUOTE_TOKEN_QTY");
-const INSUFFICIENT_TOKEN_QTY = new Error("MathLib: INSUFFICIENT_TOKEN_QTY");
-const NAN_ERROR = new Error("MathLib: NaN");
-const NEGATIVE_INPUT = new Error("MathLib: NEGATIVE_INPUT");
-const NO_QUOTE_DECAY = new Error( "MathLib: NO_QUOTE_DECAY");
+export const ZERO = BigNumber('0');
+export const INSUFFICIENT_BASE_QTY = new Error("MathLib: INSUFFICIENT_BASE_QTY");
+export const INSUFFICIENT_BASE_TOKEN_QTY = new Error( "MathLib: INSUFFICIENT_BASE_TOKEN_QTY");
+export const INSUFFICIENT_BASE_QTY_DESIRED = new Error("MathLib: INSUFFICIENT_BASE_QTY_DESIRED");
+export const INSUFFICIENT_CHANGE_IN_DECAY = new Error( "MathLib: INSUFFICIENT_CHANGE_IN_DECAY");
+export const INSUFFICIENT_DECAY = new Error("MathLib: INSUFFICIENT_DECAY");
+export const INSUFFICIENT_LIQUIDITY = new Error("MathLib: INSUFFICIENT_LIQUIDITY");
+export const INSUFFICIENT_QTY = new Error("MathLib: INSUFFICIENT_QTY");
+export const INSUFFICIENT_QUOTE_QTY = new Error("MathLib: INSUFFICIENT_QUOTE_QTY");
+export const INSUFFICIENT_QUOTE_QTY_DESIRED = new Error("MathLib: INSUFFICIENT_QUOTE_QTY_DESIRED");
+export const INSUFFICIENT_QUOTE_TOKEN_QTY = new Error( "MathLib: INSUFFICIENT_QUOTE_TOKEN_QTY");
+export const INSUFFICIENT_TOKEN_QTY = new Error("MathLib: INSUFFICIENT_TOKEN_QTY");
+export const NAN_ERROR = new Error("MathLib: NaN");
+export const NEGATIVE_INPUT = new Error("MathLib: NEGATIVE_INPUT");
+export const NO_QUOTE_DECAY = new Error( "MathLib: NO_QUOTE_DECAY");
 
 
-const BASIS_POINTS = BigNumber('10000');
+export const BASIS_POINTS = BigNumber('10000');
 
 
 /**
@@ -34,7 +35,7 @@ const BASIS_POINTS = BigNumber('10000');
  * baseTokenQty - qty of base token the user must supply
  * liquidityTokenQty - qty of liquidity tokens to be issued in exchange
  */
- const calculateAddBaseTokenLiquidityQuantities = (
+export const calculateAddBaseTokenLiquidityQuantities = (
   baseTokenQtyDesired,
   baseTokenQtyMin,
   baseTokenReserveQty,
@@ -120,7 +121,7 @@ const BASIS_POINTS = BigNumber('10000');
  *
  * @return tokenQtys = {baseTokenQty, quoteTokenQty, liquidityTokenQty} - qty of tokens needed to complete transaction 
  */
- const calculateAddLiquidityQuantities = (
+export const calculateAddLiquidityQuantities = (
   baseTokenQtyDesired,
   quoteTokenQtyDesired,
   baseTokenQtyMin,
@@ -294,7 +295,7 @@ const BASIS_POINTS = BigNumber('10000');
  * quoteTokenQty - qty of quote token the user must supply
  * liquidityTokenQty -  qty of liquidity tokens to be issued in exchange
  */
- const calculateAddQuoteTokenLiquidityQuantities = (
+export const calculateAddQuoteTokenLiquidityQuantities = (
   quoteTokenQtyDesired,
   quoteTokenQtyMin,
   baseTokenReserveQty,
@@ -371,7 +372,7 @@ const BASIS_POINTS = BigNumber('10000');
  * @return quoteTokenQty qty of quote token the user must supply
  * @return liquidityTokenQty qty of liquidity tokens to be issued in exchange
  */
- const calculateAddTokenPairLiquidityQuantities = (
+export const calculateAddTokenPairLiquidityQuantities = (
   baseTokenQtyDesired,
   quoteTokenQtyDesired,
   baseTokenQtyMin,
@@ -440,7 +441,7 @@ const BASIS_POINTS = BigNumber('10000');
    *
    * @return baseTokenQty qty of base token the user will receive back
    */
-  const calculateBaseTokenQty = (
+export const calculateBaseTokenQty = (
     quoteTokenQty,
     baseTokenQtyMin,
     baseTokenReserveQty,
@@ -497,7 +498,7 @@ const BASIS_POINTS = BigNumber('10000');
  * @returns exchangeRate - the current exchange rate
  */ 
 
-const calculateExchangeRate = ( inputTokenReserveQty, outputTokenReserveQty) => {
+export const calculateExchangeRate = ( inputTokenReserveQty, outputTokenReserveQty) => {
   // cleanse input 
   const inputTokenReserveQtyBN = BigNumber(inputTokenReserveQty);
   const outputTokenReserveQtyBN = BigNumber(outputTokenReserveQty);
@@ -525,7 +526,7 @@ const calculateExchangeRate = ( inputTokenReserveQty, outputTokenReserveQty) => 
  * @param swapAmount - the amount being traded
  * @return fees - the fee amount
  */
-const calculateFees = (feesInBasisPoints, swapAmount) => {
+export const calculateFees = (feesInBasisPoints, swapAmount) => {
   
   // cleanse inputs 
   const feesInBasisPointsBN = BigNumber(feesInBasisPoints);
@@ -554,7 +555,7 @@ const calculateFees = (feesInBasisPoints, swapAmount) => {
  *
  * @return liquidityTokenFeeQty qty of tokens to be minted to the fee address for the growth in K
  */ 
- const calculateLiquidityTokenFees = (
+export  const calculateLiquidityTokenFees = (
   totalSupplyOfLiquidityTokens,
   internalBalances
 ) => {
@@ -587,7 +588,7 @@ const calculateFees = (feesInBasisPoints, swapAmount) => {
  *
  * @return liquidityTokenQty qty of liquidity tokens to be issued in exchange
  */
- const calculateLiquidityTokenQtyForDoubleAssetEntry = (
+export  const calculateLiquidityTokenQtyForDoubleAssetEntry = (
   totalSupplyOfLiquidityTokens,
   quoteTokenQty,
   quoteTokenReserveBalance ) => {
@@ -627,7 +628,7 @@ const calculateFees = (feesInBasisPoints, swapAmount) => {
  *
  * @return liquidityTokenQty qty of liquidity tokens to be issued in exchange
  */
- const calculateLiquidityTokenQtyForSingleAssetEntry    = (
+export  const calculateLiquidityTokenQtyForSingleAssetEntry    = (
   totalSupplyOfLiquidityTokens,
   tokenQtyAToAdd,
   internalTokenAReserveQty,
@@ -686,7 +687,7 @@ const calculateFees = (feesInBasisPoints, swapAmount) => {
  *  kLast:
  *  }
  */
-const calculateLPTokenAmount = (quoteTokenAmount, baseTokenAmount, quoteTokenReserveQty, baseTokenReserveQty, slippage,  totalSupplyOfLiquidityTokens, internalBalances) => {
+export const calculateLPTokenAmount = (quoteTokenAmount, baseTokenAmount, quoteTokenReserveQty, baseTokenReserveQty, slippage,  totalSupplyOfLiquidityTokens, internalBalances) => {
   
   // cleanse input 
   // the amount of quote token the user wants to contribute
@@ -738,7 +739,7 @@ return tokenQtys.liquidityTokenQty;
  * @param feeAmount the total amount of fees in Basis points for the trade
  * @returns outputAmountLessSlippage
  */
-const calculateOutputAmountLessFees = (
+export const calculateOutputAmountLessFees = (
   inputTokenAmount, 
   inputTokenReserveQty, 
   outputTokenReserveQty,
@@ -783,7 +784,7 @@ const calculateOutputAmountLessFees = (
  * @param outputTokenReserveQty
  * @returns priceImpact (in percentage)
  */
-const calculatePriceImpact = (inputTokenAmount, inputTokenReserveQty, outputTokenReserveQty, slippagePercent, feeAmount) => {
+export const calculatePriceImpact = (inputTokenAmount, inputTokenReserveQty, outputTokenReserveQty, slippagePercent, feeAmount) => {
   // cleanse inputs 
   const inputTokenAmountBN = BigNumber(inputTokenAmount);
   const inputTokenReserveQtyBN = BigNumber(inputTokenReserveQty);
@@ -833,7 +834,7 @@ const calculatePriceImpact = (inputTokenAmount, inputTokenReserveQty, outputToke
  * @param tokenBReserveQty current reserve qty of the other base or quote token (not tokenA)
  * @return tokenBQty
  */
-const calculateQty = (tokenAQty, tokenAReserveQty, tokenBReserveQty) => {
+export const calculateQty = (tokenAQty, tokenAReserveQty, tokenBReserveQty) => {
   // cleanse input 
   const tokenAQtyBN = BigNumber(tokenAQty);
   const tokenAReserveQtyBN = BigNumber(tokenAReserveQty);
@@ -861,7 +862,7 @@ const calculateQty = (tokenAQty, tokenAReserveQty, tokenBReserveQty) => {
  * @param liquidityFeeInBasisPoints fee to liquidity providers represented in basis points
  * @return qtyToReturn
  */
-const calculateQtyToReturnAfterFees = (
+export const calculateQtyToReturnAfterFees = (
   tokenASwapQty,
   tokenAReserveQty,
   tokenBReserveQty,
@@ -899,7 +900,7 @@ const calculateQtyToReturnAfterFees = (
  *
  * @return quoteTokenQty qty of quote token the user will receive back
  */
-const calculateQuoteTokenQty = (
+export const calculateQuoteTokenQty = (
   baseTokenQty,
   quoteTokenQtyMin,
   liquidityFeeInBasisPoints,
@@ -967,7 +968,7 @@ const calculateQuoteTokenQty = (
  * quoteTokenReceived = deltaX * (1 - (slippage/percent))
  * baseTokenReceived = deltaY *  (1 - (slippage/percent))
  */
-const calculateTokenAmountsFromLPTokens = (lpTokenQtyToRedeem, slippagePercent, baseTokenReserveQty, quoteTokenReserveQty, totalLPTokenSupply) => {
+export const calculateTokenAmountsFromLPTokens = (lpTokenQtyToRedeem, slippagePercent, baseTokenReserveQty, quoteTokenReserveQty, totalLPTokenSupply) => {
   // cleanse inputs
   const lpTokenQtyToRedeemBN = BigNumber(lpTokenQtyToRedeem);
   const slippagePercentBN = BigNumber(slippagePercent);
@@ -1017,8 +1018,7 @@ const calculateTokenAmountsFromLPTokens = (lpTokenQtyToRedeem, slippagePercent, 
  *  kLast: 
  * }
  */
-// todo: logic check on internalbalances
-const isSufficientDecayPresent = (baseTokenReserveQty, internalBalances) => {
+export const isSufficientDecayPresent = (baseTokenReserveQty, internalBalances) => {
   const baseTokenReserveQtyBN = BigNumber(baseTokenReserveQty);
   const internalBalancesBN = internalBalancesBNConverter(internalBalances);
   const baseTokenReserveDifference = (baseTokenReserveQtyBN.minus(internalBalancesBN.baseTokenReserveQty).abs());
@@ -1029,7 +1029,7 @@ const isSufficientDecayPresent = (baseTokenReserveQty, internalBalances) => {
 
 
 // helper function
-const internalBalancesBNConverter = (internalBalances) => {
+export const internalBalancesBNConverter = (internalBalances) => {
   internalBalances.baseTokenReserveQty = BigNumber( internalBalances.baseTokenReserveQty);
   internalBalances.quoteTokenReserveQty = BigNumber(internalBalances.quoteTokenReserveQty);
   internalBalances.kLast = BigNumber( internalBalances.kLast);
@@ -1041,7 +1041,7 @@ const internalBalancesBNConverter = (internalBalances) => {
    
 
 
-module.exports = {
+export default {
 isSufficientDecayPresent,
 calculateQty,
 calculateQtyToReturnAfterFees,
