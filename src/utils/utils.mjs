@@ -320,10 +320,10 @@ export const swapBigNumber = (obj) => {
 export const toBigNumber = (value, decimalShift = 0) => {
   let normalizedValue = value;
 
-  if(value === null || value === undefined) {
+  if (value === null || value === undefined) {
     return BigNumber(NaN);
   }
-  
+
   if (isPOJO(normalizedValue) && normalizedValue.type === 'BigNumber') {
     normalizedValue = ethers.BigNumber.from(normalizedValue);
   }

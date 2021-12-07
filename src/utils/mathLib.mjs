@@ -170,7 +170,9 @@ export const calculateAddLiquidityQuantities = (
   const quoteTokenQtyMinBN = toBigNumber(quoteTokenQtyMin);
   const baseTokenReserveQtyBN = toBigNumber(baseTokenReserveQty);
   const quoteTokenReserveQtyBN = toBigNumber(quoteTokenReserveQty);
-  let totalSupplyOfLiquidityTokensBN = toBigNumber(totalSupplyOfLiquidityTokens);
+  let totalSupplyOfLiquidityTokensBN = toBigNumber(
+    totalSupplyOfLiquidityTokens,
+  );
   const internalBalancesBN = internalBalancesBNConverter(internalBalances);
 
   const tokenQtys = {
@@ -626,7 +628,7 @@ export const calculateExchangeRate = (
   const exchangeRate = inputTokenReserveQtyBN.dividedBy(
     outputTokenReserveQtyBN,
   );
-  
+
   return exchangeRate;
 };
 

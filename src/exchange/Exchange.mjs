@@ -102,19 +102,18 @@ export default class Exchange extends Base {
     const inputTokenAddressLowerCase = inputTokenAddress.toLowerCase();
     let inputTokenReserveQty = toBigNumber(0);
     let outputTokenReserveQty = toBigNumber(0);
-    
+
     const internalBalances = await this.contract.internalBalances();
-    if(inputTokenAddressLowerCase === this.baseTokenAddress.toLowerCase()) {
+    if (inputTokenAddressLowerCase === this.baseTokenAddress.toLowerCase()) {
       inputTokenReserveQty = internalBalances.baseTokenReserveQty;
       outputTokenReserveQty = internalBalances.quoteTokenReserveQty;
     } else if (inputTokenAddress === this.quoteTokenAddress.toLowerCase()) {
       inputTokenReserveQty = internalBalances.quoteTokenReserveQty;
       outputTokenReserveQty = internalBalances.baseTokenReserveQty;
-    } 
-    
+    }
+
     return calculateExchangeRate(inputTokenReserveQty, outputTokenReserveQty);
   }
-
 
   async addLiquidity(
     baseTokenQtyDesired,

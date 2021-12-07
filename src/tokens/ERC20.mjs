@@ -33,7 +33,7 @@ export default class ERC20 extends Base {
   }
 
   async totalSupply() {
-    return await this.contract.totalSupply();
+    return this.contract.totalSupply();
   }
 
   async approve(spenderAddress, amount, overrides = {}) {

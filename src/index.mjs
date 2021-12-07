@@ -92,7 +92,7 @@ export class SDK extends Subscribable {
     }
 
     validateIsAddress(this.env.exchangeFactoryAddress, { prefix });
-    
+
     this._exchangeFactory = new ExchangeFactory(
       this,
       this.env.exchangeFactoryAddress,
