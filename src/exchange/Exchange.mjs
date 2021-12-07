@@ -2,6 +2,8 @@ import ExchangeSolidity from '@elasticswap/elasticswap/artifacts/src/contracts/E
 import ERC20 from '../tokens/ERC20.mjs';
 import Base from '../Base.mjs';
 import ErrorHandling from '../ErrorHandling.mjs';
+import { calculateExchangeRate } from '../utils/mathLib.mjs';
+import { toBigNumber } from '../utils/utils.mjs';
 
 export default class Exchange extends Base {
   constructor(sdk, exchangeAddress, baseTokenAddress, quoteTokenAddress) {
@@ -95,6 +97,24 @@ export default class Exchange extends Base {
   get errorHandling() {
     return this._errorHandling;
   }
+
+  async calculateExchangeRate(inputTokenAddress) {
+    const inputTokenAddressLowerCase = inputTokenAddress.toLowerCase();
+    let inputTokenReserveQty = toBigNumber(0);
+    let outputTokenReserveQty = toBigNumber(0);
+    
+    const internalBalances = await this.contract.internalBalances();
+    if(inputTokenAddressLowerCase === this.baseTokenAddress.toLowerCase()) {
+      inputTokenReserveQty = internalBalances.baseTokenReserveQty;
+      outputTokenReserveQty = internalBalances.quoteTokenReserveQty;
+    } else if (inputTokenAddress === this.quoteTokenAddress.toLowerCase()) {
+      inputTokenReserveQty = internalBalances.quoteTokenReserveQty;
+      outputTokenReserveQty = internalBalances.baseTokenReserveQty;
+    } 
+    
+    return calculateExchangeRate(inputTokenReserveQty, outputTokenReserveQty);
+  }
+
 
   async addLiquidity(
     baseTokenQtyDesired,

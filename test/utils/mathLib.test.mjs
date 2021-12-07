@@ -237,7 +237,7 @@ describe('calculateExchangeRate', () => {
 
   it('Should return an error when incorrect values are provided', async () => {
     const quoteTokenReserveQty1 = BigNumber('12.123456789123456789');
-    const negativequoteTokenReserveQty = BigNumber('-12.123456789123456789');
+    const negativeQuoteTokenReserveQty = BigNumber('-12.123456789123456789');
 
     // ZERO case
     expect(() => calculateExchangeRate(ZERO, quoteTokenReserveQty1)).to.throw(
@@ -251,16 +251,16 @@ describe('calculateExchangeRate', () => {
     expect(() =>
       calculateExchangeRate(
         quoteTokenReserveQty1,
-        negativequoteTokenReserveQty,
+        negativeQuoteTokenReserveQty,
       ),
     ).to.throw(NEGATIVE_INPUT);
 
     // Nan cases
     expect(() =>
-      calculateExchangeRate(null, negativequoteTokenReserveQty),
+      calculateExchangeRate(null, negativeQuoteTokenReserveQty),
     ).to.throw(NAN_ERROR);
     expect(() =>
-      calculateExchangeRate(undefined, negativequoteTokenReserveQty),
+      calculateExchangeRate(undefined, negativeQuoteTokenReserveQty),
     ).to.throw(NAN_ERROR);
   });
 });

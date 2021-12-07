@@ -1,9 +1,10 @@
 // const BigNumber = require("bignumber.js");
 import BigNumber from 'bignumber.js';
+import { toBigNumber } from './utils.mjs';
 
 const { ROUND_DOWN } = BigNumber;
 
-export const ZERO = BigNumber('0');
+export const ZERO = toBigNumber('0');
 export const INSUFFICIENT_BASE_QTY = new Error(
   'MathLib: INSUFFICIENT_BASE_QTY',
 );
@@ -37,7 +38,7 @@ export const NAN_ERROR = new Error('MathLib: NaN');
 export const NEGATIVE_INPUT = new Error('MathLib: NEGATIVE_INPUT');
 export const NO_QUOTE_DECAY = new Error('MathLib: NO_QUOTE_DECAY');
 
-export const BASIS_POINTS = BigNumber('10000');
+export const BASIS_POINTS = toBigNumber('10000');
 
 /**
  * @dev used to calculate the qty of base tokens required and liquidity
@@ -64,10 +65,10 @@ export const calculateAddBaseTokenLiquidityQuantities = (
   internalBalances,
 ) => {
   // cleanse input
-  const baseTokenQtyDesiredBN = BigNumber(baseTokenQtyDesired);
-  const baseTokenQtyMinBN = BigNumber(baseTokenQtyMin);
-  const baseTokenReserveQtyBN = BigNumber(baseTokenReserveQty);
-  const totalSupplyOfLiquidityTokensBN = BigNumber(
+  const baseTokenQtyDesiredBN = toBigNumber(baseTokenQtyDesired);
+  const baseTokenQtyMinBN = toBigNumber(baseTokenQtyMin);
+  const baseTokenReserveQtyBN = toBigNumber(baseTokenReserveQty);
+  const totalSupplyOfLiquidityTokensBN = toBigNumber(
     totalSupplyOfLiquidityTokens,
   );
   const internalBalancesBN = internalBalancesBNConverter(internalBalances);
@@ -163,13 +164,13 @@ export const calculateAddLiquidityQuantities = (
   internalBalances,
 ) => {
   // cleanse input
-  const baseTokenQtyDesiredBN = BigNumber(baseTokenQtyDesired);
-  const quoteTokenQtyDesiredBN = BigNumber(quoteTokenQtyDesired);
-  const baseTokenQtyMinBN = BigNumber(baseTokenQtyMin);
-  const quoteTokenQtyMinBN = BigNumber(quoteTokenQtyMin);
-  const baseTokenReserveQtyBN = BigNumber(baseTokenReserveQty);
-  const quoteTokenReserveQtyBN = BigNumber(quoteTokenReserveQty);
-  let totalSupplyOfLiquidityTokensBN = BigNumber(totalSupplyOfLiquidityTokens);
+  const baseTokenQtyDesiredBN = toBigNumber(baseTokenQtyDesired);
+  const quoteTokenQtyDesiredBN = toBigNumber(quoteTokenQtyDesired);
+  const baseTokenQtyMinBN = toBigNumber(baseTokenQtyMin);
+  const quoteTokenQtyMinBN = toBigNumber(quoteTokenQtyMin);
+  const baseTokenReserveQtyBN = toBigNumber(baseTokenReserveQty);
+  const quoteTokenReserveQtyBN = toBigNumber(quoteTokenReserveQty);
+  let totalSupplyOfLiquidityTokensBN = toBigNumber(totalSupplyOfLiquidityTokens);
   const internalBalancesBN = internalBalancesBNConverter(internalBalances);
 
   const tokenQtys = {
@@ -359,10 +360,10 @@ export const calculateAddQuoteTokenLiquidityQuantities = (
   internalBalances,
 ) => {
   // cleanse input
-  const quoteTokenQtyDesiredBN = BigNumber(quoteTokenQtyDesired);
-  const quoteTokenQtyMinBN = BigNumber(quoteTokenQtyMin);
-  const baseTokenReserveQtyBN = BigNumber(baseTokenReserveQty);
-  const totalSupplyOfLiquidityTokensBN = BigNumber(
+  const quoteTokenQtyDesiredBN = toBigNumber(quoteTokenQtyDesired);
+  const quoteTokenQtyMinBN = toBigNumber(quoteTokenQtyMin);
+  const baseTokenReserveQtyBN = toBigNumber(baseTokenReserveQty);
+  const totalSupplyOfLiquidityTokensBN = toBigNumber(
     totalSupplyOfLiquidityTokens,
   );
   const internalBalancesBN = internalBalancesBNConverter(internalBalances);
@@ -451,12 +452,12 @@ export const calculateAddTokenPairLiquidityQuantities = (
   internalBalances,
 ) => {
   // cleanse input
-  const baseTokenQtyDesiredBN = BigNumber(baseTokenQtyDesired);
-  const quoteTokenQtyDesiredBN = BigNumber(quoteTokenQtyDesired);
-  const baseTokenQtyMinBN = BigNumber(baseTokenQtyMin);
-  const quoteTokenQtyMinBN = BigNumber(quoteTokenQtyMin);
-  const quoteTokenReserveQtyBN = BigNumber(quoteTokenReserveQty);
-  const totalSupplyOfLiquidityTokensBN = BigNumber(
+  const baseTokenQtyDesiredBN = toBigNumber(baseTokenQtyDesired);
+  const quoteTokenQtyDesiredBN = toBigNumber(quoteTokenQtyDesired);
+  const baseTokenQtyMinBN = toBigNumber(baseTokenQtyMin);
+  const quoteTokenQtyMinBN = toBigNumber(quoteTokenQtyMin);
+  const quoteTokenReserveQtyBN = toBigNumber(quoteTokenReserveQty);
+  const totalSupplyOfLiquidityTokensBN = toBigNumber(
     totalSupplyOfLiquidityTokens,
   );
   const internalBalancesBN = internalBalancesBNConverter(internalBalances);
@@ -534,10 +535,10 @@ export const calculateBaseTokenQty = (
   internalBalances,
 ) => {
   // cleanse inputs
-  const quoteTokenQtyBN = BigNumber(quoteTokenQty);
-  const baseTokenQtyMinBN = BigNumber(baseTokenQtyMin);
-  const baseTokenReserveQtyBN = BigNumber(baseTokenReserveQty);
-  const liquidityFeeInBasisPointsBN = BigNumber(liquidityFeeInBasisPoints);
+  const quoteTokenQtyBN = toBigNumber(quoteTokenQty);
+  const baseTokenQtyMinBN = toBigNumber(baseTokenQtyMin);
+  const baseTokenReserveQtyBN = toBigNumber(baseTokenReserveQty);
+  const liquidityFeeInBasisPointsBN = toBigNumber(liquidityFeeInBasisPoints);
   const internalBalancesBN = internalBalancesBNConverter(internalBalances);
 
   let baseTokenQty = ZERO;
@@ -601,8 +602,8 @@ export const calculateExchangeRate = (
   outputTokenReserveQty,
 ) => {
   // cleanse input
-  const inputTokenReserveQtyBN = BigNumber(inputTokenReserveQty);
-  const outputTokenReserveQtyBN = BigNumber(outputTokenReserveQty);
+  const inputTokenReserveQtyBN = toBigNumber(inputTokenReserveQty);
+  const outputTokenReserveQtyBN = toBigNumber(outputTokenReserveQty);
 
   if (inputTokenReserveQtyBN.isNaN() || outputTokenReserveQtyBN.isNaN()) {
     throw NAN_ERROR;
@@ -625,6 +626,7 @@ export const calculateExchangeRate = (
   const exchangeRate = inputTokenReserveQtyBN.dividedBy(
     outputTokenReserveQtyBN,
   );
+  
   return exchangeRate;
 };
 
@@ -636,8 +638,8 @@ export const calculateExchangeRate = (
  */
 export const calculateFees = (feesInBasisPoints, swapAmount) => {
   // cleanse inputs
-  const feesInBasisPointsBN = BigNumber(feesInBasisPoints);
-  const swapAmountBN = BigNumber(swapAmount);
+  const feesInBasisPointsBN = toBigNumber(feesInBasisPoints);
+  const swapAmountBN = toBigNumber(swapAmount);
 
   // NaN case
   if (feesInBasisPointsBN.isNaN() || swapAmountBN.isNaN()) {
@@ -670,7 +672,7 @@ export const calculateLiquidityTokenFees = (
   internalBalances,
 ) => {
   // cleanse inputs
-  const totalSupplyOfLiquidityTokensBN = BigNumber(
+  const totalSupplyOfLiquidityTokensBN = toBigNumber(
     totalSupplyOfLiquidityTokens,
   );
   const internalBalancesBN = internalBalancesBNConverter(internalBalances);
@@ -686,7 +688,7 @@ export const calculateLiquidityTokenFees = (
     const numerator = totalSupplyOfLiquidityTokensBN.multipliedBy(
       rootK.minus(rootKLast),
     );
-    const denominator = rootK.multipliedBy(BigNumber(5)).plus(rootKLast);
+    const denominator = rootK.multipliedBy(toBigNumber(5)).plus(rootKLast);
     liquidityTokenFeeQty = numerator.dividedBy(denominator);
     return liquidityTokenFeeQty;
   }
@@ -709,11 +711,11 @@ export const calculateLiquidityTokenQtyForDoubleAssetEntry = (
   quoteTokenReserveBalance,
 ) => {
   // cleanse the input
-  const totalSupplyOfLiquidityTokensBN = BigNumber(
+  const totalSupplyOfLiquidityTokensBN = toBigNumber(
     totalSupplyOfLiquidityTokens,
   );
-  const quoteTokenQtyBN = BigNumber(quoteTokenQty);
-  const quoteTokenReserveBalanceBN = BigNumber(quoteTokenReserveBalance);
+  const quoteTokenQtyBN = toBigNumber(quoteTokenQty);
+  const quoteTokenReserveBalanceBN = toBigNumber(quoteTokenReserveBalance);
 
   /*
 
@@ -757,18 +759,18 @@ export const calculateLiquidityTokenQtyForSingleAssetEntry = (
   tokenBDecay,
 ) => {
   // cleanse input to BN
-  const totalSupplyOfLiquidityTokensBN = BigNumber(
+  const totalSupplyOfLiquidityTokensBN = toBigNumber(
     totalSupplyOfLiquidityTokens,
   );
-  const tokenQtyAToAddBN = BigNumber(tokenQtyAToAdd);
-  const internalTokenAReserveQtyBN = BigNumber(internalTokenAReserveQty);
-  const tokenBDecayChangeBN = BigNumber(tokenBDecayChange);
-  const tokenBDecayBN = BigNumber(tokenBDecay);
+  const tokenQtyAToAddBN = toBigNumber(tokenQtyAToAdd);
+  const internalTokenAReserveQtyBN = toBigNumber(internalTokenAReserveQty);
+  const tokenBDecayChangeBN = toBigNumber(tokenBDecayChange);
+  const tokenBDecayBN = toBigNumber(tokenBDecay);
   const aTokenDiv = tokenQtyAToAddBN.dividedBy(internalTokenAReserveQtyBN);
   const bTokenWADMul = tokenBDecayChangeBN;
   const aAndBDecayMul = aTokenDiv.multipliedBy(bTokenWADMul);
   const AAndBDecayMulDivByTokenBDecay = aAndBDecayMul.dividedBy(tokenBDecayBN);
-  const altWGamma = AAndBDecayMulDivByTokenBDecay.dividedBy(BigNumber(2)).dp(
+  const altWGamma = AAndBDecayMulDivByTokenBDecay.dividedBy(toBigNumber(2)).dp(
     18,
     ROUND_DOWN,
   );
@@ -794,7 +796,7 @@ export const calculateLiquidityTokenQtyForSingleAssetEntry = (
   */
   const liquidityTokenQty = totalSupplyOfLiquidityTokensBN
     .multipliedBy(altWGamma)
-    .dividedBy(BigNumber(1).minus(altWGamma))
+    .dividedBy(toBigNumber(1).minus(altWGamma))
     .dp(0, ROUND_DOWN);
   return liquidityTokenQty;
 };
@@ -826,15 +828,15 @@ export const calculateLPTokenAmount = (
 ) => {
   // cleanse input
   // the amount of quote token the user wants to contribute
-  const quoteTokenAmountBN = BigNumber(quoteTokenAmount);
+  const quoteTokenAmountBN = toBigNumber(quoteTokenAmount);
 
   // the amount of base token the user wants to contribute
-  const baseTokenAmountBN = BigNumber(baseTokenAmount);
+  const baseTokenAmountBN = toBigNumber(baseTokenAmount);
 
-  const quoteTokenReserveQtyBN = BigNumber(quoteTokenReserveQty);
-  const baseTokenReserveQtyBN = BigNumber(baseTokenReserveQty);
-  const slippageBN = BigNumber(slippage);
-  const totalSupplyOfLiquidityTokensBN = BigNumber(
+  const quoteTokenReserveQtyBN = toBigNumber(quoteTokenReserveQty);
+  const baseTokenReserveQtyBN = toBigNumber(baseTokenReserveQty);
+  const slippageBN = toBigNumber(slippage);
+  const totalSupplyOfLiquidityTokensBN = toBigNumber(
     totalSupplyOfLiquidityTokens,
   );
   const cleansedinternalBalancesBN =
@@ -864,7 +866,7 @@ export const calculateLPTokenAmount = (
     throw NEGATIVE_INPUT;
   }
 
-  const slippageMultiplier = BigNumber('1').minus(slippageBN.dividedBy(100));
+  const slippageMultiplier = toBigNumber('1').minus(slippageBN.dividedBy(100));
 
   // the minimum amount of quote token the user wants to contribute (allows for slippage)
   const quoteTokenAmountLessSlippage =
@@ -904,11 +906,11 @@ export const calculateOutputAmountLessFees = (
   feeAmount,
 ) => {
   // cleanse input to BN
-  const inputTokenAmountBN = BigNumber(inputTokenAmount);
-  const inputTokenReserveQtyBN = BigNumber(inputTokenReserveQty);
-  const outputTokenReserveQtyBN = BigNumber(outputTokenReserveQty);
-  const slippagePercentBN = BigNumber(slippagePercent);
-  const feeAmountBN = BigNumber(feeAmount);
+  const inputTokenAmountBN = toBigNumber(inputTokenAmount);
+  const inputTokenReserveQtyBN = toBigNumber(inputTokenReserveQty);
+  const outputTokenReserveQtyBN = toBigNumber(outputTokenReserveQty);
+  const slippagePercentBN = toBigNumber(slippagePercent);
+  const feeAmountBN = toBigNumber(feeAmount);
 
   if (
     inputTokenAmountBN.isNaN() ||
@@ -945,8 +947,8 @@ export const calculateOutputAmountLessFees = (
   );
 
   // slippage multiplier = 1 - (slippage% / 100)
-  const slippageMultiplier = BigNumber(1).minus(
-    slippagePercentBN.dividedBy(BigNumber(100)),
+  const slippageMultiplier = toBigNumber(1).minus(
+    slippagePercentBN.dividedBy(toBigNumber(100)),
   );
 
   // outputAmountLessSlippage = outputamount * slippage multiplier
@@ -971,11 +973,11 @@ export const calculatePriceImpact = (
   feeAmount,
 ) => {
   // cleanse inputs
-  const inputTokenAmountBN = BigNumber(inputTokenAmount);
-  const inputTokenReserveQtyBN = BigNumber(inputTokenReserveQty);
-  const outputTokenReserveQtyBN = BigNumber(outputTokenReserveQty);
-  const slippagePercentBN = BigNumber(slippagePercent);
-  const feeAmountBN = BigNumber(feeAmount);
+  const inputTokenAmountBN = toBigNumber(inputTokenAmount);
+  const inputTokenReserveQtyBN = toBigNumber(inputTokenReserveQty);
+  const outputTokenReserveQtyBN = toBigNumber(outputTokenReserveQty);
+  const slippagePercentBN = toBigNumber(slippagePercent);
+  const feeAmountBN = toBigNumber(feeAmount);
 
   if (
     inputTokenAmountBN.isNaN() ||
@@ -1030,7 +1032,7 @@ export const calculatePriceImpact = (
 
   const priceDiff = finalPrice.minus(initialPrice);
   const priceDiffRatio = priceDiff.dividedBy(initialPrice);
-  const priceImpact = priceDiffRatio.multipliedBy(BigNumber('100'));
+  const priceImpact = priceDiffRatio.multipliedBy(toBigNumber('100'));
 
   return priceImpact;
 };
@@ -1045,9 +1047,9 @@ export const calculatePriceImpact = (
  */
 export const calculateQty = (tokenAQty, tokenAReserveQty, tokenBReserveQty) => {
   // cleanse input
-  const tokenAQtyBN = BigNumber(tokenAQty);
-  const tokenAReserveQtyBN = BigNumber(tokenAReserveQty);
-  const tokenBReserveQtyBN = BigNumber(tokenBReserveQty);
+  const tokenAQtyBN = toBigNumber(tokenAQty);
+  const tokenAReserveQtyBN = toBigNumber(tokenAReserveQty);
+  const tokenBReserveQtyBN = toBigNumber(tokenBReserveQty);
 
   if (tokenAQtyBN.isLessThanOrEqualTo(ZERO)) {
     throw INSUFFICIENT_QTY;
@@ -1081,10 +1083,10 @@ export const calculateQtyToReturnAfterFees = (
   liquidityFeeInBasisPoints,
 ) => {
   // cleanse inputs
-  const tokenASwapQtyBN = BigNumber(tokenASwapQty);
-  const tokenAReserveQtyBN = BigNumber(tokenAReserveQty);
-  const tokenBReserveQtyBN = BigNumber(tokenBReserveQty);
-  const liquidityFeeInBasisPointsBN = BigNumber(liquidityFeeInBasisPoints);
+  const tokenASwapQtyBN = toBigNumber(tokenASwapQty);
+  const tokenAReserveQtyBN = toBigNumber(tokenAReserveQty);
+  const tokenBReserveQtyBN = toBigNumber(tokenBReserveQty);
+  const liquidityFeeInBasisPointsBN = toBigNumber(liquidityFeeInBasisPoints);
 
   const differenceInBP = BASIS_POINTS.minus(liquidityFeeInBasisPointsBN);
   const tokenASwapQtyLessFee = tokenASwapQtyBN
@@ -1123,9 +1125,9 @@ export const calculateQuoteTokenQty = (
   internalBalances,
 ) => {
   // cleanse input
-  const baseTokenQtyBN = BigNumber(baseTokenQty);
-  const quoteTokenQtyMinBN = BigNumber(quoteTokenQtyMin);
-  const liquidityFeeInBasisPointsBN = BigNumber(liquidityFeeInBasisPoints);
+  const baseTokenQtyBN = toBigNumber(baseTokenQty);
+  const quoteTokenQtyMinBN = toBigNumber(quoteTokenQtyMin);
+  const liquidityFeeInBasisPointsBN = toBigNumber(liquidityFeeInBasisPoints);
   const internalBalancesBN = internalBalancesBNConverter(internalBalances);
 
   let quoteTokenQty = ZERO;
@@ -1195,11 +1197,11 @@ export const calculateTokenAmountsFromLPTokens = (
   totalLPTokenSupply,
 ) => {
   // cleanse inputs
-  const lpTokenQtyToRedeemBN = BigNumber(lpTokenQtyToRedeem);
-  const slippagePercentBN = BigNumber(slippagePercent);
-  const baseTokenReserveQtyBN = BigNumber(baseTokenReserveQty);
-  const quoteTokenReserveQtyBN = BigNumber(quoteTokenReserveQty);
-  const totalSupplyLPTokenSupplyBN = BigNumber(totalLPTokenSupply);
+  const lpTokenQtyToRedeemBN = toBigNumber(lpTokenQtyToRedeem);
+  const slippagePercentBN = toBigNumber(slippagePercent);
+  const baseTokenReserveQtyBN = toBigNumber(baseTokenReserveQty);
+  const quoteTokenReserveQtyBN = toBigNumber(quoteTokenReserveQty);
+  const totalSupplyLPTokenSupplyBN = toBigNumber(totalLPTokenSupply);
 
   // NaN cases
   if (
@@ -1224,8 +1226,8 @@ export const calculateTokenAmountsFromLPTokens = (
   }
 
   const lpRatio = lpTokenQtyToRedeemBN.dividedBy(totalSupplyLPTokenSupplyBN);
-  const slippageMultiplier = BigNumber(1).minus(
-    slippagePercentBN.dividedBy(BigNumber(100)),
+  const slippageMultiplier = toBigNumber(1).minus(
+    slippagePercentBN.dividedBy(toBigNumber(100)),
   );
 
   const baseTokenRecieved = baseTokenReserveQtyBN.multipliedBy(lpRatio);
@@ -1259,7 +1261,7 @@ export const isSufficientDecayPresent = (
   baseTokenReserveQty,
   internalBalances,
 ) => {
-  const baseTokenReserveQtyBN = BigNumber(baseTokenReserveQty);
+  const baseTokenReserveQtyBN = toBigNumber(baseTokenReserveQty);
   const internalBalancesBN = internalBalancesBNConverter(internalBalances);
   const baseTokenReserveDifference = baseTokenReserveQtyBN
     .minus(internalBalancesBN.baseTokenReserveQty)
@@ -1269,15 +1271,15 @@ export const isSufficientDecayPresent = (
   );
   const decayPresentComparison = baseTokenReserveDifference
     .dividedBy(internalBalanceRatio)
-    .isGreaterThan(BigNumber('1'));
+    .isGreaterThan(toBigNumber('1'));
   return decayPresentComparison;
 };
 
 // helper function
 export const internalBalancesBNConverter = (internalBalances) => ({
-  baseTokenReserveQty: BigNumber(internalBalances.baseTokenReserveQty),
-  quoteTokenReserveQty: BigNumber(internalBalances.quoteTokenReserveQty),
-  kLast: BigNumber(internalBalances.kLast),
+  baseTokenReserveQty: toBigNumber(internalBalances.baseTokenReserveQty),
+  quoteTokenReserveQty: toBigNumber(internalBalances.quoteTokenReserveQty),
+  kLast: toBigNumber(internalBalances.kLast),
 });
 
 export default {
