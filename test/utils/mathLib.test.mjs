@@ -1,11 +1,7 @@
 /* eslint import/extensions: 0 */
 import { expect } from 'chai';
 import BigNumber from 'bignumber.js';
-import mathLib from '../../src/utils/mathLib.mjs';
-
-// const { assert } = chai;
-const { ROUND_DOWN } = BigNumber;
-const {
+import {
   BASIS_POINTS,
   calculateExchangeRate,
   calculateFees,
@@ -21,7 +17,10 @@ const {
   INSUFFICIENT_QTY,
   NAN_ERROR,
   NEGATIVE_INPUT,
-} = mathLib;
+} from '../../src/utils/mathLib.mjs';
+
+// const { assert } = chai;
+const { ROUND_DOWN } = BigNumber;
 
 const ZERO = BigNumber(0);
 
@@ -32,13 +31,9 @@ describe('calculateQty', () => {
   });
 
   it('Should revert if any value is 0', async () => {
-    expect(() => mathLib.calculateQty(0, 100, 500)).to.throw(INSUFFICIENT_QTY);
-    expect(() => mathLib.calculateQty(500, 0, 1000)).to.throw(
-      INSUFFICIENT_LIQUIDITY,
-    );
-    expect(() => mathLib.calculateQty(500, 100, 0)).to.throw(
-      INSUFFICIENT_LIQUIDITY,
-    );
+    expect(() => calculateQty(0, 100, 500)).to.throw(INSUFFICIENT_QTY);
+    expect(() => calculateQty(500, 0, 1000)).to.throw(INSUFFICIENT_LIQUIDITY);
+    expect(() => calculateQty(500, 100, 0)).to.throw(INSUFFICIENT_LIQUIDITY);
   });
 });
 
