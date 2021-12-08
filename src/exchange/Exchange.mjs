@@ -149,6 +149,8 @@ export default class Exchange extends Base {
     ) {
       throw this.errorHandling.error('TRANSFER_NOT_APPROVED');
     }
+
+    this._contract = this.confirmSigner(this.contract);
     const txStatus = await this.contract.addLiquidity(
       baseTokenQtyDesired,
       quoteTokenQtyDesired,
@@ -178,6 +180,8 @@ export default class Exchange extends Base {
     if ((await this.lpTokenAllowance) < liquidityTokenQty) {
       throw this.errorHandling.error('TRANSFER_NOT_APPROVED');
     }
+
+    this._contract = this.confirmSigner(this.contract);
     const txStatus = await this.contract.removeLiquidity(
       liquidityTokenQty,
       baseTokenQtyMin,
@@ -204,6 +208,8 @@ export default class Exchange extends Base {
     if ((await this.baseTokenAllowance) < baseTokenQty) {
       throw this.errorHandling.error('TRANSFER_NOT_APPROVED');
     }
+
+    this._contract = this.confirmSigner(this.contract);
     const txStatus = await this.contract.swapBaseTokenForQuoteToken(
       baseTokenQty,
       quoteTokenQtyMin,
@@ -228,6 +234,8 @@ export default class Exchange extends Base {
     if ((await this.quoteTokenAllowance) < quoteTokenQty) {
       throw this.errorHandling.error('TRANSFER_NOT_APPROVED');
     }
+
+    this._contract = this.confirmSigner(this.contract);
     const txStatus = await this.contract.swapQuoteTokenForBaseToken(
       quoteTokenQty,
       baseTokenQtyMin,

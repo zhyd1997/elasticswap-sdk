@@ -37,6 +37,7 @@ export default class ERC20 extends Base {
   }
 
   async approve(spenderAddress, amount, overrides = {}) {
+    this._contract = this.confirmSigner(this.contract);
     const txStatus = await this.contract.approve(
       spenderAddress,
       this.toEthersBigNumber(amount),

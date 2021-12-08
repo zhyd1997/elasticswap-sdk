@@ -160,6 +160,7 @@ export default class ExchangeFactory extends QueryFilterable {
       throw this._errorHandling.error('PAIR_ALREADY_EXISTS');
     }
 
+    this._contract = this.confirmSigner(this.contract);
     const txStatus = await this.contract.createNewExchange(
       name,
       symbol,
