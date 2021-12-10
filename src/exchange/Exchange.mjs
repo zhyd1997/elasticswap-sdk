@@ -140,11 +140,14 @@ export default class Exchange extends Base {
   }
 
   async calculateShareOfPool(quoteTokenAmount, baseTokenAmount, slippage) {
-    const totalSupplyOfLiquidityTokens = await this._lpToken.totalSupply();
+    const totalSupplyOfLiquidityTokens = toBigNumber(
+      await this._lpToken.totalSupply(),
+    );
     if (totalSupplyOfLiquidityTokens.eq(toBigNumber(0))) {
       return toBigNumber(1); // 100% of pool!
     }
-    const newTokens = this.calculateLPTokenAmount(
+
+    const newTokens = await this.calculateLPTokenAmount(
       quoteTokenAmount,
       baseTokenAmount,
       slippage,
