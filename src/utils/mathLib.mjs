@@ -841,7 +841,7 @@ export const calculateLPTokenAmount = (
   const totalSupplyOfLiquidityTokensBN = toBigNumber(
     totalSupplyOfLiquidityTokens,
   );
-  const cleansedinternalBalancesBN =
+  const cleansedInternalBalancesBN =
     internalBalancesBNConverter(internalBalances);
 
   // NaN cases
@@ -886,7 +886,7 @@ export const calculateLPTokenAmount = (
     baseTokenReserveQtyBN,
     quoteTokenReserveQtyBN,
     totalSupplyOfLiquidityTokensBN,
-    cleansedinternalBalancesBN,
+    cleansedInternalBalancesBN,
   );
   return tokenQtys.liquidityTokenQty;
 };

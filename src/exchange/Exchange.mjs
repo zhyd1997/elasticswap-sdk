@@ -2,7 +2,10 @@ import ExchangeSolidity from '@elasticswap/elasticswap/artifacts/src/contracts/E
 import ERC20 from '../tokens/ERC20.mjs';
 import Base from '../Base.mjs';
 import ErrorHandling from '../ErrorHandling.mjs';
-import { calculateExchangeRate } from '../utils/mathLib.mjs';
+import {
+  calculateExchangeRate,
+  calculateLPTokenAmount,
+} from '../utils/mathLib.mjs';
 import { toBigNumber } from '../utils/utils.mjs';
 
 export default class Exchange extends Base {
@@ -113,6 +116,40 @@ export default class Exchange extends Base {
     }
 
     return calculateExchangeRate(inputTokenReserveQty, outputTokenReserveQty);
+  }
+
+  async calculateLPTokenAmount(quoteTokenAmount, baseTokenAmount, slippage) {
+    const quoteTokenReserveQty = await this._quoteToken.balanceOf(
+      this._exchangeAddress,
+    );
+    const baseTokenReserveQty = await this._baseToken.balanceOf(
+      this._exchangeAddress,
+    );
+    const internalBalances = await this.contract.internalBalances();
+    const totalSupplyOfLiquidityTokens = await this._lpToken.totalSupply();
+
+    return calculateLPTokenAmount(
+      quoteTokenAmount,
+      baseTokenAmount,
+      quoteTokenReserveQty,
+      baseTokenReserveQty,
+      slippage,
+      totalSupplyOfLiquidityTokens,
+      internalBalances,
+    );
+  }
+
+  async calculateShareOfPool(quoteTokenAmount, baseTokenAmount, slippage) {
+    const totalSupplyOfLiquidityTokens = await this._lpToken.totalSupply();
+    if (totalSupplyOfLiquidityTokens.eq(toBigNumber(0))) {
+      return toBigNumber(1); // 100% of pool!
+    }
+    const newTokens = this.calculateLPTokenAmount(
+      quoteTokenAmount,
+      baseTokenAmount,
+      slippage,
+    );
+    return newTokens.div(totalSupplyOfLiquidityTokens.plus(newTokens));
   }
 
   async addLiquidity(
