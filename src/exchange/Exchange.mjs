@@ -6,7 +6,7 @@ import {
   calculateExchangeRate,
   calculateLPTokenAmount,
 } from '../utils/mathLib.mjs';
-import { toBigNumber } from '../utils/utils.mjs';
+import { toBigNumber, toEthersBigNumber } from '../utils/utils.mjs';
 
 export default class Exchange extends Base {
   constructor(sdk, exchangeAddress, baseTokenAddress, quoteTokenAddress) {
@@ -152,6 +152,33 @@ export default class Exchange extends Base {
     return newTokens.div(totalSupplyOfLiquidityTokens.plus(newTokens));
   }
 
+  async addLiquidityWithSlippage(
+    baseTokenQtyDesired,
+    quoteTokenQtyDesired,
+    slippagePercent,
+    liquidityTokenRecipient,
+    expirationTimestamp,
+    overrides = {},
+  ) {
+    if (slippagePercent.gte(1) || slippagePercent.lt(0)) {
+      throw this.errorHandling.error('SLIPPAGE_MUST_BE_PERCENT');
+    }
+
+    const slippageInverse = toBigNumber(1).minus(slippagePercent);
+    const baseTokenQtyMin = baseTokenQtyDesired.multipliedBy(slippageInverse);
+    const quoteTokenQtyMin = quoteTokenQtyDesired.multipliedBy(slippageInverse);
+
+    return this.addLiquidity(
+      baseTokenQtyDesired,
+      quoteTokenQtyDesired,
+      baseTokenQtyMin,
+      quoteTokenQtyMin,
+      liquidityTokenRecipient,
+      expirationTimestamp,
+      overrides,
+    );
+  }
+
   async addLiquidity(
     baseTokenQtyDesired,
     quoteTokenQtyDesired,
@@ -161,38 +188,50 @@ export default class Exchange extends Base {
     expirationTimestamp,
     overrides = {},
   ) {
+    const baseTokenQtyDesiredBN = toBigNumber(baseTokenQtyDesired);
+    const quoteTokenQtyDesiredBN = toBigNumber(quoteTokenQtyDesired);
+    const baseTokenQtyMinBN = toBigNumber(baseTokenQtyMin);
+    const quoteTokenQtyMinBN = toBigNumber(quoteTokenQtyMin);
+
     if (expirationTimestamp < new Date().getTime() / 1000) {
       throw this.errorHandling.error('TIMESTAMP_EXPIRED');
     }
-    if (baseTokenQtyDesired <= baseTokenQtyMin) {
+
+    if (baseTokenQtyDesiredBN.lte(baseTokenQtyMinBN)) {
       throw this.errorHandling.error(
         'TOKEN_QTY_DESIRED_LESS_OR_EQUAL_THAN_MINIMUM',
       );
     }
-    if ((await this.baseTokenBalance) < baseTokenQtyDesired) {
+
+    if ((await this.baseTokenBalance).lt(baseTokenQtyDesiredBN)) {
       throw this.errorHandling.error('NOT_ENOUGH_BASE_TOKEN_BALANCE');
     }
-    if (quoteTokenQtyDesired <= quoteTokenQtyMin) {
+
+    if (quoteTokenQtyDesiredBN.lte(quoteTokenQtyMinBN)) {
       throw this.errorHandling.error(
         'TOKEN_QTY_DESIRED_LESS_OR_EQUAL_THAN_MINIMUM',
       );
     }
-    if ((await this.quoteTokenBalance) < quoteTokenQtyDesired) {
+
+    if ((await this.quoteTokenBalance).lt(quoteTokenQtyDesiredBN)) {
       throw this.errorHandling.error('NOT_ENOUGH_QUOTE_TOKEN_BALANCE');
     }
+    const baseTokenAllowanceBN = toBigNumber(await this.baseTokenAllowance);
+    const quoteTokenAllowanceBN = toBigNumber(await this.quoteTokenAllowance);
+
     if (
-      (await this.baseTokenAllowance) < baseTokenQtyDesired ||
-      (await this.quoteTokenAllowance) < quoteTokenQtyDesired
+      baseTokenAllowanceBN.lt(baseTokenQtyDesiredBN) ||
+      quoteTokenAllowanceBN.lt(quoteTokenQtyDesiredBN)
     ) {
       throw this.errorHandling.error('TRANSFER_NOT_APPROVED');
     }
 
     this._contract = this.confirmSigner(this.contract);
     const txStatus = await this.contract.addLiquidity(
-      baseTokenQtyDesired,
-      quoteTokenQtyDesired,
-      baseTokenQtyMin,
-      quoteTokenQtyMin,
+      toEthersBigNumber(baseTokenQtyDesiredBN),
+      toEthersBigNumber(quoteTokenQtyDesiredBN),
+      toEthersBigNumber(baseTokenQtyMinBN),
+      toEthersBigNumber(quoteTokenQtyMinBN),
       liquidityTokenRecipient,
       expirationTimestamp,
       this.sanitizeOverrides(overrides),
