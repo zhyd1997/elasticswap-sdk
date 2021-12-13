@@ -302,6 +302,9 @@ export default class Exchange extends Base {
     const baseTokenQtyMinEBN = toEthersBigNumber(baseTokenQtyMin);
     const quoteTokenQtyMinEBN = toEthersBigNumber(quoteTokenQtyMin);
 
+    console.log("baseTokenQtyMinEBN", baseTokenQtyMinEBN.toString(), 
+    baseTokenQtyMin.toString());
+    
     const txStatus = await this.contract.removeLiquidity(
       toEthersBigNumber(liquidityTokenQty),
       baseTokenQtyMinEBN,
