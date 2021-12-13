@@ -280,30 +280,32 @@ export default class Exchange extends Base {
     expirationTimestamp,
     overrides = {},
   ) {
-    console.log('liquidityTokenQty: ', Number(liquidityTokenQty));
-    await this.lpTokenAllowance.then(
-      (value) => {
-        console.log('lpTokenAllowance', Number(value));
-      });
-    await this.lpTokenBalance.then(
-      (value) => {
-        console.log('lpTokenBalance', Number(value));
-      });
+    
+    const liquidityTokenQtyBN = toBigNumber(liquidityTokenQty);
+    const lpTokenBalance = toBigNumber(await this.lpTokenBalance);
+    const lpTokenAllowance = toBigNumber(await this.lpTokenAllowance);
+
     if (expirationTimestamp < new Date().getTime() / 1000) {
       throw this.errorHandling.error('TIMESTAMP_EXPIRED');
     }
-    if ((await this.lpTokenBalance) < liquidityTokenQty) {
+    
+    if (lpTokenBalance.lt(liquidityTokenQtyBN)) {
       throw this.errorHandling.error('NOT_ENOUGH_LP_TOKEN_BALANCE');
     }
-    if ((await this.lpTokenAllowance) < liquidityTokenQty) {
+    
+    if (lpTokenAllowance.lt(liquidityTokenQtyBN)) {
       throw this.errorHandling.error('TRANSFER_NOT_APPROVED');
     }
 
     this._contract = this.confirmSigner(this.contract);
+    
+    const baseTokenQtyMinEBN = toEthersBigNumber(baseTokenQtyMin);
+    const quoteTokenQtyMinEBN = toEthersBigNumber(quoteTokenQtyMin);
+
     const txStatus = await this.contract.removeLiquidity(
-      liquidityTokenQty,
-      baseTokenQtyMin,
-      quoteTokenQtyMin,
+      toEthersBigNumber(liquidityTokenQty),
+      baseTokenQtyMinEBN,
+      quoteTokenQtyMinEBN,
       tokenRecipient,
       expirationTimestamp,
       this.sanitizeOverrides(overrides),
