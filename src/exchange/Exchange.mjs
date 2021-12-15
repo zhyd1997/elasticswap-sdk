@@ -3,8 +3,10 @@ import ERC20 from '../tokens/ERC20.mjs';
 import Base from '../Base.mjs';
 import ErrorHandling from '../ErrorHandling.mjs';
 import {
+  calculateBaseTokenQty,
   calculateExchangeRate,
   calculateLPTokenAmount,
+  calculateQuoteTokenQty,
   calculateTokenAmountsFromLPTokens,
 } from '../utils/mathLib.mjs';
 import { toBigNumber, toEthersBigNumber } from '../utils/utils.mjs';
@@ -102,6 +104,22 @@ export default class Exchange extends Base {
     return this._errorHandling;
   }
 
+  async calculateBaseTokenQty(quoteTokenQty, baseTokenQtyMin) {
+    const baseTokenReserveQty = await this._baseToken.balanceOf(
+      this._exchangeAddress,
+    );
+    const liquidityFeeInBasisPoints = await this.liquidityFee;
+    const internalBalances = await this.contract.internalBalances();
+
+    return calculateBaseTokenQty(
+      quoteTokenQty,
+      baseTokenQtyMin,
+      baseTokenReserveQty,
+      liquidityFeeInBasisPoints,
+      internalBalances,
+    );
+  }
+
   async calculateExchangeRate(inputTokenAddress) {
     const inputTokenAddressLowerCase = inputTokenAddress.toLowerCase();
     let inputTokenReserveQty = toBigNumber(0);
@@ -136,6 +154,18 @@ export default class Exchange extends Base {
       baseTokenReserveQty,
       slippage,
       totalSupplyOfLiquidityTokens,
+      internalBalances,
+    );
+  }
+
+  async calculateQuoteTokenQty(baseTokenQty, quoteTokenQtyMin) {
+    const liquidityFeeInBasisPoints = await this.liquidityFee;
+    const internalBalances = await this.contract.internalBalances();
+
+    return calculateQuoteTokenQty(
+      baseTokenQty,
+      quoteTokenQtyMin,
+      liquidityFeeInBasisPoints,
       internalBalances,
     );
   }
