@@ -138,7 +138,7 @@ export default class Exchange extends Base {
     return calculateExchangeRate(inputTokenReserveQty, outputTokenReserveQty);
   }
 
-  async calculateFees(swapAmount){
+  async calculateFees(swapAmount) {
     const liquidityFeeInBasisPoints = await this.liquidityFee;
     return calculateFees(swapAmount, liquidityFeeInBasisPoints);
   }
