@@ -174,10 +174,9 @@ export default class Exchange extends Base {
     return newTokens.div(totalSupplyOfLiquidityTokens.plus(newTokens));
   }
 
-  async calculateShareOfPoolProvided(lpAmount, lpTokenDecimals) {
+  async calculateShareOfPoolProvided(lpAmount) {
     const totalSupplyOfLiquidityTokens = toBigNumber(
       await this._lpToken.totalSupply(),
-      lpTokenDecimals,
     );
     if (totalSupplyOfLiquidityTokens.eq(lpAmount)) {
       return toBigNumber(1); // 100% of pool!
