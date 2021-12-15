@@ -6,6 +6,7 @@ import {
   calculateBaseTokenQty,
   calculateExchangeRate,
   calculateLPTokenAmount,
+  calculateQuoteTokenQty,
   calculateTokenAmountsFromLPTokens,
 } from '../utils/mathLib.mjs';
 import { toBigNumber, toEthersBigNumber } from '../utils/utils.mjs';
@@ -153,6 +154,18 @@ export default class Exchange extends Base {
       baseTokenReserveQty,
       slippage,
       totalSupplyOfLiquidityTokens,
+      internalBalances,
+    );
+  }
+
+  async calculateQuoteTokenQty(baseTokenQty, quoteTokenQtyMin) {
+    const liquidityFeeInBasisPoints = await this.liquidityFee;
+    const internalBalances = await this.contract.internalBalances();
+
+    return calculateQuoteTokenQty(
+      baseTokenQty,
+      quoteTokenQtyMin,
+      liquidityFeeInBasisPoints,
       internalBalances,
     );
   }
