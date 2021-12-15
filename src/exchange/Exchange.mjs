@@ -3,6 +3,7 @@ import ERC20 from '../tokens/ERC20.mjs';
 import Base from '../Base.mjs';
 import ErrorHandling from '../ErrorHandling.mjs';
 import {
+  calculateBaseTokenQty,
   calculateExchangeRate,
   calculateLPTokenAmount,
   calculateTokenAmountsFromLPTokens,
@@ -100,6 +101,22 @@ export default class Exchange extends Base {
 
   get errorHandling() {
     return this._errorHandling;
+  }
+
+  async calculateBaseTokenQty(quoteTokenQty, baseTokenQtyMin) {
+    const baseTokenReserveQty = await this._baseToken.balanceOf(
+      this._exchangeAddress,
+    );
+    const liquidityFeeInBasisPoints = await this.liquidityFee;
+    const internalBalances = await this.contract.internalBalances();
+
+    return calculateBaseTokenQty(
+      quoteTokenQty,
+      baseTokenQtyMin,
+      baseTokenReserveQty,
+      liquidityFeeInBasisPoints,
+      internalBalances,
+    );
   }
 
   async calculateExchangeRate(inputTokenAddress) {
