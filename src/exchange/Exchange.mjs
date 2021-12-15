@@ -315,20 +315,27 @@ export default class Exchange extends Base {
     expirationTimestamp,
     overrides = {},
   ) {
+    const baseTokenQtyBN = toBigNumber(baseTokenQty);
+    const quoteTokenQtyMinBN = toBigNumber(quoteTokenQtyMin);
+    const baseTokenBalanceBN = toBigNumber(await this.baseTokenBalance);
+    const baseTokenAllowanceBN = toBigNumber(await this.baseTokenAllowance);
+
     if (expirationTimestamp < new Date().getTime() / 1000) {
       throw this.errorHandling.error('TIMESTAMP_EXPIRED');
     }
-    if ((await this.baseTokenBalance) < baseTokenQty) {
+    if (baseTokenBalanceBN.lt(baseTokenQtyBN)) {
       throw this.errorHandling.error('NOT_ENOUGH_BASE_TOKEN_BALANCE');
     }
-    if ((await this.baseTokenAllowance) < baseTokenQty) {
+    if (baseTokenAllowanceBN.lt(baseTokenQtyBN)) {
       throw this.errorHandling.error('TRANSFER_NOT_APPROVED');
     }
 
     this._contract = this.confirmSigner(this.contract);
+    const baseTokenQtyEBN = toEthersBigNumber(baseTokenQtyBN);
+    const quoteTokenQtyMinEBN = toEthersBigNumber(quoteTokenQtyMinBN);
     const txStatus = await this.contract.swapBaseTokenForQuoteToken(
-      baseTokenQty,
-      quoteTokenQtyMin,
+      baseTokenQtyEBN,
+      quoteTokenQtyMinEBN,
       expirationTimestamp,
       this.sanitizeOverrides(overrides),
     );
