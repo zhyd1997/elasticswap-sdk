@@ -130,11 +130,10 @@ export default class Exchange extends Base {
     if (inputTokenAddressLowerCase === this.baseTokenAddress.toLowerCase()) {
       inputTokenReserveQty = internalBalances.baseTokenReserveQty;
       outputTokenReserveQty = internalBalances.quoteTokenReserveQty;
-    } else if (inputTokenAddress === this.quoteTokenAddress.toLowerCase()) {
+    } else if (inputTokenAddressLowerCase === this.quoteTokenAddress.toLowerCase()) {
       inputTokenReserveQty = internalBalances.quoteTokenReserveQty;
       outputTokenReserveQty = internalBalances.baseTokenReserveQty;
     }
-
     return calculateExchangeRate(inputTokenReserveQty, outputTokenReserveQty);
   }
 
