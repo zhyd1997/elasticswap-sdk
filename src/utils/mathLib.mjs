@@ -961,7 +961,7 @@ export const calculateLPTokenAmount = (
  * @param outputTokenReserveQty current reserve qty of the other base or quote token (not tokenA)
  * @param slippagePercent the percentage of slippage
  * @param feeAmount the total amount of fees in Basis points for the trade
- * @returns outputAmountLessSlippage
+ * @returns outputAmountLessFeesLessSlippage
  */
 export const calculateOutputAmountLessFees = (
   inputTokenAmount,
@@ -1003,7 +1003,7 @@ export const calculateOutputAmountLessFees = (
     throw INSUFFICIENT_LIQUIDITY;
   }
 
-  const outputAmount = calculateQtyToReturnAfterFees(
+  const outputAmountLessFees = calculateQtyToReturnAfterFees(
     inputTokenAmountBN,
     inputTokenReserveQtyBN,
     outputTokenReserveQtyBN,
@@ -1016,10 +1016,10 @@ export const calculateOutputAmountLessFees = (
   );
 
   // outputAmountLessSlippage = outputamount * slippage multiplier
-  const outputAmountLessSlippage =
-    outputAmount.multipliedBy(slippageMultiplier);
-  console.log('outputAmountLessSlippage: ', outputAmountLessSlippage.toString());
-  return outputAmountLessSlippage;
+  const outputAmountLessFeesLessSlippage =
+    outputAmountLessFees.multipliedBy(slippageMultiplier);
+  console.log('outputAmountLessFeesLessSlippage: ', outputAmountLessFeesLessSlippage.toString());
+  return outputAmountLessFeesLessSlippage;
 };
 
 /**
