@@ -970,6 +970,12 @@ export const calculateOutputAmountLessFees = (
   slippagePercent,
   feeAmount,
 ) => {
+  // console.log("calculateAmountLessFees: INPUTS:")
+  // console.log("inputTokenAmount: ", inputTokenAmount.toString());
+  // console.log("inputTokenReserveQty: ", inputTokenReserveQty.toString());
+  // console.log("outputTokenReserveQty: ", outputTokenReserveQty.toString());
+  // console.log("slippagePercent: ", slippagePercent.toString());
+  // console.log("feeAmount: ", feeAmount.toString());
   // cleanse input to BN
   const inputTokenAmountBN = toBigNumber(inputTokenAmount);
   const inputTokenReserveQtyBN = toBigNumber(inputTokenReserveQty);
@@ -1009,6 +1015,9 @@ export const calculateOutputAmountLessFees = (
     outputTokenReserveQtyBN,
     feeAmountBN,
   );
+  // console.log("calculateAmountLessFees: CALCS:");
+  // console.log("outputAmountLessFees: ", outputAmountLessFees);
+  // console.log("outputAmountLessFees: ", outputAmountLessFees.toString())
 
   // slippage multiplier = 1 - (slippage% / 100)
   const slippageMultiplier = toBigNumber(1).minus(
@@ -1035,24 +1044,24 @@ export const calculatePriceImpact = (
   slippagePercent,
   feeAmount,
 ) => {
-  console.log('BEFORE BEING CLEANSE');
-  console.log('inputTokenAmount: ', inputTokenAmount);
-  console.log('inputTokenReserveQty: ', inputTokenReserveQty);
-  console.log('outputTokenReserveQty: ', outputTokenReserveQty);
-  console.log('slippagePercent: ', slippagePercent);
-  console.log('feeAmount: ', feeAmount);
+  // console.log('calculatePriceImpact: input: BEFORE CLEANSE');
+  // console.log('inputTokenAmount: ', inputTokenAmount);
+  // console.log('inputTokenReserveQty: ', inputTokenReserveQty.toString());
+  // console.log('outputTokenReserveQty: ', outputTokenReserveQty);
+  // console.log('slippagePercent: ', slippagePercent);
+  // console.log('feeAmount: ', feeAmount);
   // cleanse inputs
   const inputTokenAmountBN = toBigNumber(inputTokenAmount);
   const inputTokenReserveQtyBN = toBigNumber(inputTokenReserveQty);
   const outputTokenReserveQtyBN = toBigNumber(outputTokenReserveQty);
   const slippagePercentBN = toBigNumber(slippagePercent);
   const feeAmountBN = toBigNumber(feeAmount);
-  console.log('AFTER BEING CLEANSE');
-  console.log('inputTokenAmount: ', inputTokenAmount);
-  console.log('inputTokenReserveQty: ', inputTokenReserveQty);
-  console.log('outputTokenReserveQty: ', outputTokenReserveQty);
-  console.log('slippagePercent: ', slippagePercent);
-  console.log('feeAmount: ', feeAmount);
+  // console.log('AFTER BEING CLEANSE');
+  // console.log('inputTokenAmount: ', inputTokenAmount);
+  // console.log('inputTokenReserveQty: ', inputTokenReserveQty.toString());
+  // console.log('outputTokenReserveQty: ', outputTokenReserveQty.toString());
+  // console.log('slippagePercent: ', slippagePercent);
+  // console.log('feeAmount: ', feeAmount);
   if (
     inputTokenAmountBN.isNaN() ||
     inputTokenReserveQtyBN.isNaN() ||
@@ -1084,6 +1093,8 @@ export const calculatePriceImpact = (
     inputTokenReserveQtyBN,
     outputTokenReserveQtyBN,
   );
+  console.log("PRICE IMPACT CALCS:")
+  console.log("initialPrice: " + initialPrice);
 
   const outputTokenAmount = calculateOutputAmountLessFees(
     inputTokenAmountBN,
@@ -1092,9 +1103,10 @@ export const calculatePriceImpact = (
     slippagePercentBN,
     feeAmountBN,
   );
+  console.log("outputTokenAmount: " + outputTokenAmount.toString());
 
   const inputTokenReserveQtyAfter =
-    inputTokenReserveQtyBN.plus(inputTokenAmount);
+    inputTokenReserveQtyBN.plus(inputTokenAmountBN);
 
   const outputTokenReserveQtyAfter =
     outputTokenReserveQtyBN.minus(outputTokenAmount);
@@ -1103,11 +1115,16 @@ export const calculatePriceImpact = (
     inputTokenReserveQtyAfter,
     outputTokenReserveQtyAfter,
   );
+  // initial ->  input initial / output initial
+  // final -> input final(increase)/ output final (decrease)
 
+  // final - initial
+  // --------------- x 100
+  //  initial 
   const priceDiff = finalPrice.minus(initialPrice);
-  const priceDiffRatio = priceDiff.dividedBy(initialPrice);
-  const priceImpact = priceDiffRatio.multipliedBy(toBigNumber('100'));
-
+  const priceDiffMultiplied = priceDiff.multipliedBy(toBigNumber('100'));
+  const priceImpact = priceDiffMultiplied.dividedBy(finalPrice);
+  
   return priceImpact;
 };
 
@@ -1156,13 +1173,34 @@ export const calculateQtyToReturnAfterFees = (
   tokenBReserveQty,
   liquidityFeeInBasisPoints,
 ) => {
+  console.log('CALCULATEQTYTORETURNAFTERFEES: input: BEFORE CLEANSE');
+  console.log('tokenASwapQty: ', tokenASwapQty);
+  console.log('tokenASwapQty: ', tokenASwapQty.toString());
+  console.log('tokenAReserveQty: ', tokenAReserveQty);
+  console.log('tokenAReserveQty: ', tokenAReserveQty.toString());
+  console.log('tokenBReserveQty: ', tokenBReserveQty);
+  console.log('tokenBReserveQty: ', tokenBReserveQty.toString());
+  console.log('liquidityFeeInBasisPoints: ', liquidityFeeInBasisPoints);
+  console.log('liquidityFeeInBasisPoints: ', liquidityFeeInBasisPoints.toString());
+  
+  // cleanse inputs
   // cleanse inputs
   const tokenASwapQtyBN = toBigNumber(tokenASwapQty);
   const tokenAReserveQtyBN = toBigNumber(tokenAReserveQty);
   const tokenBReserveQtyBN = toBigNumber(tokenBReserveQty);
   const liquidityFeeInBasisPointsBN = toBigNumber(liquidityFeeInBasisPoints);
+  console.log('CALCULATEQTYTORETURNAFTERFEES: input: AFTER CLEANSE');
+  console.log('tokenASwapQty: ', tokenASwapQtyBN);
+  console.log('tokenASwapQty: ', tokenASwapQtyBN.toString());
+  console.log('tokenAReserveQty: ', tokenAReserveQtyBN);
+  console.log('tokenAReserveQty: ', tokenAReserveQtyBN.toString());
+  console.log('tokenBReserveQty: ', tokenBReserveQtyBN);
+  console.log('tokenBReserveQty: ', tokenBReserveQtyBN.toString());
+  console.log('liquidityFeeInBasisPoints: ', liquidityFeeInBasisPointsBN);
+  console.log('liquidityFeeInBasisPoints: ', liquidityFeeInBasisPointsBN.toString());
 
   const differenceInBP = BASIS_POINTS.minus(liquidityFeeInBasisPointsBN);
+  console.log("differenceInBP: ", differenceInBP.toString());
   const tokenASwapQtyLessFee = tokenASwapQtyBN
     .multipliedBy(differenceInBP)
     .dp(18, ROUND_DOWN);
@@ -1175,7 +1213,8 @@ export const calculateQtyToReturnAfterFees = (
     .dp(18, ROUND_DOWN)
     .plus(tokenASwapQtyLessFee);
 
-  const qtyToReturn = numerator.dividedBy(denominator).dp(0, ROUND_DOWN);
+  const qtyToReturn = numerator.dividedBy(denominator);
+  console.log("qtyToReturn", qtyToReturn.toString());
 
   return qtyToReturn;
 };
