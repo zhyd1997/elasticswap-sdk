@@ -606,7 +606,6 @@ export const calculateExchangeRate = (
   // cleanse input
   const inputTokenReserveQtyBN = toBigNumber(inputTokenReserveQty);
   const outputTokenReserveQtyBN = toBigNumber(outputTokenReserveQty);
-
   if (inputTokenReserveQtyBN.isNaN() || outputTokenReserveQtyBN.isNaN()) {
     throw NAN_ERROR;
   }
@@ -628,8 +627,72 @@ export const calculateExchangeRate = (
   const exchangeRate = inputTokenReserveQtyBN.dividedBy(
     outputTokenReserveQtyBN,
   );
-
   return exchangeRate;
+};
+
+/**
+ * @dev calculates the exchange rate after price impact ( X/Y )
+ * @param inputTokenAmount
+ * @param inputTokenReserveQty
+ * @param outputTokenReserveQty
+ * @returns exchangeRate - after price impact
+ */
+export const calculateExchangeRateAfterPriceImpact = (
+  inputTokenAmount,
+  inputTokenReserveQty,
+  outputTokenReserveQty,
+  slippagePercent,
+  feeAmount,
+) => {
+  // cleanse inputs
+  const inputTokenAmountBN = toBigNumber(inputTokenAmount);
+  const inputTokenReserveQtyBN = toBigNumber(inputTokenReserveQty);
+  const outputTokenReserveQtyBN = toBigNumber(outputTokenReserveQty);
+  const slippagePercentBN = toBigNumber(slippagePercent);
+  const feeAmountBN = toBigNumber(feeAmount);
+  if (
+    inputTokenAmountBN.isNaN() ||
+    inputTokenReserveQtyBN.isNaN() ||
+    outputTokenReserveQtyBN.isNaN() ||
+    slippagePercentBN.isNaN() ||
+    feeAmountBN.isNaN()
+  ) {
+    throw NAN_ERROR;
+  }
+
+  if (
+    inputTokenAmountBN.isNegative() ||
+    inputTokenReserveQtyBN.isNegative() ||
+    outputTokenReserveQtyBN.isNegative() ||
+    slippagePercentBN.isNegative() ||
+    feeAmountBN.isNegative()
+  ) {
+    throw NEGATIVE_INPUT;
+  }
+
+  if (
+    inputTokenReserveQtyBN.isEqualTo(ZERO) ||
+    outputTokenReserveQtyBN.isEqualTo(ZERO)
+  ) {
+    throw INSUFFICIENT_LIQUIDITY;
+  }
+
+  const outputTokenAmount = calculateOutputAmountLessFees(
+    inputTokenAmountBN,
+    inputTokenReserveQtyBN,
+    outputTokenReserveQtyBN,
+    slippagePercentBN,
+    feeAmountBN,
+  );
+  const inputTokenReserveQtyAfter =
+    inputTokenReserveQtyBN.plus(inputTokenAmountBN);
+  const outputTokenReserveQtyAfter =
+    outputTokenReserveQtyBN.minus(outputTokenAmount);
+  const finalPrice = calculateExchangeRate(
+    inputTokenReserveQtyAfter,
+    outputTokenReserveQtyAfter,
+  );
+  return finalPrice;
 };
 
 /**
@@ -913,7 +976,6 @@ export const calculateOutputAmountLessFees = (
   const outputTokenReserveQtyBN = toBigNumber(outputTokenReserveQty);
   const slippagePercentBN = toBigNumber(slippagePercent);
   const feeAmountBN = toBigNumber(feeAmount);
-
   if (
     inputTokenAmountBN.isNaN() ||
     inputTokenReserveQtyBN.isNaN() ||
@@ -956,7 +1018,7 @@ export const calculateOutputAmountLessFees = (
   // outputAmountLessSlippage = outputamount * slippage multiplier
   const outputAmountLessSlippage =
     outputAmount.multipliedBy(slippageMultiplier);
-
+  console.log('outputAmountLessSlippage: ', outputAmountLessSlippage.toString());
   return outputAmountLessSlippage;
 };
 
@@ -980,7 +1042,6 @@ export const calculatePriceImpact = (
   const outputTokenReserveQtyBN = toBigNumber(outputTokenReserveQty);
   const slippagePercentBN = toBigNumber(slippagePercent);
   const feeAmountBN = toBigNumber(feeAmount);
-
   if (
     inputTokenAmountBN.isNaN() ||
     inputTokenReserveQtyBN.isNaN() ||
@@ -1020,10 +1081,8 @@ export const calculatePriceImpact = (
     slippagePercentBN,
     feeAmountBN,
   );
-
   const inputTokenReserveQtyAfter =
     inputTokenReserveQtyBN.plus(inputTokenAmount);
-
   const outputTokenReserveQtyAfter =
     outputTokenReserveQtyBN.minus(outputTokenAmount);
 
@@ -1033,9 +1092,8 @@ export const calculatePriceImpact = (
   );
 
   const priceDiff = finalPrice.minus(initialPrice);
-  const priceDiffRatio = priceDiff.dividedBy(initialPrice);
-  const priceImpact = priceDiffRatio.multipliedBy(toBigNumber('100'));
-
+  const priceDiffMultiplied = priceDiff.multipliedBy('100');
+  const priceImpact = priceDiffMultiplied.dividedBy(finalPrice);
   return priceImpact;
 };
 
