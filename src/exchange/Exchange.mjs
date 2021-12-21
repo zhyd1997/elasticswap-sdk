@@ -245,36 +245,20 @@ export default class Exchange extends Base {
   async calculatePriceImpact(swapAmount, inputTokenAddress, slippagePercent) {
     const inputTokenAddressLowerCase = inputTokenAddress.toLowerCase();
     const inputTokenAmount = toBigNumber(swapAmount);
-    const baseDecimals = await this._baseToken.contract.decimals();
-    const quoteDecimals = await this._baseToken.contract.decimals();
     let inputTokenReserveQty = toBigNumber(0);
     let outputTokenReserveQty = toBigNumber(0);
 
     const feeAmount = await this.calculateFees(swapAmount);
     const internalBalances = await this.contract.internalBalances();
-
     if (inputTokenAddressLowerCase === this.baseTokenAddress.toLowerCase()) {
-      inputTokenReserveQty = toBigNumber(
-        internalBalances.baseTokenReserveQty,
-        baseDecimals,
-      );
-      outputTokenReserveQty = toBigNumber(
-        internalBalances.quoteTokenReserveQty,
-        quoteDecimals,
-      );
+      inputTokenReserveQty = internalBalances.baseTokenReserveQty;
+      outputTokenReserveQty = internalBalances.quoteTokenReserveQty;
     } else if (
       inputTokenAddressLowerCase === this.quoteTokenAddress.toLowerCase()
     ) {
-      inputTokenReserveQty = toBigNumber(
-        internalBalances.quoteTokenReserveQty,
-        quoteDecimals,
-      );
-      outputTokenReserveQty = toBigNumber(
-        internalBalances.baseTokenReserveQty,
-        baseDecimals,
-      );
+      inputTokenReserveQty = internalBalances.quoteTokenReserveQty;
+      outputTokenReserveQty = internalBalances.baseTokenReserveQty;
     }
-
     return calculatePriceImpact(
       inputTokenAmount,
       inputTokenReserveQty,
@@ -291,8 +275,6 @@ export default class Exchange extends Base {
   ) {
     const inputTokenAddressLowerCase = inputTokenAddress.toLowerCase();
     const inputTokenAmount = toBigNumber(swapAmount);
-    const baseDecimals = await this._baseToken.contract.decimals();
-    const quoteDecimals = await this._baseToken.contract.decimals();
     let inputTokenReserveQty = toBigNumber(0);
     let outputTokenReserveQty = toBigNumber(0);
 
@@ -300,25 +282,13 @@ export default class Exchange extends Base {
     const internalBalances = await this.contract.internalBalances();
 
     if (inputTokenAddressLowerCase === this.baseTokenAddress.toLowerCase()) {
-      inputTokenReserveQty = toBigNumber(
-        internalBalances.baseTokenReserveQty,
-        baseDecimals,
-      );
-      outputTokenReserveQty = toBigNumber(
-        internalBalances.quoteTokenReserveQty,
-        quoteDecimals,
-      );
+      inputTokenReserveQty = toBigNumber(internalBalances.baseTokenReserveQty);
+      outputTokenReserveQty = toBigNumber(internalBalances.quoteTokenReserveQty);
     } else if (
       inputTokenAddressLowerCase === this.quoteTokenAddress.toLowerCase()
     ) {
-      inputTokenReserveQty = toBigNumber(
-        internalBalances.quoteTokenReserveQty,
-        quoteDecimals,
-      );
-      outputTokenReserveQty = toBigNumber(
-        internalBalances.baseTokenReserveQty,
-        baseDecimals,
-      );
+      inputTokenReserveQty = toBigNumber(internalBalances.quoteTokenReserveQty);
+      outputTokenReserveQty = toBigNumber(internalBalances.baseTokenReserveQty);
     }
     return calculateOutputAmountLessFees(
       inputTokenAmount,

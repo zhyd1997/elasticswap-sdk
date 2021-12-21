@@ -1018,7 +1018,6 @@ export const calculateOutputAmountLessFees = (
   // outputAmountLessSlippage = outputamount * slippage multiplier
   const outputAmountLessFeesLessSlippage =
     outputAmountLessFees.multipliedBy(slippageMultiplier);
-  console.log('outputAmountLessFeesLessSlippage: ', outputAmountLessFeesLessSlippage.toString());
   return outputAmountLessFeesLessSlippage;
 };
 
@@ -1036,12 +1035,24 @@ export const calculatePriceImpact = (
   slippagePercent,
   feeAmount,
 ) => {
+  console.log('BEFORE BEING CLEANSE');
+  console.log('inputTokenAmount: ', inputTokenAmount);
+  console.log('inputTokenReserveQty: ', inputTokenReserveQty);
+  console.log('outputTokenReserveQty: ', outputTokenReserveQty);
+  console.log('slippagePercent: ', slippagePercent);
+  console.log('feeAmount: ', feeAmount);
   // cleanse inputs
   const inputTokenAmountBN = toBigNumber(inputTokenAmount);
   const inputTokenReserveQtyBN = toBigNumber(inputTokenReserveQty);
   const outputTokenReserveQtyBN = toBigNumber(outputTokenReserveQty);
   const slippagePercentBN = toBigNumber(slippagePercent);
   const feeAmountBN = toBigNumber(feeAmount);
+  console.log('AFTER BEING CLEANSE');
+  console.log('inputTokenAmount: ', inputTokenAmount);
+  console.log('inputTokenReserveQty: ', inputTokenReserveQty);
+  console.log('outputTokenReserveQty: ', outputTokenReserveQty);
+  console.log('slippagePercent: ', slippagePercent);
+  console.log('feeAmount: ', feeAmount);
   if (
     inputTokenAmountBN.isNaN() ||
     inputTokenReserveQtyBN.isNaN() ||
@@ -1081,8 +1092,10 @@ export const calculatePriceImpact = (
     slippagePercentBN,
     feeAmountBN,
   );
+
   const inputTokenReserveQtyAfter =
     inputTokenReserveQtyBN.plus(inputTokenAmount);
+
   const outputTokenReserveQtyAfter =
     outputTokenReserveQtyBN.minus(outputTokenAmount);
 
@@ -1092,8 +1105,9 @@ export const calculatePriceImpact = (
   );
 
   const priceDiff = finalPrice.minus(initialPrice);
-  const priceDiffMultiplied = priceDiff.multipliedBy('100');
-  const priceImpact = priceDiffMultiplied.dividedBy(finalPrice);
+  const priceDiffRatio = priceDiff.dividedBy(initialPrice);
+  const priceImpact = priceDiffRatio.multipliedBy(toBigNumber('100'));
+
   return priceImpact;
 };
 
