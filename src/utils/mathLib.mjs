@@ -1093,8 +1093,8 @@ export const calculatePriceImpact = (
     inputTokenReserveQtyBN,
     outputTokenReserveQtyBN,
   );
-  console.log("PRICE IMPACT CALCS:")
-  console.log("initialPrice: " + initialPrice);
+  console.log('PRICE IMPACT CALCS:');
+  console.log('initialPrice: ', initialPrice);
 
   const outputTokenAmount = calculateOutputAmountLessFees(
     inputTokenAmountBN,
@@ -1103,7 +1103,7 @@ export const calculatePriceImpact = (
     slippagePercentBN,
     feeAmountBN,
   );
-  console.log("outputTokenAmount: " + outputTokenAmount.toString());
+  console.log('outputTokenAmount: ', outputTokenAmount.toString());
 
   const inputTokenReserveQtyAfter =
     inputTokenReserveQtyBN.plus(inputTokenAmountBN);
@@ -1115,16 +1115,27 @@ export const calculatePriceImpact = (
     inputTokenReserveQtyAfter,
     outputTokenReserveQtyAfter,
   );
-  // initial ->  input initial / output initial
-  // final -> input final(increase)/ output final (decrease)
-
+  // ssdd
   // final - initial
-  // --------------- x 100
-  //  initial 
+  // --------------- x 100  
+  //  initial
+
+  // evandro -> works on the front end
+  // final - initial
+  // --------------- x 100  
+  //  final
+
+  // -> uni price impact
+  // final - ( final + initial)    x 100 
+  //          -------
+  //            2
+  // paradigm 
+  // final - intial 
+
   const priceDiff = finalPrice.minus(initialPrice);
   const priceDiffMultiplied = priceDiff.multipliedBy(toBigNumber('100'));
-  const priceImpact = priceDiffMultiplied.dividedBy(finalPrice);
-  
+  const priceImpact = priceDiffMultiplied.dividedBy(initialPrice);
+
   return priceImpact;
 };
 
@@ -1181,8 +1192,11 @@ export const calculateQtyToReturnAfterFees = (
   console.log('tokenBReserveQty: ', tokenBReserveQty);
   console.log('tokenBReserveQty: ', tokenBReserveQty.toString());
   console.log('liquidityFeeInBasisPoints: ', liquidityFeeInBasisPoints);
-  console.log('liquidityFeeInBasisPoints: ', liquidityFeeInBasisPoints.toString());
-  
+  console.log(
+    'liquidityFeeInBasisPoints: ',
+    liquidityFeeInBasisPoints.toString(),
+  );
+
   // cleanse inputs
   // cleanse inputs
   const tokenASwapQtyBN = toBigNumber(tokenASwapQty);
@@ -1197,10 +1211,13 @@ export const calculateQtyToReturnAfterFees = (
   console.log('tokenBReserveQty: ', tokenBReserveQtyBN);
   console.log('tokenBReserveQty: ', tokenBReserveQtyBN.toString());
   console.log('liquidityFeeInBasisPoints: ', liquidityFeeInBasisPointsBN);
-  console.log('liquidityFeeInBasisPoints: ', liquidityFeeInBasisPointsBN.toString());
+  console.log(
+    'liquidityFeeInBasisPoints: ',
+    liquidityFeeInBasisPointsBN.toString(),
+  );
 
   const differenceInBP = BASIS_POINTS.minus(liquidityFeeInBasisPointsBN);
-  console.log("differenceInBP: ", differenceInBP.toString());
+  console.log('differenceInBP: ', differenceInBP.toString());
   const tokenASwapQtyLessFee = tokenASwapQtyBN
     .multipliedBy(differenceInBP)
     .dp(18, ROUND_DOWN);
@@ -1213,8 +1230,8 @@ export const calculateQtyToReturnAfterFees = (
     .dp(18, ROUND_DOWN)
     .plus(tokenASwapQtyLessFee);
 
-  const qtyToReturn = numerator.dividedBy(denominator);
-  console.log("qtyToReturn", qtyToReturn.toString());
+  const qtyToReturn = numerator.dividedBy(denominator).dp(0, ROUND_DOWN);
+  console.log('qtyToReturn', qtyToReturn.toString());
 
   return qtyToReturn;
 };

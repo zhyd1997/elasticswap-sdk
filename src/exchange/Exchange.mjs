@@ -251,24 +251,44 @@ export default class Exchange extends Base {
     const feeAmount = await this.calculateFees(swapAmount);
     const baseDecimals = await this._baseToken.contract.decimals();
     const quoteDecimals = await this._baseToken.contract.decimals();
-    
+
     const internalBalances = await this.contract.internalBalances();
     if (inputTokenAddressLowerCase === this.baseTokenAddress.toLowerCase()) {
-      inputTokenReserveQty = toBigNumber(internalBalances.baseTokenReserveQty, baseDecimals);
-      outputTokenReserveQty = toBigNumber(internalBalances.quoteTokenReserveQty, quoteDecimals);
+      inputTokenReserveQty = toBigNumber(
+        internalBalances.baseTokenReserveQty,
+        baseDecimals,
+      );
+      outputTokenReserveQty = toBigNumber(
+        internalBalances.quoteTokenReserveQty,
+        quoteDecimals,
+      );
     } else if (
       inputTokenAddressLowerCase === this.quoteTokenAddress.toLowerCase()
     ) {
-      inputTokenReserveQty = toBigNumber(internalBalances.quoteTokenReserveQty, quoteDecimals);
-      outputTokenReserveQty = toBigNumber(internalBalances.baseTokenReserveQty, baseDecimals);
+      inputTokenReserveQty = toBigNumber(
+        internalBalances.quoteTokenReserveQty,
+        quoteDecimals,
+      );
+      outputTokenReserveQty = toBigNumber(
+        internalBalances.baseTokenReserveQty,
+        baseDecimals,
+      );
     }
-    return calculatePriceImpact(
+
+    const initialExchangeRate = calculateExchangeRate(inputTokenReserveQty, outputTokenReserveQty);
+
+    const initialOutputAmount = swapAmount.dividedBy(initialExchangeRate);
+    
+    const finalOutputAmount = calculateOutputAmountLessFees(
       inputTokenAmount,
       inputTokenReserveQty,
       outputTokenReserveQty,
       slippagePercent,
       feeAmount,
-    );
+      );
+    
+  
+      
   }
 
   async calculateOutputAmountLessFees(
@@ -287,15 +307,25 @@ export default class Exchange extends Base {
     const quoteDecimals = await this._baseToken.contract.decimals();
 
     if (inputTokenAddressLowerCase === this.baseTokenAddress.toLowerCase()) {
-      inputTokenReserveQty = toBigNumber(internalBalances.baseTokenReserveQty, baseDecimals);
+      inputTokenReserveQty = toBigNumber(
+        internalBalances.baseTokenReserveQty,
+        baseDecimals,
+      );
       outputTokenReserveQty = toBigNumber(
-        internalBalances.quoteTokenReserveQty, quoteDecimals
+        internalBalances.quoteTokenReserveQty,
+        quoteDecimals,
       );
     } else if (
       inputTokenAddressLowerCase === this.quoteTokenAddress.toLowerCase()
     ) {
-      inputTokenReserveQty = toBigNumber(internalBalances.quoteTokenReserveQty, quoteDecimals);
-      outputTokenReserveQty = toBigNumber(internalBalances.baseTokenReserveQty, baseDecimals);
+      inputTokenReserveQty = toBigNumber(
+        internalBalances.quoteTokenReserveQty,
+        quoteDecimals,
+      );
+      outputTokenReserveQty = toBigNumber(
+        internalBalances.baseTokenReserveQty,
+        baseDecimals,
+      );
     }
     return calculateOutputAmountLessFees(
       inputTokenAmount,
