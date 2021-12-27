@@ -1094,8 +1094,7 @@ export const calculateQtyToReturnAfterFees = (
     .dp(18, ROUND_DOWN)
     .plus(tokenASwapQtyLessFee);
 
-  const qtyToReturn = numerator.dividedBy(denominator);
-
+  const qtyToReturn = numerator.dividedBy(denominator).dp(0, ROUND_DOWN);
   return qtyToReturn;
 };
 
