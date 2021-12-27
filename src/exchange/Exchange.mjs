@@ -131,7 +131,9 @@ export default class Exchange extends Base {
     if (inputTokenAddressLowerCase === this.baseTokenAddress.toLowerCase()) {
       inputTokenReserveQty = internalBalances.baseTokenReserveQty;
       outputTokenReserveQty = internalBalances.quoteTokenReserveQty;
-    } else if (inputTokenAddressLowerCase === this.quoteTokenAddress.toLowerCase()) {
+    } else if (
+      inputTokenAddressLowerCase === this.quoteTokenAddress.toLowerCase()
+    ) {
       inputTokenReserveQty = internalBalances.quoteTokenReserveQty;
       outputTokenReserveQty = internalBalances.baseTokenReserveQty;
     }
@@ -194,101 +196,39 @@ export default class Exchange extends Base {
     );
   }
 
-  async calculatePriceImpact(swapAmount, inputTokenAddress, slippagePercent) {
-    const inputTokenAddressLowerCase = inputTokenAddress.toLowerCase();
-    const inputTokenAmount = toBigNumber(swapAmount);
-    let inputTokenReserveQty = toBigNumber(0);
-    let outputTokenReserveQty = toBigNumber(0);
-    const feeAmount = await this.calculateFees(swapAmount);
-    const baseDecimals = await this._baseToken.contract.decimals();
-    const quoteDecimals = await this._baseToken.contract.decimals();
-    const internalBalances = await this.contract.internalBalances();
-
-    if (inputTokenAddressLowerCase === this.baseTokenAddress.toLowerCase()) {
-      inputTokenReserveQty = toBigNumber(
-        internalBalances.baseTokenReserveQty,
-        baseDecimals,
-      );
-      outputTokenReserveQty = toBigNumber(
-        internalBalances.quoteTokenReserveQty,
-        quoteDecimals,
-      );
-    } else if (
-      inputTokenAddressLowerCase === this.quoteTokenAddress.toLowerCase()
-    ) {
-      inputTokenReserveQty = toBigNumber(
-        internalBalances.quoteTokenReserveQty,
-        quoteDecimals,
-      );
-      outputTokenReserveQty = toBigNumber(
-        internalBalances.baseTokenReserveQty,
-        baseDecimals,
-      );
-    }
-
-    const initialExchangeRate = await calculateExchangeRate(
-      inputTokenReserveQty,
-      outputTokenReserveQty,
-    );
-    const initialOutputAmount = swapAmount.dividedBy(initialExchangeRate);
-    const finalOutputAmount = await calculateOutputAmountLessFees(
-      inputTokenAmount,
-      inputTokenReserveQty,
-      outputTokenReserveQty,
-      slippagePercent,
-      feeAmount,
-    );
-    const OutputDifference = initialOutputAmount.minus(finalOutputAmount);
-    const OutputDifferenceMultiplied = OutputDifference.multipliedBy(
-      toBigNumber('100'),
-    );
-    const priceImpact =
-      OutputDifferenceMultiplied.dividedBy(initialOutputAmount);
-    return priceImpact;
+  async calculatePriceImpact(
+    inputTokenAmount,
+    inputTokenAddress,
+    slippagePercent,
+  ) {
+    return toBigNumber(0); // TODO: create test and write in correct format.
   }
 
   async calculateOutputAmountLessFees(
-    swapAmount,
+    inputAmount,
     inputTokenAddress,
     slippagePercent,
   ) {
     const inputTokenAddressLowerCase = inputTokenAddress.toLowerCase();
-    const inputTokenAmount = toBigNumber(swapAmount);
-    let inputTokenReserveQty = toBigNumber(0);
-    let outputTokenReserveQty = toBigNumber(0);
-
-    const feeAmount = await this.calculateFees(swapAmount);
+    const inputTokenAmountBN = toBigNumber(inputAmount);
+    let inputTokenReserveQty;
+    let outputTokenReserveQty;
     const internalBalances = await this.contract.internalBalances();
-    const baseDecimals = await this._baseToken.contract.decimals();
-    const quoteDecimals = await this._baseToken.contract.decimals();
 
     if (inputTokenAddressLowerCase === this.baseTokenAddress.toLowerCase()) {
-      inputTokenReserveQty = toBigNumber(
-        internalBalances.baseTokenReserveQty,
-        baseDecimals,
-      );
-      outputTokenReserveQty = toBigNumber(
-        internalBalances.quoteTokenReserveQty,
-        quoteDecimals,
-      );
-    } else if (
-      inputTokenAddressLowerCase === this.quoteTokenAddress.toLowerCase()
-    ) {
-      inputTokenReserveQty = toBigNumber(
-        internalBalances.quoteTokenReserveQty,
-        quoteDecimals,
-      );
-      outputTokenReserveQty = toBigNumber(
-        internalBalances.baseTokenReserveQty,
-        baseDecimals,
-      );
+      inputTokenReserveQty = internalBalances.baseTokenReserveQty;
+      outputTokenReserveQty = internalBalances.quoteTokenReserveQty;
+    } else {
+      inputTokenReserveQty = internalBalances.quoteTokenReserveQty;
+      outputTokenReserveQty = internalBalances.baseTokenReserveQty;
     }
+
     return calculateOutputAmountLessFees(
-      inputTokenAmount,
+      inputTokenAmountBN,
       inputTokenReserveQty,
       outputTokenReserveQty,
       slippagePercent,
-      feeAmount,
+      await this.liquidityFee,
     );
   }
 
