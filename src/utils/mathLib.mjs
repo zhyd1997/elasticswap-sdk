@@ -606,6 +606,7 @@ export const calculateExchangeRate = (
   // cleanse input
   const inputTokenReserveQtyBN = toBigNumber(inputTokenReserveQty);
   const outputTokenReserveQtyBN = toBigNumber(outputTokenReserveQty);
+
   if (inputTokenReserveQtyBN.isNaN() || outputTokenReserveQtyBN.isNaN()) {
     throw NAN_ERROR;
   }
@@ -627,6 +628,7 @@ export const calculateExchangeRate = (
   const exchangeRate = inputTokenReserveQtyBN.dividedBy(
     outputTokenReserveQtyBN,
   );
+
   return exchangeRate;
 };
 
@@ -911,6 +913,7 @@ export const calculateOutputAmountLessFees = (
   const outputTokenReserveQtyBN = toBigNumber(outputTokenReserveQty);
   const slippagePercentBN = toBigNumber(slippagePercent);
   const feeAmountBN = toBigNumber(feeAmount);
+
   if (
     inputTokenAmountBN.isNaN() ||
     inputTokenReserveQtyBN.isNaN() ||
