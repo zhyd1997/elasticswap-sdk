@@ -896,7 +896,7 @@ export const calculateLPTokenAmount = (
  * @param outputTokenReserveQty current reserve qty of the other base or quote token (not tokenA)
  * @param slippagePercent the percentage of slippage
  * @param feeAmount the total amount of fees in Basis points for the trade
- * @returns outputAmountLessFeesLessSlippage
+ * @returns outputAmountLessSlippage
  */
 export const calculateOutputAmountLessFees = (
   inputTokenAmount,
@@ -905,6 +905,7 @@ export const calculateOutputAmountLessFees = (
   slippagePercent,
   feeAmount,
 ) => {
+  // cleanse input to BN
   const inputTokenAmountBN = toBigNumber(inputTokenAmount);
   const inputTokenReserveQtyBN = toBigNumber(inputTokenReserveQty);
   const outputTokenReserveQtyBN = toBigNumber(outputTokenReserveQty);
@@ -937,19 +938,23 @@ export const calculateOutputAmountLessFees = (
     throw INSUFFICIENT_LIQUIDITY;
   }
 
-  const outputAmountLessFees = calculateQtyToReturnAfterFees(
+  const outputAmount = calculateQtyToReturnAfterFees(
     inputTokenAmountBN,
     inputTokenReserveQtyBN,
     outputTokenReserveQtyBN,
     feeAmountBN,
   );
+
+  // slippage multiplier = 1 - (slippage% / 100)
   const slippageMultiplier = toBigNumber(1).minus(
     slippagePercentBN.dividedBy(toBigNumber(100)),
   );
 
-  const outputAmountLessFeesLessSlippage =
-    outputAmountLessFees.multipliedBy(slippageMultiplier);
-  return outputAmountLessFeesLessSlippage;
+  // outputAmountLessSlippage = outputamount * slippage multiplier
+  const outputAmountLessSlippage =
+    outputAmount.multipliedBy(slippageMultiplier);
+
+  return outputAmountLessSlippage;
 };
 
 /**
@@ -966,11 +971,13 @@ export const calculatePriceImpact = (
   slippagePercent,
   feeAmount,
 ) => {
+  // cleanse inputs
   const inputTokenAmountBN = toBigNumber(inputTokenAmount);
   const inputTokenReserveQtyBN = toBigNumber(inputTokenReserveQty);
   const outputTokenReserveQtyBN = toBigNumber(outputTokenReserveQty);
   const slippagePercentBN = toBigNumber(slippagePercent);
   const feeAmountBN = toBigNumber(feeAmount);
+
   if (
     inputTokenAmountBN.isNaN() ||
     inputTokenReserveQtyBN.isNaN() ||
@@ -1012,7 +1019,7 @@ export const calculatePriceImpact = (
   );
 
   const inputTokenReserveQtyAfter =
-    inputTokenReserveQtyBN.plus(inputTokenAmountBN);
+    inputTokenReserveQtyBN.plus(inputTokenAmount);
 
   const outputTokenReserveQtyAfter =
     outputTokenReserveQtyBN.minus(outputTokenAmount);
@@ -1023,8 +1030,8 @@ export const calculatePriceImpact = (
   );
 
   const priceDiff = finalPrice.minus(initialPrice);
-  const priceDiffMultiplied = priceDiff.multipliedBy(toBigNumber('100'));
-  const priceImpact = priceDiffMultiplied.dividedBy(initialPrice);
+  const priceDiffRatio = priceDiff.dividedBy(initialPrice);
+  const priceImpact = priceDiffRatio.multipliedBy(toBigNumber('100'));
 
   return priceImpact;
 };
@@ -1075,7 +1082,6 @@ export const calculateQtyToReturnAfterFees = (
   liquidityFeeInBasisPoints,
 ) => {
   // cleanse inputs
-  // cleanse inputs
   const tokenASwapQtyBN = toBigNumber(tokenASwapQty);
   const tokenAReserveQtyBN = toBigNumber(tokenAReserveQty);
   const tokenBReserveQtyBN = toBigNumber(tokenBReserveQty);
@@ -1095,6 +1101,7 @@ export const calculateQtyToReturnAfterFees = (
     .plus(tokenASwapQtyLessFee);
 
   const qtyToReturn = numerator.dividedBy(denominator).dp(0, ROUND_DOWN);
+
   return qtyToReturn;
 };
 
