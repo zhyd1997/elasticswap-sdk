@@ -9,6 +9,7 @@ import {
   calculateLPTokenAmount,
   calculateQuoteTokenQty,
   calculateTokenAmountsFromLPTokens,
+  calculateOutputAmountLessFees,
 } from '../utils/mathLib.mjs';
 import { toBigNumber, toEthersBigNumber } from '../utils/utils.mjs';
 
@@ -130,7 +131,9 @@ export default class Exchange extends Base {
     if (inputTokenAddressLowerCase === this.baseTokenAddress.toLowerCase()) {
       inputTokenReserveQty = internalBalances.baseTokenReserveQty;
       outputTokenReserveQty = internalBalances.quoteTokenReserveQty;
-    } else if (inputTokenAddressLowerCase === this.quoteTokenAddress.toLowerCase()) {
+    } else if (
+      inputTokenAddressLowerCase === this.quoteTokenAddress.toLowerCase()
+    ) {
       inputTokenReserveQty = internalBalances.quoteTokenReserveQty;
       outputTokenReserveQty = internalBalances.baseTokenReserveQty;
     }
@@ -190,6 +193,42 @@ export default class Exchange extends Base {
       baseTokenReserveQty,
       quoteTokenReserveQty,
       totalLPTokenSupply,
+    );
+  }
+
+  async calculatePriceImpact(
+    inputTokenAmount,
+    inputTokenAddress,
+    slippagePercent,
+  ) {
+    return toBigNumber(0); // TODO: create test and write in correct format.
+  }
+
+  async calculateOutputAmountLessFees(
+    inputAmount,
+    inputTokenAddress,
+    slippagePercent,
+  ) {
+    const inputTokenAddressLowerCase = inputTokenAddress.toLowerCase();
+    const inputTokenAmountBN = toBigNumber(inputAmount);
+    let inputTokenReserveQty;
+    let outputTokenReserveQty;
+    const internalBalances = await this.contract.internalBalances();
+
+    if (inputTokenAddressLowerCase === this.baseTokenAddress.toLowerCase()) {
+      inputTokenReserveQty = internalBalances.baseTokenReserveQty;
+      outputTokenReserveQty = internalBalances.quoteTokenReserveQty;
+    } else {
+      inputTokenReserveQty = internalBalances.quoteTokenReserveQty;
+      outputTokenReserveQty = internalBalances.baseTokenReserveQty;
+    }
+
+    return calculateOutputAmountLessFees(
+      inputTokenAmountBN,
+      inputTokenReserveQty,
+      outputTokenReserveQty,
+      slippagePercent,
+      await this.liquidityFee,
     );
   }
 
