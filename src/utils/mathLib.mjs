@@ -948,14 +948,19 @@ export const calculateOutputAmountLessFees = (
     feeAmountBN,
   );
 
+  console.log("mathLib: outputAmountOnlyLessFees: ",  outputAmount.toString())
+
   // slippage multiplier = 1 - (slippage% / 100)
   const slippageMultiplier = toBigNumber(1).minus(
     slippagePercentBN.dividedBy(toBigNumber(100)),
   );
+  console.log("mathLib: slippage multiplier = " + slippageMultiplier.toString());
 
   // outputAmountLessSlippage = outputamount * slippage multiplier
   const outputAmountLessSlippage =
     outputAmount.multipliedBy(slippageMultiplier);
+
+  console.log("mathLib: outputAmountLessSlippage: ",  outputAmountLessSlippage.toString())  
 
   return outputAmountLessSlippage;
 };
@@ -1020,6 +1025,7 @@ export const calculatePriceImpact = (
   );
   console.log("mathLib: initialPrice: " + initialPrice.toString());
 
+  // this is less fees and less slippage
   const outputTokenAmount = calculateOutputAmountLessFees(
     inputTokenAmountBN,
     inputTokenReserveQtyBN,
@@ -1027,6 +1033,8 @@ export const calculatePriceImpact = (
     slippagePercentBN,
     feeAmountBN,
   );
+
+  console.log("mathLib: outputTokenAmount: " + outputTokenAmount.toString());
 
   const inputTokenReserveQtyAfter =
     inputTokenReserveQtyBN.plus(inputTokenAmountBN).minus(feeAmountBN);
