@@ -7,6 +7,7 @@ import {
   calculateExchangeRate,
   calculateFees,
   calculateLPTokenAmount,
+  calculatePriceImpact,
   calculateQuoteTokenQty,
   calculateTokenAmountsFromLPTokens,
   calculateOutputAmountLessFees,
@@ -201,7 +202,40 @@ export default class Exchange extends Base {
     inputTokenAddress,
     slippagePercent,
   ) {
-    return toBigNumber(0); // TODO: create test and write in correct format.
+    console.log("Exchange: inputTokenAmount: ", inputTokenAmount);
+    console.log("Exchange: slippagePercent: ", slippagePercent);
+
+    const inputTokenAddressLowerCase = inputTokenAddress.toLowerCase();
+    const inputTokenAmountBN = toBigNumber(inputTokenAmount);
+
+    let inputTokenReserveQty;
+    let outputTokenReserveQty;
+
+    const internalBalances = await this.contract.internalBalances();
+
+    if (inputTokenAddressLowerCase === this.baseTokenAddress.toLowerCase()) {
+      inputTokenReserveQty = internalBalances.baseTokenReserveQty;
+      outputTokenReserveQty = internalBalances.quoteTokenReserveQty;
+    } else {
+      inputTokenReserveQty = internalBalances.quoteTokenReserveQty;
+      outputTokenReserveQty = internalBalances.baseTokenReserveQty;
+    }
+    const liquidityFee = await this.liquidityFee;
+    console.log("Exchange: inputTokenReserveQty: ", inputTokenReserveQty, inputTokenReserveQty.toString());
+    console.log("Exchange: outputTokenReserveQty: ", outputTokenReserveQty, outputTokenReserveQty.toString());
+    console.log("Exchange: liquidityFee: ", liquidityFee, liquidityFee.toString())
+
+
+    const calculatedPriceImpact =  calculatePriceImpact(
+      inputTokenAmountBN,
+      inputTokenReserveQty,
+      outputTokenReserveQty,
+      slippagePercent,
+      await this.liquidityFee,
+    );
+    console.log("Exchange: calculatedPriceImpact: ", calculatedPriceImpact.toString());
+
+    return calculatedPriceImpact;
   }
 
   async calculateOutputAmountLessFees(

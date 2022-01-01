@@ -976,6 +976,10 @@ export const calculatePriceImpact = (
 ) => {
   // cleanse inputs
   const inputTokenAmountBN = toBigNumber(inputTokenAmount);
+  console.log("mathLib: inputTokenAmount: " + inputTokenAmount);
+  console.log("mathLib: inputTokenAmountBN: " + inputTokenAmountBN);
+  console.log("mathLib: feeAmount: " + feeAmount);
+
   const inputTokenReserveQtyBN = toBigNumber(inputTokenReserveQty);
   const outputTokenReserveQtyBN = toBigNumber(outputTokenReserveQty);
   const slippagePercentBN = toBigNumber(slippagePercent);
@@ -1008,10 +1012,13 @@ export const calculatePriceImpact = (
     throw INSUFFICIENT_LIQUIDITY;
   }
 
+  console.log("mathLib: inputTokenReserveQtyBN: " + inputTokenReserveQtyBN.toString());
+  console.log("mathLib: outputTokenReserveQtyBN: " + outputTokenReserveQtyBN.toString());
   const initialPrice = calculateExchangeRate(
     inputTokenReserveQtyBN,
     outputTokenReserveQtyBN,
   );
+  console.log("mathLib: initialPrice: " + initialPrice.toString());
 
   const outputTokenAmount = calculateOutputAmountLessFees(
     inputTokenAmountBN,
@@ -1022,20 +1029,27 @@ export const calculatePriceImpact = (
   );
 
   const inputTokenReserveQtyAfter =
-    inputTokenReserveQtyBN.plus(inputTokenAmount);
+    inputTokenReserveQtyBN.plus(inputTokenAmountBN).minus(feeAmountBN);
 
   const outputTokenReserveQtyAfter =
     outputTokenReserveQtyBN.minus(outputTokenAmount);
+  
+  console.log("mathLib: inputTokenReserveQtyAfter:", inputTokenReserveQtyAfter.toString());
+  console.log("mathLib: outputTokenReserveQtyAfter:", outputTokenReserveQtyAfter.toString());  
 
   const finalPrice = calculateExchangeRate(
     inputTokenReserveQtyAfter,
     outputTokenReserveQtyAfter,
   );
+  console.log("mathLib: finalPrice: " + finalPrice.toString());
 
   const priceDiff = finalPrice.minus(initialPrice);
   const priceDiffRatio = priceDiff.dividedBy(initialPrice);
   const priceImpact = priceDiffRatio.multipliedBy(toBigNumber('100'));
-
+  
+  
+  
+  console.log("mathLib: priceImpact: " + priceImpact.toString());
   return priceImpact;
 };
 
