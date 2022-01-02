@@ -1516,151 +1516,6 @@ describe('Exchange', () => {
   });
 
   describe('calculatePriceImpact', () => {
-    // it.only('should calculate the priceImpact correctly accounting for fees and  0 slippage', async () => {
-    //   // create expiration 50 minutes from now.
-    //   const expiration = Math.round(new Date().getTime() / 1000 + 60 * 50);
-    //   const liquidityProvider = accounts[1];
-    //   const trader = accounts[2];
-    //   const liquidityProviderInitialBalances = 1000000;
-    //   const amountToAdd = 1000000;
-    //   const baseTokenQtyToAdd = 10000;
-    //   const quoteTokenQtyToAdd = 50000;
-
-    //   await sdk.changeSigner(liquidityProvider);
-    //   exchangeClass = new elasticSwapSDK.Exchange(
-    //     sdk,
-    //     exchange.address,
-    //     baseToken.address,
-    //     quoteToken.address,
-    //   );
-
-    //   // send users (liquidity provider) base and quote tokens for easy accounting.
-    //   await baseToken.transfer(
-    //     liquidityProvider.address,
-    //     liquidityProviderInitialBalances,
-    //   );
-
-    //   await quoteToken.transfer(
-    //     liquidityProvider.address,
-    //     liquidityProviderInitialBalances,
-    //   );
-
-    //   // add approvals
-    //   await exchangeClass.quoteToken.approve(
-    //     exchangeClass.address,
-    //     liquidityProviderInitialBalances,
-    //   );
-
-    //   await exchangeClass.baseToken.approve(
-    //     exchangeClass.address,
-    //     liquidityProviderInitialBalances,
-    //   );
-
-    //   await exchangeClass.addLiquidity(
-    //     baseTokenQtyToAdd,
-    //     quoteTokenQtyToAdd,
-    //     1,
-    //     1,
-    //     liquidityProvider.address,
-    //     expiration,
-    //   );
-
-    //   await sdk.changeSigner(trader);
-    //   exchangeClass = new elasticSwapSDK.Exchange(
-    //     sdk,
-    //     exchange.address,
-    //     baseToken.address,
-    //     quoteToken.address,
-    //   );
-
-    //   // send trader quote tokens - 1000000
-    //   await quoteToken.transfer(trader.address, amountToAdd);
-
-    //   // add approvals for exchange to trade their quote tokens
-    //   await exchangeClass.quoteToken.approve(
-    //     exchangeClass.address,
-    //     amountToAdd,
-    //   );
-    //   // confirm no balance before trade.
-    //   expect((await baseToken.balanceOf(trader.address)).toNumber()).to.equal(
-    //     0,
-    //   );
-    //   expect((await quoteToken.balanceOf(trader.address)).toNumber()).to.equal(
-    //     amountToAdd,
-    //   );
-
-    //   // trader executes the first trade, our pricing should be ~1:1 currently minus fees
-    //   const swapAmount = 10000;
-    //   const swapAmountBN = toBigNumber(swapAmount);
-    //   console.log("test: swapAmountBN: ", swapAmountBN.toString());
-
-    //   const expectedFee = swapAmount * liquidityFee;
-    //   const expectedFeeBN = toBigNumber(expectedFee);
-    //   console.log("test: expectedFeeBN: ", expectedFeeBN.toString());
-
-    //   const quoteTokenReserveBalance = await quoteToken.balanceOf(
-    //     exchangeClass.address,
-    //   );
-    //   const quoteTokenReserveBalanceBN = toBigNumber(quoteTokenReserveBalance);
-    
-    //   const pricingConstantK =
-    //     (await exchangeClass.baseToken.balanceOf(exchangeClass.address)).multipliedBy
-    //     (await exchangeClass.quoteToken.balanceOf(exchangeClass.address));
-
-    //   const pricingConstantKBN = toBigNumber(pricingConstantK);  
-
-    //   console.log("test: pricingConstantKBN: ", pricingConstantKBN.toString());  
-
-    //   const baseTokenQtyReserveBeforeTrade =
-    //     pricingConstantK / quoteTokenReserveBalance.toNumber();
-
-    //   const baseTokenQtyReserveBeforeTradeBN = pricingConstantKBN.dividedBy(quoteTokenReserveBalanceBN);  
-      
-    //   console.log("test: quoteTokenReserveBalanceBN:", quoteTokenReserveBalanceBN.toString());
-    //   console.log("test: baseTokenQtyReserveBeforeTradeBN:", baseTokenQtyReserveBeforeTradeBN.toString());    
-
-    //   const initialPrice =    quoteTokenReserveBalance / baseTokenQtyReserveBeforeTrade;
-    //   const initialPriceBN =  quoteTokenReserveBalanceBN.dividedBy(baseTokenQtyReserveBeforeTradeBN);
-
-    //   console.log("test: initialPriceBN: ", initialPriceBN.toString());
-      
- 
-    //   const quoteTokenReserveQtyAfterTrade = quoteTokenReserveBalance.toNumber() + swapAmount - expectedFee
-    //   const quoteTokenReserveQtyAfterTradeBN = (quoteTokenReserveBalanceBN.plus(swapAmountBN)).minus(expectedFeeBN);
-
-    //   const baseTokenQtyReserveAfterTrade =
-    //     pricingConstantK /
-    //     (quoteTokenReserveBalance.toNumber() + swapAmount - expectedFee);
-      
-    //   const baseTokenQtyReserveAfterTradeBN = pricingConstantKBN.dividedBy(quoteTokenReserveQtyAfterTradeBN).dp(0, ROUND_UP);
-      
-      
-      
-
-  
-      
-    //   console.log("test: quoteTokenReserveQtyAfterTradeBN:", quoteTokenReserveQtyAfterTradeBN.toString());
-    //   console.log("test: baseTokenQtyReserveAfterTradeBN:", baseTokenQtyReserveAfterTradeBN.toString());    
-     
-
-    //   const finalPrice = quoteTokenReserveQtyAfterTrade / baseTokenQtyReserveAfterTrade;
-    //   const finalPriceBN = quoteTokenReserveQtyAfterTradeBN.dividedBy(baseTokenQtyReserveAfterTradeBN);
-    //   console.log("test: finalPriceBN: ", finalPriceBN.toString());
-
-    //   const calculatedPriceImpact = ((finalPrice - initialPrice)/initialPrice)*100;
-      
-    //   const priceDiffNumeratorBN = finalPriceBN.minus(initialPriceBN);
-    //   const priceDiffRatio = priceDiffNumeratorBN.dividedBy(initialPriceBN);
-    //   const calculatedPriceImpactBN = priceDiffRatio.multipliedBy(toBigNumber(100));
-    //   console.log("test: calculatedPriceImpact: ", calculatedPriceImpact.toString());
-
-    //   const expectedPriceImpact = await exchangeClass.calculatePriceImpact(swapAmount, quoteToken.address, 0);
-    //   console.log("test: expectedPriceImpact(from exchange): ", expectedPriceImpact,expectedPriceImpact.toString());
-
-    //   expect(expectedPriceImpact.toNumber()).to.equal(calculatedPriceImpactBN.toNumber())
-
-    // });
-
     it.only('should calculate the priceImpact correctly accounting for fees and  0 slippage', async () => {
       // create expiration 50 minutes from now.
       const expiration = Math.round(new Date().getTime() / 1000 + 60 * 50);
@@ -1737,67 +1592,147 @@ describe('Exchange', () => {
       // trader executes the first trade, our pricing should be ~1:1 currently minus fees
       const swapAmount = 10000;
       const swapAmountBN = toBigNumber(swapAmount);
-      console.log("test: swapAmountBN: ", swapAmountBN.toString());
 
       const expectedFeeBN = await exchangeClass.calculateFees(swapAmount); 
-      console.log("test: expectedFeeBN: ", expectedFeeBN.toString());
 
       const quoteTokenReserveBalance = await quoteToken.balanceOf(
         exchangeClass.address,
       );
       const quoteTokenReserveBalanceBN = toBigNumber(quoteTokenReserveBalance);
-      console.log("test: quoteTokenReserveBalanceBN:", quoteTokenReserveBalanceBN.toString());
     
       const pricingConstantK =
         (await exchangeClass.baseToken.balanceOf(exchangeClass.address)).multipliedBy
         (await exchangeClass.quoteToken.balanceOf(exchangeClass.address));
 
       const pricingConstantKBN = toBigNumber(pricingConstantK);  
-      console.log("test: pricingConstantKBN: ", pricingConstantKBN.toString());  
-
-
       const baseTokenQtyReserveBeforeTradeBN = pricingConstantKBN.dividedBy(quoteTokenReserveBalanceBN);  
-      console.log("test: baseTokenQtyReserveBeforeTradeBN:", baseTokenQtyReserveBeforeTradeBN.toString());    
-
       const initialPriceBN =  quoteTokenReserveBalanceBN.dividedBy(baseTokenQtyReserveBeforeTradeBN);
-      console.log("test: initialPriceBN: ", initialPriceBN.toString());
-      
- 
       const quoteTokenReserveQtyAfterTradeBN = (quoteTokenReserveBalanceBN.plus(swapAmountBN)).minus(expectedFeeBN);
-      console.log("test: quoteTokenReserveQtyAfterTradeBN:", quoteTokenReserveQtyAfterTradeBN.toString());
-
-      
       const baseTokenQtyReserveAfterTradeBN = pricingConstantKBN.dividedBy(quoteTokenReserveQtyAfterTradeBN).dp(0, ROUND_UP);
-      console.log("test: baseTokenQtyReserveAfterTradeBN:", baseTokenQtyReserveAfterTradeBN.toString());
       const outputTokenAmountLessFeesBN = baseTokenQtyReserveBeforeTradeBN.minus(baseTokenQtyReserveAfterTradeBN)
-      console.log("test: outputTokenAmountLessFeesBN: ", outputTokenAmountLessFeesBN.toString());  
 
+      const slippagePercentBN = toBigNumber(0);
+      const slippageMultiplierBN = toBigNumber(1).minus(
+        slippagePercentBN.dividedBy(toBigNumber(100)),
+      );
+
+      const outputTokenAmountLessFeesLessSlippageBN = outputTokenAmountLessFeesBN.multipliedBy(slippageMultiplierBN);
+      const baseTokenQtyReserveAfterTradeBNLessSlippage = baseTokenQtyReserveBeforeTradeBN.minus(outputTokenAmountLessFeesLessSlippageBN)
+      const finalPriceBN = quoteTokenReserveQtyAfterTradeBN.dividedBy(baseTokenQtyReserveAfterTradeBNLessSlippage);
+      
+      const priceDiffNumeratorBN = finalPriceBN.minus(initialPriceBN);
+      const priceDiffRatio = priceDiffNumeratorBN.dividedBy(initialPriceBN);
+      const calculatedPriceImpactBN = priceDiffRatio.multipliedBy(toBigNumber(100));
+
+      const expectedPriceImpact = await exchangeClass.calculatePriceImpact(swapAmount, quoteToken.address, slippagePercentBN);
+
+      expect(expectedPriceImpact.toString()).to.equal(calculatedPriceImpactBN.toString());
+    });
+
+    it.only('should calculate the priceImpact correctly accounting for fees and  slippage', async () => {
+      // create expiration 50 minutes from now.
+      const expiration = Math.round(new Date().getTime() / 1000 + 60 * 50);
+      const liquidityProvider = accounts[1];
+      const trader = accounts[2];
+      const liquidityProviderInitialBalances = 1000000;
+      const amountToAdd = 1000000;
+      const baseTokenQtyToAdd = 10000;
+      const quoteTokenQtyToAdd = 50000;
+
+      await sdk.changeSigner(liquidityProvider);
+      exchangeClass = new elasticSwapSDK.Exchange(
+        sdk,
+        exchange.address,
+        baseToken.address,
+        quoteToken.address,
+      );
+
+      // send users (liquidity provider) base and quote tokens for easy accounting.
+      await baseToken.transfer(
+        liquidityProvider.address,
+        liquidityProviderInitialBalances,
+      );
+
+      await quoteToken.transfer(
+        liquidityProvider.address,
+        liquidityProviderInitialBalances,
+      );
+
+      // add approvals
+      await exchangeClass.quoteToken.approve(
+        exchangeClass.address,
+        liquidityProviderInitialBalances,
+      );
+
+      await exchangeClass.baseToken.approve(
+        exchangeClass.address,
+        liquidityProviderInitialBalances,
+      );
+
+      await exchangeClass.addLiquidity(
+        baseTokenQtyToAdd,
+        quoteTokenQtyToAdd,
+        1,
+        1,
+        liquidityProvider.address,
+        expiration,
+      );
+
+      await sdk.changeSigner(trader);
+      exchangeClass = new elasticSwapSDK.Exchange(
+        sdk,
+        exchange.address,
+        baseToken.address,
+        quoteToken.address,
+      );
+
+      // send trader quote tokens - 1000000
+      await quoteToken.transfer(trader.address, amountToAdd);
+
+      // add approvals for exchange to trade their quote tokens
+      await exchangeClass.quoteToken.approve(
+        exchangeClass.address,
+        amountToAdd,
+      );
+      // confirm no balance before trade.
+      expect((await baseToken.balanceOf(trader.address)).toNumber()).to.equal(
+        0,
+      );
+      expect((await quoteToken.balanceOf(trader.address)).toNumber()).to.equal(
+        amountToAdd,
+      );
+
+      // trader executes the first trade, our pricing should be ~1:1 currently minus fees
+      const swapAmount = 10000;
+      const swapAmountBN = toBigNumber(swapAmount);
+      const expectedFeeBN = await exchangeClass.calculateFees(swapAmount); 
+      const quoteTokenReserveBalance = await quoteToken.balanceOf(
+        exchangeClass.address,
+      );
+      const quoteTokenReserveBalanceBN = toBigNumber(quoteTokenReserveBalance);
+      const pricingConstantK =
+        (await exchangeClass.baseToken.balanceOf(exchangeClass.address)).multipliedBy
+        (await exchangeClass.quoteToken.balanceOf(exchangeClass.address));
+
+      const pricingConstantKBN = toBigNumber(pricingConstantK);  
+      const baseTokenQtyReserveBeforeTradeBN = pricingConstantKBN.dividedBy(quoteTokenReserveBalanceBN);  
+      const initialPriceBN =  quoteTokenReserveBalanceBN.dividedBy(baseTokenQtyReserveBeforeTradeBN);
+      const quoteTokenReserveQtyAfterTradeBN = (quoteTokenReserveBalanceBN.plus(swapAmountBN)).minus(expectedFeeBN);
+      const baseTokenQtyReserveAfterTradeBN = pricingConstantKBN.dividedBy(quoteTokenReserveQtyAfterTradeBN).dp(0, ROUND_UP);
+      const outputTokenAmountLessFeesBN = baseTokenQtyReserveBeforeTradeBN.minus(baseTokenQtyReserveAfterTradeBN)
 
       const slippagePercentBN = toBigNumber(5);
       const slippageMultiplierBN = toBigNumber(1).minus(
         slippagePercentBN.dividedBy(toBigNumber(100)),
       );
-      console.log("test: slippage multiplier = " + slippageMultiplierBN.toString());
-
       const outputTokenAmountLessFeesLessSlippageBN = outputTokenAmountLessFeesBN.multipliedBy(slippageMultiplierBN);
-      console.log("test: outputTokenAmountLessFeesLessSlippageBN: ", outputTokenAmountLessFeesLessSlippageBN.toString());  
-
       const baseTokenQtyReserveAfterTradeBNLessSlippage = baseTokenQtyReserveBeforeTradeBN.minus(outputTokenAmountLessFeesLessSlippageBN)
-      console.log("test: baseTokenQtyReserveAfterTradeBNLessSlippage:", baseTokenQtyReserveAfterTradeBNLessSlippage.toString());  
-      
-     
-
       const finalPriceBN = quoteTokenReserveQtyAfterTradeBN.dividedBy(baseTokenQtyReserveAfterTradeBNLessSlippage);
-      console.log("test: finalPriceBN: ", finalPriceBN.toString());
-
-      
       const priceDiffNumeratorBN = finalPriceBN.minus(initialPriceBN);
       const priceDiffRatio = priceDiffNumeratorBN.dividedBy(initialPriceBN);
       const calculatedPriceImpactBN = priceDiffRatio.multipliedBy(toBigNumber(100));
-      console.log("test: calculatedPriceImpactBN: ", calculatedPriceImpactBN.toString());
 
       const expectedPriceImpact = await exchangeClass.calculatePriceImpact(swapAmount, quoteToken.address, slippagePercentBN);
-      console.log("test: expectedPriceImpact(from exchange): ", expectedPriceImpact, expectedPriceImpact.toString());
 
       expect(expectedPriceImpact.toString()).to.equal(calculatedPriceImpactBN.toString());
     });

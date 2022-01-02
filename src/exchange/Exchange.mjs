@@ -202,9 +202,6 @@ export default class Exchange extends Base {
     inputTokenAddress,
     slippagePercent,
   ) {
-    console.log("Exchange: inputTokenAmount: ", inputTokenAmount);
-    console.log("Exchange: slippagePercent: ", slippagePercent);
-
     const inputTokenAddressLowerCase = inputTokenAddress.toLowerCase();
     const inputTokenAmountBN = toBigNumber(inputTokenAmount);
 
@@ -220,11 +217,6 @@ export default class Exchange extends Base {
       inputTokenReserveQty = internalBalances.quoteTokenReserveQty;
       outputTokenReserveQty = internalBalances.baseTokenReserveQty;
     }
-    const liquidityFee = await this.liquidityFee;
-    console.log("Exchange: inputTokenReserveQty: ", inputTokenReserveQty, inputTokenReserveQty.toString());
-    console.log("Exchange: outputTokenReserveQty: ", outputTokenReserveQty, outputTokenReserveQty.toString());
-    console.log("Exchange: liquidityFee: ", liquidityFee, liquidityFee.toString())
-
 
     const calculatedPriceImpact =  calculatePriceImpact(
       inputTokenAmountBN,
@@ -233,8 +225,6 @@ export default class Exchange extends Base {
       slippagePercent,
       await this.liquidityFee,
     );
-    console.log("Exchange: calculatedPriceImpact: ", calculatedPriceImpact.toString());
-
     return calculatedPriceImpact;
   }
 
