@@ -142,9 +142,8 @@ export default class Exchange extends Base {
   }
 
   async calculateFees(swapAmount) {
-    
     const liquidityFeeInBasisPoints = await this.liquidityFee;
-    
+
     return calculateFees(swapAmount, liquidityFeeInBasisPoints);
   }
 
@@ -220,7 +219,7 @@ export default class Exchange extends Base {
       outputTokenReserveQty = internalBalances.baseTokenReserveQty;
     }
 
-    const calculatedPriceImpact =  calculatePriceImpact(
+    const calculatedPriceImpact = calculatePriceImpact(
       inputTokenAmountBN,
       inputTokenReserveQty,
       outputTokenReserveQty,

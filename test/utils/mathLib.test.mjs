@@ -256,9 +256,9 @@ describe('calculateExchangeRate', () => {
     ).to.throw(NEGATIVE_INPUT);
 
     // Nan cases
-    expect(() =>
-      calculateExchangeRate(null, quoteTokenReserveQty1),
-    ).to.throw(NAN_ERROR);
+    expect(() => calculateExchangeRate(null, quoteTokenReserveQty1)).to.throw(
+      NAN_ERROR,
+    );
     expect(() =>
       calculateExchangeRate(undefined, quoteTokenReserveQty1),
     ).to.throw(NAN_ERROR);
@@ -470,13 +470,15 @@ describe('calculatePriceImpact', () => {
 
     const tokenSwapQty = BigNumber(15);
 
-    const expectedFees = (feesInBasisPointsBN.dividedBy(BigNumber(10000))).multipliedBy(tokenSwapQty);
+    const expectedFees = feesInBasisPointsBN
+      .dividedBy(BigNumber(10000))
+      .multipliedBy(tokenSwapQty);
 
     const tokenAReserveQtyBeforeTrade = BigNumber(2000);
 
-
-    const tokenAReserveQtyAfterTrade =
-      (tokenAReserveQtyBeforeTrade.plus(tokenSwapQty)).minus(expectedFees);
+    const tokenAReserveQtyAfterTrade = tokenAReserveQtyBeforeTrade
+      .plus(tokenSwapQty)
+      .minus(expectedFees);
 
     const tokenBReserveQtyBeforeTrade = BigNumber(3000);
 
@@ -490,7 +492,6 @@ describe('calculatePriceImpact', () => {
 
     const tokenBQtyReserveAfterTrade =
       tokenBReserveQtyBeforeTrade.minus(tokenBOutAmount);
-
 
     const initialPrice = BigNumber(tokenAReserveQtyBeforeTrade).dividedBy(
       BigNumber(tokenBReserveQtyBeforeTrade),
@@ -510,11 +511,9 @@ describe('calculatePriceImpact', () => {
       tokenBReserveQtyBeforeTrade,
       ZERO,
       feesInBasisPoints,
-    )
+    );
 
-    expect(
-      calculatedPriceImpact.toNumber(),
-    ).to.equal(priceImpact.toNumber());
+    expect(calculatedPriceImpact.toNumber()).to.equal(priceImpact.toNumber());
   });
 
   it('should calculate the priceImpact correctly accounting for fees and slippage', async () => {
@@ -524,10 +523,13 @@ describe('calculatePriceImpact', () => {
     const tokenSwapQty = BigNumber(15);
     const tokenAReserveQtyBeforeTrade = BigNumber(2000);
 
-    const expectedFees = (feesInBasisPointsBN.dividedBy(BigNumber(10000))).multipliedBy(tokenSwapQty);
+    const expectedFees = feesInBasisPointsBN
+      .dividedBy(BigNumber(10000))
+      .multipliedBy(tokenSwapQty);
 
-    const tokenAReserveQtyAfterTrade =
-      (tokenAReserveQtyBeforeTrade.plus(tokenSwapQty)).minus(expectedFees);
+    const tokenAReserveQtyAfterTrade = tokenAReserveQtyBeforeTrade
+      .plus(tokenSwapQty)
+      .minus(expectedFees);
 
     const tokenBReserveQtyBeforeTrade = BigNumber(3000);
 

@@ -948,7 +948,6 @@ export const calculateOutputAmountLessFees = (
     feeAmountBN,
   );
 
-
   // slippage multiplier = 1 - (slippage% / 100)
   const slippageMultiplier = toBigNumber(1).minus(
     slippagePercentBN.dividedBy(toBigNumber(100)),
@@ -982,7 +981,7 @@ export const calculatePriceImpact = (
   const outputTokenReserveQtyBN = toBigNumber(outputTokenReserveQty);
   const slippagePercentBN = toBigNumber(slippagePercent);
   const feeAmountBN = toBigNumber(feeAmount);
- 
+
   if (
     inputTokenAmountBN.isNaN() ||
     inputTokenReserveQtyBN.isNaN() ||
@@ -1023,16 +1022,16 @@ export const calculatePriceImpact = (
     slippagePercentBN,
     feeAmountBN,
   );
-  
-  const expectedFees = calculateFees(feeAmountBN, inputTokenAmountBN)
-  
-  const inputTokenReserveQtyAfter =
-    inputTokenReserveQtyBN.plus(inputTokenAmountBN).minus(expectedFees);
-  
+
+  const expectedFees = calculateFees(feeAmountBN, inputTokenAmountBN);
+
+  const inputTokenReserveQtyAfter = inputTokenReserveQtyBN
+    .plus(inputTokenAmountBN)
+    .minus(expectedFees);
 
   const outputTokenReserveQtyAfter =
     outputTokenReserveQtyBN.minus(outputTokenAmount);
-  
+
   const finalPrice = calculateExchangeRate(
     inputTokenReserveQtyAfter,
     outputTokenReserveQtyAfter,

@@ -1593,40 +1593,65 @@ describe('Exchange', () => {
       const swapAmount = 10000;
       const swapAmountBN = toBigNumber(swapAmount);
 
-      const expectedFeeBN = await exchangeClass.calculateFees(swapAmount); 
+      const expectedFeeBN = await exchangeClass.calculateFees(swapAmount);
 
       const quoteTokenReserveBalance = await quoteToken.balanceOf(
         exchangeClass.address,
       );
       const quoteTokenReserveBalanceBN = toBigNumber(quoteTokenReserveBalance);
-    
-      const pricingConstantK =
-        (await exchangeClass.baseToken.balanceOf(exchangeClass.address)).multipliedBy
-        (await exchangeClass.quoteToken.balanceOf(exchangeClass.address));
 
-      const pricingConstantKBN = toBigNumber(pricingConstantK);  
-      const baseTokenQtyReserveBeforeTradeBN = pricingConstantKBN.dividedBy(quoteTokenReserveBalanceBN);  
-      const initialPriceBN =  quoteTokenReserveBalanceBN.dividedBy(baseTokenQtyReserveBeforeTradeBN);
-      const quoteTokenReserveQtyAfterTradeBN = (quoteTokenReserveBalanceBN.plus(swapAmountBN)).minus(expectedFeeBN);
-      const baseTokenQtyReserveAfterTradeBN = pricingConstantKBN.dividedBy(quoteTokenReserveQtyAfterTradeBN).dp(0, ROUND_UP);
-      const outputTokenAmountLessFeesBN = baseTokenQtyReserveBeforeTradeBN.minus(baseTokenQtyReserveAfterTradeBN)
+      const pricingConstantK = (
+        await exchangeClass.baseToken.balanceOf(exchangeClass.address)
+      ).multipliedBy(
+        await exchangeClass.quoteToken.balanceOf(exchangeClass.address),
+      );
+
+      const pricingConstantKBN = toBigNumber(pricingConstantK);
+      const baseTokenQtyReserveBeforeTradeBN = pricingConstantKBN.dividedBy(
+        quoteTokenReserveBalanceBN,
+      );
+      const initialPriceBN = quoteTokenReserveBalanceBN.dividedBy(
+        baseTokenQtyReserveBeforeTradeBN,
+      );
+      const quoteTokenReserveQtyAfterTradeBN = quoteTokenReserveBalanceBN
+        .plus(swapAmountBN)
+        .minus(expectedFeeBN);
+      const baseTokenQtyReserveAfterTradeBN = pricingConstantKBN
+        .dividedBy(quoteTokenReserveQtyAfterTradeBN)
+        .dp(0, ROUND_UP);
+      const outputTokenAmountLessFeesBN =
+        baseTokenQtyReserveBeforeTradeBN.minus(baseTokenQtyReserveAfterTradeBN);
 
       const slippagePercentBN = toBigNumber(0);
       const slippageMultiplierBN = toBigNumber(1).minus(
         slippagePercentBN.dividedBy(toBigNumber(100)),
       );
 
-      const outputTokenAmountLessFeesLessSlippageBN = outputTokenAmountLessFeesBN.multipliedBy(slippageMultiplierBN);
-      const baseTokenQtyReserveAfterTradeBNLessSlippage = baseTokenQtyReserveBeforeTradeBN.minus(outputTokenAmountLessFeesLessSlippageBN)
-      const finalPriceBN = quoteTokenReserveQtyAfterTradeBN.dividedBy(baseTokenQtyReserveAfterTradeBNLessSlippage);
-      
+      const outputTokenAmountLessFeesLessSlippageBN =
+        outputTokenAmountLessFeesBN.multipliedBy(slippageMultiplierBN);
+      const baseTokenQtyReserveAfterTradeBNLessSlippage =
+        baseTokenQtyReserveBeforeTradeBN.minus(
+          outputTokenAmountLessFeesLessSlippageBN,
+        );
+      const finalPriceBN = quoteTokenReserveQtyAfterTradeBN.dividedBy(
+        baseTokenQtyReserveAfterTradeBNLessSlippage,
+      );
+
       const priceDiffNumeratorBN = finalPriceBN.minus(initialPriceBN);
       const priceDiffRatio = priceDiffNumeratorBN.dividedBy(initialPriceBN);
-      const calculatedPriceImpactBN = priceDiffRatio.multipliedBy(toBigNumber(100));
+      const calculatedPriceImpactBN = priceDiffRatio.multipliedBy(
+        toBigNumber(100),
+      );
 
-      const expectedPriceImpact = await exchangeClass.calculatePriceImpact(swapAmount, quoteToken.address, slippagePercentBN);
+      const expectedPriceImpact = await exchangeClass.calculatePriceImpact(
+        swapAmount,
+        quoteToken.address,
+        slippagePercentBN,
+      );
 
-      expect(expectedPriceImpact.toString()).to.equal(calculatedPriceImpactBN.toString());
+      expect(expectedPriceImpact.toString()).to.equal(
+        calculatedPriceImpactBN.toString(),
+      );
     });
 
     it('should calculate the priceImpact correctly accounting for fees and  slippage', async () => {
@@ -1705,39 +1730,61 @@ describe('Exchange', () => {
       // trader executes the first trade, our pricing should be ~1:1 currently minus fees
       const swapAmount = 10000;
       const swapAmountBN = toBigNumber(swapAmount);
-      const expectedFeeBN = await exchangeClass.calculateFees(swapAmount); 
+      const expectedFeeBN = await exchangeClass.calculateFees(swapAmount);
       const quoteTokenReserveBalance = await quoteToken.balanceOf(
         exchangeClass.address,
       );
       const quoteTokenReserveBalanceBN = toBigNumber(quoteTokenReserveBalance);
-      const pricingConstantK =
-        (await exchangeClass.baseToken.balanceOf(exchangeClass.address)).multipliedBy
-        (await exchangeClass.quoteToken.balanceOf(exchangeClass.address));
+      const pricingConstantK = (
+        await exchangeClass.baseToken.balanceOf(exchangeClass.address)
+      ).multipliedBy(
+        await exchangeClass.quoteToken.balanceOf(exchangeClass.address),
+      );
 
-      const pricingConstantKBN = toBigNumber(pricingConstantK);  
-      const baseTokenQtyReserveBeforeTradeBN = pricingConstantKBN.dividedBy(quoteTokenReserveBalanceBN);  
-      const initialPriceBN =  quoteTokenReserveBalanceBN.dividedBy(baseTokenQtyReserveBeforeTradeBN);
-      const quoteTokenReserveQtyAfterTradeBN = (quoteTokenReserveBalanceBN.plus(swapAmountBN)).minus(expectedFeeBN);
-      const baseTokenQtyReserveAfterTradeBN = pricingConstantKBN.dividedBy(quoteTokenReserveQtyAfterTradeBN).dp(0, ROUND_UP);
-      const outputTokenAmountLessFeesBN = baseTokenQtyReserveBeforeTradeBN.minus(baseTokenQtyReserveAfterTradeBN)
+      const pricingConstantKBN = toBigNumber(pricingConstantK);
+      const baseTokenQtyReserveBeforeTradeBN = pricingConstantKBN.dividedBy(
+        quoteTokenReserveBalanceBN,
+      );
+      const initialPriceBN = quoteTokenReserveBalanceBN.dividedBy(
+        baseTokenQtyReserveBeforeTradeBN,
+      );
+      const quoteTokenReserveQtyAfterTradeBN = quoteTokenReserveBalanceBN
+        .plus(swapAmountBN)
+        .minus(expectedFeeBN);
+      const baseTokenQtyReserveAfterTradeBN = pricingConstantKBN
+        .dividedBy(quoteTokenReserveQtyAfterTradeBN)
+        .dp(0, ROUND_UP);
+      const outputTokenAmountLessFeesBN =
+        baseTokenQtyReserveBeforeTradeBN.minus(baseTokenQtyReserveAfterTradeBN);
 
       const slippagePercentBN = toBigNumber(5);
       const slippageMultiplierBN = toBigNumber(1).minus(
         slippagePercentBN.dividedBy(toBigNumber(100)),
       );
-      const outputTokenAmountLessFeesLessSlippageBN = outputTokenAmountLessFeesBN.multipliedBy(slippageMultiplierBN);
-      const baseTokenQtyReserveAfterTradeBNLessSlippage = baseTokenQtyReserveBeforeTradeBN.minus(outputTokenAmountLessFeesLessSlippageBN)
-      const finalPriceBN = quoteTokenReserveQtyAfterTradeBN.dividedBy(baseTokenQtyReserveAfterTradeBNLessSlippage);
+      const outputTokenAmountLessFeesLessSlippageBN =
+        outputTokenAmountLessFeesBN.multipliedBy(slippageMultiplierBN);
+      const baseTokenQtyReserveAfterTradeBNLessSlippage =
+        baseTokenQtyReserveBeforeTradeBN.minus(
+          outputTokenAmountLessFeesLessSlippageBN,
+        );
+      const finalPriceBN = quoteTokenReserveQtyAfterTradeBN.dividedBy(
+        baseTokenQtyReserveAfterTradeBNLessSlippage,
+      );
       const priceDiffNumeratorBN = finalPriceBN.minus(initialPriceBN);
       const priceDiffRatio = priceDiffNumeratorBN.dividedBy(initialPriceBN);
-      const calculatedPriceImpactBN = priceDiffRatio.multipliedBy(toBigNumber(100));
+      const calculatedPriceImpactBN = priceDiffRatio.multipliedBy(
+        toBigNumber(100),
+      );
 
-      const expectedPriceImpact = await exchangeClass.calculatePriceImpact(swapAmount, quoteToken.address, slippagePercentBN);
+      const expectedPriceImpact = await exchangeClass.calculatePriceImpact(
+        swapAmount,
+        quoteToken.address,
+        slippagePercentBN,
+      );
 
-      expect(expectedPriceImpact.toString()).to.equal(calculatedPriceImpactBN.toString());
+      expect(expectedPriceImpact.toString()).to.equal(
+        calculatedPriceImpactBN.toString(),
+      );
     });
   });
- 
-  
-
 });
