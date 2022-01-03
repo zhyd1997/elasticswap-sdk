@@ -1517,7 +1517,6 @@ describe('Exchange', () => {
 
   describe('calculatePriceImpact', () => {
     it('should calculate the priceImpact correctly accounting for fees and  0 slippage', async () => {
-      console.log("exchangetest");
       // create expiration 50 minutes from now.
       const expiration = Math.round(new Date().getTime() / 1000 + 60 * 50);
       const liquidityProvider = accounts[1];
@@ -1595,7 +1594,6 @@ describe('Exchange', () => {
       const swapAmountBN = toBigNumber(swapAmount);
 
       const expectedFeeBN = await exchangeClass.calculateFees(swapAmount); 
-      console.log("exchange: expectedFeeBN: " + expectedFeeBN.toString());
 
       const quoteTokenReserveBalance = await quoteToken.balanceOf(
         exchangeClass.address,
@@ -1627,7 +1625,6 @@ describe('Exchange', () => {
       const calculatedPriceImpactBN = priceDiffRatio.multipliedBy(toBigNumber(100));
 
       const expectedPriceImpact = await exchangeClass.calculatePriceImpact(swapAmount, quoteToken.address, slippagePercentBN);
-      console.log("exchangetest");
 
       expect(expectedPriceImpact.toString()).to.equal(calculatedPriceImpactBN.toString());
     });

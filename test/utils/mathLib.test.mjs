@@ -465,18 +465,14 @@ describe('calculatePriceImpact', () => {
   });
 
   it('should calculate priceImpact correctly accounting for fees and 0 slippage', async () => {
-    console.log("1");
     const feesInBasisPoints = 3000;
     const feesInBasisPointsBN = BigNumber(feesInBasisPoints);
-    console.log("test: feesInBasisPoints:", feesInBasisPoints.toString());
 
     const tokenSwapQty = BigNumber(15);
-    console.log("test: tokenSwapQty:", tokenSwapQty.toString());
 
     const expectedFees = (feesInBasisPointsBN.dividedBy(BigNumber(10000))).multipliedBy(tokenSwapQty);
 
     const tokenAReserveQtyBeforeTrade = BigNumber(2000);
-    console.log("test: tokenAReserveQtyBeforeTrade:", tokenAReserveQtyBeforeTrade.toString());
 
 
     const tokenAReserveQtyAfterTrade =
@@ -494,7 +490,6 @@ describe('calculatePriceImpact', () => {
 
     const tokenBQtyReserveAfterTrade =
       tokenBReserveQtyBeforeTrade.minus(tokenBOutAmount);
-    console.log("test: tokenBReserveQtyBeforeTrade:", tokenBReserveQtyBeforeTrade.toString());
 
 
     const initialPrice = BigNumber(tokenAReserveQtyBeforeTrade).dividedBy(
@@ -508,7 +503,6 @@ describe('calculatePriceImpact', () => {
     const priceDiff = BigNumber(finalPrice).minus(BigNumber(initialPrice));
     const priceDiffRatio = priceDiff.dividedBy(BigNumber(initialPrice));
     const priceImpact = priceDiffRatio.multipliedBy(BigNumber(100));
-    console.log("2");
 
     const calculatedPriceImpact = calculatePriceImpact(
       tokenSwapQty,
@@ -517,7 +511,6 @@ describe('calculatePriceImpact', () => {
       ZERO,
       feesInBasisPoints,
     )
-    console.log("test: calculatedPriceImpact: ", calculatedPriceImpact.toString())
 
     expect(
       calculatedPriceImpact.toNumber(),
