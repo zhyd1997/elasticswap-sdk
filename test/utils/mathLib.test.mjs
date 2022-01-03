@@ -257,10 +257,10 @@ describe('calculateExchangeRate', () => {
 
     // Nan cases
     expect(() =>
-      calculateExchangeRate(null, negativeQuoteTokenReserveQty),
+      calculateExchangeRate(null, quoteTokenReserveQty1),
     ).to.throw(NAN_ERROR);
     expect(() =>
-      calculateExchangeRate(undefined, negativeQuoteTokenReserveQty),
+      calculateExchangeRate(undefined, quoteTokenReserveQty1),
     ).to.throw(NAN_ERROR);
   });
 });
@@ -465,12 +465,22 @@ describe('calculatePriceImpact', () => {
   });
 
   it('should calculate priceImpact correctly accounting for fees and 0 slippage', async () => {
+    console.log("1");
     const feesInBasisPoints = 3000;
+    const feesInBasisPointsBN = BigNumber(feesInBasisPoints);
+    console.log("test: feesInBasisPoints:", feesInBasisPoints.toString());
+
     const tokenSwapQty = BigNumber(15);
+    console.log("test: tokenSwapQty:", tokenSwapQty.toString());
+
+    const expectedFees = (feesInBasisPointsBN.dividedBy(BigNumber(10000))).multipliedBy(tokenSwapQty);
+
     const tokenAReserveQtyBeforeTrade = BigNumber(2000);
+    console.log("test: tokenAReserveQtyBeforeTrade:", tokenAReserveQtyBeforeTrade.toString());
+
 
     const tokenAReserveQtyAfterTrade =
-      tokenAReserveQtyBeforeTrade.plus(tokenSwapQty);
+      (tokenAReserveQtyBeforeTrade.plus(tokenSwapQty)).minus(expectedFees);
 
     const tokenBReserveQtyBeforeTrade = BigNumber(3000);
 
@@ -484,6 +494,8 @@ describe('calculatePriceImpact', () => {
 
     const tokenBQtyReserveAfterTrade =
       tokenBReserveQtyBeforeTrade.minus(tokenBOutAmount);
+    console.log("test: tokenBReserveQtyBeforeTrade:", tokenBReserveQtyBeforeTrade.toString());
+
 
     const initialPrice = BigNumber(tokenAReserveQtyBeforeTrade).dividedBy(
       BigNumber(tokenBReserveQtyBeforeTrade),
@@ -496,26 +508,33 @@ describe('calculatePriceImpact', () => {
     const priceDiff = BigNumber(finalPrice).minus(BigNumber(initialPrice));
     const priceDiffRatio = priceDiff.dividedBy(BigNumber(initialPrice));
     const priceImpact = priceDiffRatio.multipliedBy(BigNumber(100));
+    console.log("2");
+
+    const calculatedPriceImpact = calculatePriceImpact(
+      tokenSwapQty,
+      tokenAReserveQtyBeforeTrade,
+      tokenBReserveQtyBeforeTrade,
+      ZERO,
+      feesInBasisPoints,
+    )
+    console.log("test: calculatedPriceImpact: ", calculatedPriceImpact.toString())
 
     expect(
-      calculatePriceImpact(
-        tokenSwapQty,
-        tokenAReserveQtyBeforeTrade,
-        tokenBReserveQtyBeforeTrade,
-        ZERO,
-        feesInBasisPoints,
-      ).toNumber(),
+      calculatedPriceImpact.toNumber(),
     ).to.equal(priceImpact.toNumber());
   });
 
   it('should calculate the priceImpact correctly accounting for fees and slippage', async () => {
     const feesInBasisPoints = 3000;
+    const feesInBasisPointsBN = BigNumber(feesInBasisPoints);
     const slippage = 5;
     const tokenSwapQty = BigNumber(15);
     const tokenAReserveQtyBeforeTrade = BigNumber(2000);
 
+    const expectedFees = (feesInBasisPointsBN.dividedBy(BigNumber(10000))).multipliedBy(tokenSwapQty);
+
     const tokenAReserveQtyAfterTrade =
-      tokenAReserveQtyBeforeTrade.plus(tokenSwapQty);
+      (tokenAReserveQtyBeforeTrade.plus(tokenSwapQty)).minus(expectedFees);
 
     const tokenBReserveQtyBeforeTrade = BigNumber(3000);
 

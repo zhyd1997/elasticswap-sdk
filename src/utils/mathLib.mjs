@@ -603,6 +603,7 @@ export const calculateExchangeRate = (
   inputTokenReserveQty,
   outputTokenReserveQty,
 ) => {
+  console.log("mathLib: calculateExchangeRate: ");
   // cleanse input
   const inputTokenReserveQtyBN = toBigNumber(inputTokenReserveQty);
   const outputTokenReserveQtyBN = toBigNumber(outputTokenReserveQty);
@@ -615,6 +616,7 @@ export const calculateExchangeRate = (
     inputTokenReserveQtyBN.isNegative() ||
     outputTokenReserveQtyBN.isNegative()
   ) {
+    console.log("calculateExchangeRate: ");
     throw NEGATIVE_INPUT;
   }
 
@@ -650,12 +652,17 @@ export const calculateFees = (feesInBasisPoints, swapAmount) => {
 
   // negative case
   if (feesInBasisPointsBN.isLessThan(ZERO) || swapAmountBN.isLessThan(ZERO)) {
+    console.log("calculateFees: ")
     throw NEGATIVE_INPUT;
   }
 
   const fees = feesInBasisPointsBN
     .dividedBy(BASIS_POINTS)
     .multipliedBy(swapAmountBN);
+  console.log("fees: feesInBasisPointsBN",  feesInBasisPointsBN.toString());
+  console.log("fees: BASIS_POINTS",  BASIS_POINTS.toString());
+  console.log("fees: swapAmountBN",  swapAmountBN.toString());
+  console.log("fees: fees",  fees.toString());
 
   return fees;
 };
@@ -865,6 +872,7 @@ export const calculateLPTokenAmount = (
     slippageBN.isLessThan(ZERO) ||
     totalSupplyOfLiquidityTokensBN.isLessThan(ZERO)
   ) {
+    console.log("calculateLPTokenAmount:")
     throw NEGATIVE_INPUT;
   }
 
@@ -931,6 +939,7 @@ export const calculateOutputAmountLessFees = (
     slippagePercentBN.isNegative() ||
     feeAmountBN.isNegative()
   ) {
+    console.log("calculateOutputAmountLessFees: ");
     throw NEGATIVE_INPUT;
   }
 
@@ -982,7 +991,14 @@ export const calculatePriceImpact = (
   const outputTokenReserveQtyBN = toBigNumber(outputTokenReserveQty);
   const slippagePercentBN = toBigNumber(slippagePercent);
   const feeAmountBN = toBigNumber(feeAmount);
-
+  console.log("mathLib: calculatePriceImpact:")
+  console.log("inputs",
+    inputTokenReserveQtyBN.toString(),
+    outputTokenReserveQtyBN.toString(),
+    slippagePercentBN.toString(),
+    feeAmountBN.toString(),
+    
+    );
   if (
     inputTokenAmountBN.isNaN() ||
     inputTokenReserveQtyBN.isNaN() ||
@@ -1000,6 +1016,7 @@ export const calculatePriceImpact = (
     slippagePercentBN.isNegative() ||
     feeAmountBN.isNegative()
   ) {
+    console.log("calculatePriceImpact")
     throw NEGATIVE_INPUT;
   }
 
@@ -1023,12 +1040,17 @@ export const calculatePriceImpact = (
     slippagePercentBN,
     feeAmountBN,
   );
-
+  
+  const expectedFees = calculateFees(feeAmountBN, inputTokenAmountBN)
+  
   const inputTokenReserveQtyAfter =
-    inputTokenReserveQtyBN.plus(inputTokenAmountBN).minus(feeAmountBN);
+    inputTokenReserveQtyBN.plus(inputTokenAmountBN).minus(expectedFees);
+  
+  console.log("mathLib: inputTokenReserveQtyAfter:",  inputTokenReserveQtyAfter, inputTokenReserveQtyAfter.toString());
 
   const outputTokenReserveQtyAfter =
     outputTokenReserveQtyBN.minus(outputTokenAmount);
+  console.log("mathLib: outputTokenReserveQtyAfter:",  outputTokenReserveQtyAfter, outputTokenReserveQtyAfter.toString());  
   
   const finalPrice = calculateExchangeRate(
     inputTokenReserveQtyAfter,
@@ -1227,6 +1249,7 @@ export const calculateTokenAmountsFromLPTokens = (
     quoteTokenReserveQtyBN.isLessThan(ZERO) ||
     totalSupplyLPTokenSupplyBN.isLessThan(ZERO)
   ) {
+    console.log("calculateTokenAmountsFromLPTokens:")
     throw NEGATIVE_INPUT;
   }
 
