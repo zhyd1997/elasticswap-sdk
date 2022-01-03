@@ -976,6 +976,7 @@ export const calculatePriceImpact = (
 ) => {
   // cleanse inputs
   const inputTokenAmountBN = toBigNumber(inputTokenAmount);
+
   const inputTokenReserveQtyBN = toBigNumber(inputTokenReserveQty);
   const outputTokenReserveQtyBN = toBigNumber(outputTokenReserveQty);
   const slippagePercentBN = toBigNumber(slippagePercent);
@@ -1013,6 +1014,7 @@ export const calculatePriceImpact = (
     outputTokenReserveQtyBN,
   );
 
+  // this is less fees and less slippage
   const outputTokenAmount = calculateOutputAmountLessFees(
     inputTokenAmountBN,
     inputTokenReserveQtyBN,
@@ -1021,8 +1023,11 @@ export const calculatePriceImpact = (
     feeAmountBN,
   );
 
-  const inputTokenReserveQtyAfter =
-    inputTokenReserveQtyBN.plus(inputTokenAmount);
+  const expectedFees = calculateFees(feeAmountBN, inputTokenAmountBN);
+
+  const inputTokenReserveQtyAfter = inputTokenReserveQtyBN
+    .plus(inputTokenAmountBN)
+    .minus(expectedFees);
 
   const outputTokenReserveQtyAfter =
     outputTokenReserveQtyBN.minus(outputTokenAmount);

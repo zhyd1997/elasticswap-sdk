@@ -256,11 +256,11 @@ describe('calculateExchangeRate', () => {
     ).to.throw(NEGATIVE_INPUT);
 
     // Nan cases
+    expect(() => calculateExchangeRate(null, quoteTokenReserveQty1)).to.throw(
+      NAN_ERROR,
+    );
     expect(() =>
-      calculateExchangeRate(null, negativeQuoteTokenReserveQty),
-    ).to.throw(NAN_ERROR);
-    expect(() =>
-      calculateExchangeRate(undefined, negativeQuoteTokenReserveQty),
+      calculateExchangeRate(undefined, quoteTokenReserveQty1),
     ).to.throw(NAN_ERROR);
   });
 });
@@ -466,11 +466,19 @@ describe('calculatePriceImpact', () => {
 
   it('should calculate priceImpact correctly accounting for fees and 0 slippage', async () => {
     const feesInBasisPoints = 3000;
+    const feesInBasisPointsBN = BigNumber(feesInBasisPoints);
+
     const tokenSwapQty = BigNumber(15);
+
+    const expectedFees = feesInBasisPointsBN
+      .dividedBy(BigNumber(10000))
+      .multipliedBy(tokenSwapQty);
+
     const tokenAReserveQtyBeforeTrade = BigNumber(2000);
 
-    const tokenAReserveQtyAfterTrade =
-      tokenAReserveQtyBeforeTrade.plus(tokenSwapQty);
+    const tokenAReserveQtyAfterTrade = tokenAReserveQtyBeforeTrade
+      .plus(tokenSwapQty)
+      .minus(expectedFees);
 
     const tokenBReserveQtyBeforeTrade = BigNumber(3000);
 
@@ -497,25 +505,31 @@ describe('calculatePriceImpact', () => {
     const priceDiffRatio = priceDiff.dividedBy(BigNumber(initialPrice));
     const priceImpact = priceDiffRatio.multipliedBy(BigNumber(100));
 
-    expect(
-      calculatePriceImpact(
-        tokenSwapQty,
-        tokenAReserveQtyBeforeTrade,
-        tokenBReserveQtyBeforeTrade,
-        ZERO,
-        feesInBasisPoints,
-      ).toNumber(),
-    ).to.equal(priceImpact.toNumber());
+    const calculatedPriceImpact = calculatePriceImpact(
+      tokenSwapQty,
+      tokenAReserveQtyBeforeTrade,
+      tokenBReserveQtyBeforeTrade,
+      ZERO,
+      feesInBasisPoints,
+    );
+
+    expect(calculatedPriceImpact.toNumber()).to.equal(priceImpact.toNumber());
   });
 
   it('should calculate the priceImpact correctly accounting for fees and slippage', async () => {
     const feesInBasisPoints = 3000;
+    const feesInBasisPointsBN = BigNumber(feesInBasisPoints);
     const slippage = 5;
     const tokenSwapQty = BigNumber(15);
     const tokenAReserveQtyBeforeTrade = BigNumber(2000);
 
-    const tokenAReserveQtyAfterTrade =
-      tokenAReserveQtyBeforeTrade.plus(tokenSwapQty);
+    const expectedFees = feesInBasisPointsBN
+      .dividedBy(BigNumber(10000))
+      .multipliedBy(tokenSwapQty);
+
+    const tokenAReserveQtyAfterTrade = tokenAReserveQtyBeforeTrade
+      .plus(tokenSwapQty)
+      .minus(expectedFees);
 
     const tokenBReserveQtyBeforeTrade = BigNumber(3000);
 
