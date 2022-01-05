@@ -1789,7 +1789,7 @@ describe('Exchange', () => {
   });
 
   describe('calculateAlterNativePriceImpact', () => {
-    it.only('should calculate the alternative price impact, accounting for fees and 0 slippage', async () => {
+    it('should calculate the alternative price impact, accounting for fees and 0 slippage', async () => {
       // create expiration 50 minutes from now.
       const expiration = Math.round(new Date().getTime() / 1000 + 60 * 50);
       const liquidityProvider = accounts[1];
@@ -1892,7 +1892,7 @@ describe('Exchange', () => {
       const outputTokenAmountLessFeesBN =
         baseTokenQtyReserveBeforeTradeBN.minus(baseTokenQtyReserveAfterTradeBN);
 
-      const slippagePercent = 0;  
+      const slippagePercent = 0;
       const slippagePercentBN = toBigNumber(slippagePercent);
       const slippageMultiplierBN = toBigNumber(1).minus(
         slippagePercentBN.dividedBy(toBigNumber(100)),
@@ -1901,21 +1901,24 @@ describe('Exchange', () => {
         outputTokenAmountLessFeesBN.multipliedBy(slippageMultiplierBN);
 
       const initialOutpUtAmount = swapAmountBN.dividedBy(initialPriceBN);
-      const ratioMultiplier = (outputTokenAmountLessFeesLessSlippageBN.dividedBy(initialOutpUtAmount)).multipliedBy(BigNumber(100))
+      const ratioMultiplier = outputTokenAmountLessFeesLessSlippageBN
+        .dividedBy(initialOutpUtAmount)
+        .multipliedBy(BigNumber(100));
       const calculatedPriceImpactBN = toBigNumber(100).minus(ratioMultiplier);
 
-      const expectedPriceImpact = await exchangeClass.calculateAlternativePriceImpact(
-        swapAmount,
-        quoteToken.address,
-        slippagePercent,
-      );
+      const expectedPriceImpact =
+        await exchangeClass.calculateAlternativePriceImpact(
+          swapAmount,
+          quoteToken.address,
+          slippagePercent,
+        );
 
       expect(expectedPriceImpact.toString()).to.equal(
         calculatedPriceImpactBN.toString(),
       );
     });
 
-    it.only('should calculate the alternative price impact, accounting for fees and slippage', async () => {
+    it('should calculate the alternative price impact, accounting for fees and slippage', async () => {
       // create expiration 50 minutes from now.
       const expiration = Math.round(new Date().getTime() / 1000 + 60 * 50);
       const liquidityProvider = accounts[1];
@@ -2018,7 +2021,7 @@ describe('Exchange', () => {
       const outputTokenAmountLessFeesBN =
         baseTokenQtyReserveBeforeTradeBN.minus(baseTokenQtyReserveAfterTradeBN);
 
-      const slippagePercent = 5;  
+      const slippagePercent = 5;
       const slippagePercentBN = toBigNumber(slippagePercent);
       const slippageMultiplierBN = toBigNumber(1).minus(
         slippagePercentBN.dividedBy(toBigNumber(100)),
@@ -2027,14 +2030,17 @@ describe('Exchange', () => {
         outputTokenAmountLessFeesBN.multipliedBy(slippageMultiplierBN);
 
       const initialOutpUtAmount = swapAmountBN.dividedBy(initialPriceBN);
-      const ratioMultiplier = (outputTokenAmountLessFeesLessSlippageBN.dividedBy(initialOutpUtAmount)).multipliedBy(BigNumber(100))
+      const ratioMultiplier = outputTokenAmountLessFeesLessSlippageBN
+        .dividedBy(initialOutpUtAmount)
+        .multipliedBy(BigNumber(100));
       const calculatedPriceImpactBN = toBigNumber(100).minus(ratioMultiplier);
 
-      const expectedPriceImpact = await exchangeClass.calculateAlternativePriceImpact(
-        swapAmount,
-        quoteToken.address,
-        slippagePercent,
-      );
+      const expectedPriceImpact =
+        await exchangeClass.calculateAlternativePriceImpact(
+          swapAmount,
+          quoteToken.address,
+          slippagePercent,
+        );
 
       expect(expectedPriceImpact.toString()).to.equal(
         calculatedPriceImpactBN.toString(),
