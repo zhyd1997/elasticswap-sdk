@@ -130,7 +130,7 @@ export default class Exchange extends Base {
         slippagePercent,
       );
 
-    const calculatedExchangeRate = await calculateExchangeRate(
+    const calculatedExchangeRate = await this.calculateExchangeRate(
       inputTokenAddress,
     );
     const iniialOutputAmount = toBigNumber(inputTokenAmount).dividedBy(
