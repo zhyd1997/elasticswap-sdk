@@ -107,6 +107,40 @@ export default class Exchange extends Base {
     return this._errorHandling;
   }
 
+  /**
+   * The alternative way of calulating the priceImpact
+   * 100 - ( OALFLS x 100 )
+   *        ------
+   *         IOA
+   * OALFLS - outputAmountLessFessLessSlippage
+   * IOA - initialOutputAmount = input / exchangeRate
+   */
+  async calculateAlternativePriceImpact(
+    inputTokenAmount,
+    inputTokenAddress,
+    slippagePercent,
+  ) {
+    const calculatedOutputAmountLessFeesLessSlippage =
+      await this.calculateOutputAmountLessFees(
+        inputTokenAmount,
+        inputTokenAddress,
+        slippagePercent,
+      );
+
+    const calculatedExchangeRate = await this.calculateExchangeRate(
+      inputTokenAddress,
+    );
+    const iniialOutputAmount = toBigNumber(inputTokenAmount).dividedBy(
+      calculatedExchangeRate,
+    );
+    const ratioMultiplier = calculatedOutputAmountLessFeesLessSlippage
+      .dividedBy(iniialOutputAmount)
+      .multipliedBy(toBigNumber(100));
+    const alternativePriceImpact = toBigNumber(100).minus(ratioMultiplier);
+
+    return alternativePriceImpact;
+  }
+
   async calculateBaseTokenQty(quoteTokenQty, baseTokenQtyMin) {
     const baseTokenReserveQty = await this._baseToken.balanceOf(
       this._exchangeAddress,
