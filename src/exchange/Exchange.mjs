@@ -114,9 +114,6 @@ export default class Exchange extends Base {
    *         IOA
    * OALFLS - outputAmountLessFessLessSlippage
    * IOA - initialOutputAmount = input / exchangeRate
-   * @param {*} inputTokenAmount
-   * @param {*} inputTokenAddress
-   * @param {*} slippagePercent
    */
   async calculateAlternativePriceImpact(
     inputTokenAmount,
