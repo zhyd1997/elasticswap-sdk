@@ -106,41 +106,6 @@ export default class Exchange extends Base {
     return this._errorHandling;
   }
 
-  /**
-   * The alternative way of calulating the priceImpact
-   * 100 - ( OALFLS x 100 )
-   *        ------
-   *         IOA
-   * OALFLS - outputAmountLessFessLessSlippage
-   * IOA - initialOutputAmount = input / exchangeRate
-   */
-  async calculatePriceImpact(
-    inputTokenAmount,
-    inputTokenAddress,
-    slippagePercent,
-  ) {
-    const calculatedOutputAmountLessFeesLessSlippage =
-      await this.calculateOutputAmountLessFees(
-        inputTokenAmount,
-        inputTokenAddress,
-        slippagePercent,
-      );
-
-    // this exchange rate is prior to swap occurance
-    const calculatedExchangeRate = await this.calculateExchangeRate(
-      inputTokenAddress,
-    );
-    const iniialOutputAmount = toBigNumber(inputTokenAmount).dividedBy(
-      calculatedExchangeRate,
-    );
-    const ratioMultiplier = calculatedOutputAmountLessFeesLessSlippage
-      .dividedBy(iniialOutputAmount)
-      .multipliedBy(toBigNumber(100));
-    const priceImpact = toBigNumber(100).minus(ratioMultiplier);
-
-    return priceImpact;
-  }
-
   async calculateBaseTokenQty(quoteTokenQty, baseTokenQtyMin) {
     const baseTokenReserveQty = await this._baseToken.balanceOf(
       this._exchangeAddress,
@@ -200,6 +165,41 @@ export default class Exchange extends Base {
       totalSupplyOfLiquidityTokens,
       internalBalances,
     );
+  }
+
+  /**
+   * The alternative way of calulating the priceImpact
+   * 100 - ( OALFLS x 100 )
+   *        ------
+   *         IOA
+   * OALFLS - outputAmountLessFessLessSlippage
+   * IOA - initialOutputAmount = input / exchangeRate
+   */
+  async calculatePriceImpact(
+    inputTokenAmount,
+    inputTokenAddress,
+    slippagePercent,
+  ) {
+    const calculatedOutputAmountLessFeesLessSlippage =
+      await this.calculateOutputAmountLessFees(
+        inputTokenAmount,
+        inputTokenAddress,
+        slippagePercent,
+      );
+
+    // this exchange rate is prior to swap occurance
+    const calculatedExchangeRate = await this.calculateExchangeRate(
+      inputTokenAddress,
+    );
+    const iniialOutputAmount = toBigNumber(inputTokenAmount).dividedBy(
+      calculatedExchangeRate,
+    );
+    const ratioMultiplier = calculatedOutputAmountLessFeesLessSlippage
+      .dividedBy(iniialOutputAmount)
+      .multipliedBy(toBigNumber(100));
+    const priceImpact = toBigNumber(100).minus(ratioMultiplier);
+
+    return priceImpact;
   }
 
   async calculateQuoteTokenQty(baseTokenQty, quoteTokenQtyMin) {
