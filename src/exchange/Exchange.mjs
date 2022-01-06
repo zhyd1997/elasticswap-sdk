@@ -125,7 +125,7 @@ export default class Exchange extends Base {
         inputTokenAddress,
         slippagePercent,
       );
-    
+
     // this exchange rate is prior to swap occurance
     const calculatedExchangeRate = await this.calculateExchangeRate(
       inputTokenAddress,
