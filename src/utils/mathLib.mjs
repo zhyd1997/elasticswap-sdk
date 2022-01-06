@@ -961,90 +961,6 @@ export const calculateOutputAmountLessFees = (
 };
 
 /**
- * @dev calculates the price impact ( or % move in x/y )
- * @param inputTokenAmount
- * @param inputTokenReserveQty
- * @param outputTokenReserveQty
- * @returns priceImpact (in percentage)
- */
-export const calculatePriceImpact = (
-  inputTokenAmount,
-  inputTokenReserveQty,
-  outputTokenReserveQty,
-  slippagePercent,
-  feeAmount,
-) => {
-  // cleanse inputs
-  const inputTokenAmountBN = toBigNumber(inputTokenAmount);
-
-  const inputTokenReserveQtyBN = toBigNumber(inputTokenReserveQty);
-  const outputTokenReserveQtyBN = toBigNumber(outputTokenReserveQty);
-  const slippagePercentBN = toBigNumber(slippagePercent);
-  const feeAmountBN = toBigNumber(feeAmount);
-
-  if (
-    inputTokenAmountBN.isNaN() ||
-    inputTokenReserveQtyBN.isNaN() ||
-    outputTokenReserveQtyBN.isNaN() ||
-    slippagePercentBN.isNaN() ||
-    feeAmountBN.isNaN()
-  ) {
-    throw NAN_ERROR;
-  }
-
-  if (
-    inputTokenAmountBN.isNegative() ||
-    inputTokenReserveQtyBN.isNegative() ||
-    outputTokenReserveQtyBN.isNegative() ||
-    slippagePercentBN.isNegative() ||
-    feeAmountBN.isNegative()
-  ) {
-    throw NEGATIVE_INPUT;
-  }
-
-  if (
-    inputTokenReserveQtyBN.isEqualTo(ZERO) ||
-    outputTokenReserveQtyBN.isEqualTo(ZERO)
-  ) {
-    throw INSUFFICIENT_LIQUIDITY;
-  }
-
-  const initialPrice = calculateExchangeRate(
-    inputTokenReserveQtyBN,
-    outputTokenReserveQtyBN,
-  );
-
-  // this is less fees and less slippage
-  const outputTokenAmount = calculateOutputAmountLessFees(
-    inputTokenAmountBN,
-    inputTokenReserveQtyBN,
-    outputTokenReserveQtyBN,
-    slippagePercentBN,
-    feeAmountBN,
-  );
-
-  const expectedFees = calculateFees(feeAmountBN, inputTokenAmountBN);
-
-  const inputTokenReserveQtyAfter = inputTokenReserveQtyBN
-    .plus(inputTokenAmountBN)
-    .minus(expectedFees);
-
-  const outputTokenReserveQtyAfter =
-    outputTokenReserveQtyBN.minus(outputTokenAmount);
-
-  const finalPrice = calculateExchangeRate(
-    inputTokenReserveQtyAfter,
-    outputTokenReserveQtyAfter,
-  );
-
-  const priceDiff = finalPrice.minus(initialPrice);
-  const priceDiffRatio = priceDiff.dividedBy(initialPrice);
-  const priceImpact = priceDiffRatio.multipliedBy(toBigNumber('100'));
-
-  return priceImpact;
-};
-
-/**
  * @dev used to calculate the qty of token a liquidity provider
  * must add in order to maintain the current reserve ratios
  * @param tokenAQty base or quote token qty to be supplied by the liquidity provider
@@ -1302,7 +1218,6 @@ export default {
   calculateLiquidityTokenQtyForSingleAssetEntry,
   calculateLPTokenAmount,
   calculateOutputAmountLessFees,
-  calculatePriceImpact,
   calculateQty,
   calculateQtyToReturnAfterFees,
   calculateQuoteTokenQty,

@@ -7,7 +7,6 @@ import {
   calculateExchangeRate,
   calculateFees,
   calculateLPTokenAmount,
-  calculatePriceImpact,
   calculateQuoteTokenQty,
   calculateTokenAmountsFromLPTokens,
   calculateOutputAmountLessFees,
@@ -230,37 +229,6 @@ export default class Exchange extends Base {
       quoteTokenReserveQty,
       totalLPTokenSupply,
     );
-  }
-
-  async calculatePriceImpact(
-    inputTokenAmount,
-    inputTokenAddress,
-    slippagePercent,
-  ) {
-    const inputTokenAddressLowerCase = inputTokenAddress.toLowerCase();
-    const inputTokenAmountBN = toBigNumber(inputTokenAmount);
-
-    let inputTokenReserveQty;
-    let outputTokenReserveQty;
-
-    const internalBalances = await this.contract.internalBalances();
-
-    if (inputTokenAddressLowerCase === this.baseTokenAddress.toLowerCase()) {
-      inputTokenReserveQty = internalBalances.baseTokenReserveQty;
-      outputTokenReserveQty = internalBalances.quoteTokenReserveQty;
-    } else {
-      inputTokenReserveQty = internalBalances.quoteTokenReserveQty;
-      outputTokenReserveQty = internalBalances.baseTokenReserveQty;
-    }
-
-    const calculatedPriceImpact = calculatePriceImpact(
-      inputTokenAmountBN,
-      inputTokenReserveQty,
-      outputTokenReserveQty,
-      slippagePercent,
-      await this.liquidityFee,
-    );
-    return calculatedPriceImpact;
   }
 
   async calculateOutputAmountLessFees(
