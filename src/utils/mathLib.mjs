@@ -672,7 +672,7 @@ export const calculateFees = (feesInBasisPoints, swapAmount) => {
  *
  * @param  outputTokenAmount - The amount user wants to receive after fees and slippage
  * @param inputTokenReserveQty - The reserve quantity of the inputToken
- * @param {*} outputTokenReserveQty - The reserve quantity of the output
+ * @param outputTokenReserveQty - The reserve quantity of the output
  * @param  slippagePercent - The percentage of the slippage
  * @param liquidityFeeInBasisPoints - The liquidity fee in BasisPoints
  * @returns inputAmountFromOutputAmount
