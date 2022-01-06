@@ -660,6 +660,23 @@ export const calculateFees = (feesInBasisPoints, swapAmount) => {
   return fees;
 };
 
+/**
+ * @dev calculates the inputAmount given an OutputAmount
+ *
+ *
+ * inputAmount =  - (outputAmount * inputTokenReserveQty * BASIS_POINTS)
+ *                -----------------------------------------------------------------
+ *                ( outputAmount - outputTokenReserveQty + (outputTokenReserveQty* (slippage/100)) )
+ *                  * (BP - liquidityFeeInBasisPoints )
+ *
+ *
+ * @param  outputTokenAmount - The amount user wants to receive after fees and slippage
+ * @param inputTokenReserveQty - The reserve quantity of the inputToken
+ * @param {*} outputTokenReserveQty - The reserve quantity of the output
+ * @param  slippagePercent - The percentage of the slippage
+ * @param liquidityFeeInBasisPoints - The liquidity fee in BasisPoints
+ * @returns inputAmountFromOutputAmount
+ */
 export const calculateInputAmountFromOutputAmount = (
   outputTokenAmount,
   inputTokenReserveQty, // a
@@ -668,9 +685,6 @@ export const calculateInputAmountFromOutputAmount = (
   liquidityFeeInBasisPoints,
 ) => {
   // cleanse input to BN
-  // here it is assumed that outputTokenAmount is what the
-  // user wants accounting for fees and slippage
-  // i.e outputTokenAmount is actually outputTokenAmountLessFeesLessSlippage
   const outputTokenAmountBN = toBigNumber(outputTokenAmount);
   const inputTokenReserveQtyBN = toBigNumber(inputTokenReserveQty);
   const outputTokenReserveQtyBN = toBigNumber(outputTokenReserveQty);
