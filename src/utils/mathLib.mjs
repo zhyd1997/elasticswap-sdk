@@ -661,6 +661,87 @@ export const calculateFees = (feesInBasisPoints, swapAmount) => {
 };
 
 /**
+ * @dev calculates the inputAmount given an OutputAmount
+ *
+ *
+ * inputAmount =  - (outputAmount * inputTokenReserveQty * BASIS_POINTS)
+ *                -----------------------------------------------------------------
+ *                ( outputAmount - outputTokenReserveQty + (outputTokenReserveQty* (slippage/100)) )
+ *                  * (BP - liquidityFeeInBasisPoints )
+ *
+ *
+ * @param  outputTokenAmount - The amount user wants to receive after fees and slippage
+ * @param inputTokenReserveQty - The reserve quantity of the inputToken
+ * @param outputTokenReserveQty - The reserve quantity of the output
+ * @param  slippagePercent - The percentage of the slippage
+ * @param liquidityFeeInBasisPoints - The liquidity fee in BasisPoints
+ * @returns inputAmountFromOutputAmount
+ */
+export const calculateInputAmountFromOutputAmount = (
+  outputTokenAmount,
+  inputTokenReserveQty,
+  outputTokenReserveQty,
+  slippagePercent,
+  liquidityFeeInBasisPoints,
+) => {
+  // cleanse input to BN
+  const outputTokenAmountBN = toBigNumber(outputTokenAmount);
+  const inputTokenReserveQtyBN = toBigNumber(inputTokenReserveQty);
+  const outputTokenReserveQtyBN = toBigNumber(outputTokenReserveQty);
+  const slippagePercentBN = toBigNumber(slippagePercent);
+  const liquidityFeeInBasisPointsBN = toBigNumber(liquidityFeeInBasisPoints);
+
+  if (
+    outputTokenAmountBN.isNaN() ||
+    inputTokenReserveQtyBN.isNaN() ||
+    outputTokenReserveQtyBN.isNaN() ||
+    slippagePercentBN.isNaN() ||
+    liquidityFeeInBasisPointsBN.isNaN()
+  ) {
+    throw NAN_ERROR;
+  }
+
+  if (
+    outputTokenAmountBN.isNegative() ||
+    inputTokenReserveQtyBN.isNegative() ||
+    outputTokenReserveQtyBN.isNegative() ||
+    slippagePercentBN.isNegative() ||
+    liquidityFeeInBasisPointsBN.isNegative()
+  ) {
+    throw NEGATIVE_INPUT;
+  }
+
+  if (
+    inputTokenReserveQtyBN.isEqualTo(ZERO) ||
+    outputTokenReserveQtyBN.isEqualTo(ZERO)
+  ) {
+    throw INSUFFICIENT_LIQUIDITY;
+  }
+
+  const numerator = outputTokenAmountBN
+    .multipliedBy(inputTokenReserveQtyBN)
+    .multipliedBy(BASIS_POINTS)
+    .dp(18, ROUND_DOWN);
+
+  const basisPointDifference = BASIS_POINTS.minus(liquidityFeeInBasisPointsBN);
+
+  const outputSlippageMultiplier = outputTokenReserveQtyBN
+    .multipliedBy(slippagePercentBN.dividedBy(toBigNumber(100)))
+    .dp(18, ROUND_DOWN);
+
+  const outputSlippageTerm = outputTokenAmountBN
+    .plus(outputSlippageMultiplier)
+    .minus(outputTokenReserveQtyBN)
+    .dp(18, ROUND_DOWN);
+
+  const denominator = outputSlippageTerm.multipliedBy(basisPointDifference);
+
+  const inputAmountFromOutputAmount = numerator.dividedBy(denominator).abs();
+
+  return inputAmountFromOutputAmount;
+};
+
+/**
  * @dev calculates the qty of liquidity tokens that should be sent to the DAO due to the
  * growth in K from trading.
  * The DAO takes 1/6 of the total fees (30BP total fee, 25 BP to lps and 5 BP to the DAO)

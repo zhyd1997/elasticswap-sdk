@@ -5,6 +5,7 @@ import ErrorHandling from '../ErrorHandling.mjs';
 import {
   calculateBaseTokenQty,
   calculateExchangeRate,
+  calculateInputAmountFromOutputAmount,
   calculateFees,
   calculateLPTokenAmount,
   calculateQuoteTokenQty,
@@ -144,6 +145,38 @@ export default class Exchange extends Base {
     const liquidityFeeInBasisPoints = await this.liquidityFee;
 
     return calculateFees(swapAmount, liquidityFeeInBasisPoints);
+  }
+
+  async calculateInputAmountFromOutputAmount(
+    outputAmount,
+    outputTokenAddress,
+    slippagePercent,
+  ) {
+    const outputTokenAddressLowerCase = outputTokenAddress.toLowerCase();
+    const outputTokenAmountBN = toBigNumber(outputAmount);
+    const slippagePercentBN = toBigNumber(slippagePercent);
+    const liquidityFeeInBasisPointsBN = toBigNumber(await this.liquidityFee);
+
+    let inputTokenReserveQty;
+    let outputTokenReserveQty;
+
+    const internalBalances = await this.contract.internalBalances();
+
+    if (outputTokenAddressLowerCase === this.baseTokenAddress.toLowerCase()) {
+      inputTokenReserveQty = internalBalances.quoteTokenReserveQty;
+      outputTokenReserveQty = internalBalances.baseTokenReserveQty;
+    } else {
+      inputTokenReserveQty = internalBalances.baseTokenReserveQty;
+      outputTokenReserveQty = internalBalances.quoteTokenReserveQty;
+    }
+
+    return calculateInputAmountFromOutputAmount(
+      outputTokenAmountBN,
+      inputTokenReserveQty,
+      outputTokenReserveQty,
+      slippagePercentBN,
+      liquidityFeeInBasisPointsBN,
+    );
   }
 
   async calculateLPTokenAmount(quoteTokenAmount, baseTokenAmount, slippage) {

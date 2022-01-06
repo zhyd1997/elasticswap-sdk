@@ -5,6 +5,7 @@ import {
   BASIS_POINTS,
   calculateExchangeRate,
   calculateFees,
+  calculateInputAmountFromOutputAmount,
   calculateLiquidityTokenQtyForDoubleAssetEntry,
   calculateLiquidityTokenQtyForSingleAssetEntry,
   calculateLPTokenAmount,
@@ -1341,5 +1342,128 @@ describe('calculateFees', () => {
     expect(calculateFees(feesInBasisPoints2, swapAmount2).toNumber()).to.equal(
       answer2.toNumber(),
     );
+  });
+});
+
+describe('calculateInputAmountFromOutputAmount', () => {
+  it('Should calculate correct input amount accounting for fees and 0 slippage', async () => {
+    const outputTokenAmountBN = BigNumber(100);
+    const inputTokenReserveQtyBN = BigNumber(1000);
+    const outputTokenReserveQtyBN = BigNumber(1000);
+    const slippagePercentBN = BigNumber(0);
+    const liquidityFeeInBasisPointsBN = BigNumber(3000);
+
+    const numerator = outputTokenAmountBN
+      .multipliedBy(inputTokenReserveQtyBN)
+      .multipliedBy(BASIS_POINTS);
+    const basisPointDifference = BASIS_POINTS.minus(
+      liquidityFeeInBasisPointsBN,
+    );
+    const outputSlippageMultiplier = outputTokenReserveQtyBN.multipliedBy(
+      slippagePercentBN.dividedBy(BigNumber(100)),
+    );
+    const outputSlippageTerm = outputTokenAmountBN
+      .plus(outputSlippageMultiplier)
+      .minus(outputTokenReserveQtyBN);
+    const denominator = outputSlippageTerm.multipliedBy(basisPointDifference);
+    const calculatedInputAmount = numerator.dividedBy(denominator).abs();
+
+    const expectedInputAmount = calculateInputAmountFromOutputAmount(
+      outputTokenAmountBN,
+      inputTokenReserveQtyBN,
+      outputTokenReserveQtyBN,
+      slippagePercentBN,
+      liquidityFeeInBasisPointsBN,
+    );
+
+    expect(expectedInputAmount.toNumber()).to.equal(
+      calculatedInputAmount.toNumber(),
+    );
+  });
+
+  it('Should calculate correct input amount accounting for fees and slippage', async () => {
+    const outputTokenAmountBN = BigNumber(100);
+    const inputTokenReserveQtyBN = BigNumber(1000);
+    const outputTokenReserveQtyBN = BigNumber(1000);
+    const slippagePercentBN = BigNumber(5);
+    const liquidityFeeInBasisPointsBN = BigNumber(3000);
+
+    const numerator = outputTokenAmountBN
+      .multipliedBy(inputTokenReserveQtyBN)
+      .multipliedBy(BASIS_POINTS);
+    const basisPointDifference = BASIS_POINTS.minus(
+      liquidityFeeInBasisPointsBN,
+    );
+    const outputSlippageMultiplier = outputTokenReserveQtyBN.multipliedBy(
+      slippagePercentBN.dividedBy(BigNumber(100)),
+    );
+    const outputSlippageTerm = outputTokenAmountBN
+      .plus(outputSlippageMultiplier)
+      .minus(outputTokenReserveQtyBN);
+    const denominator = outputSlippageTerm.multipliedBy(basisPointDifference);
+    const calculatedInputAmount = numerator.dividedBy(denominator).abs();
+
+    const expectedInputAmount = calculateInputAmountFromOutputAmount(
+      outputTokenAmountBN,
+      inputTokenReserveQtyBN,
+      outputTokenReserveQtyBN,
+      slippagePercentBN,
+      liquidityFeeInBasisPointsBN,
+    );
+
+    expect(expectedInputAmount.toNumber()).to.equal(
+      calculatedInputAmount.toNumber(),
+    );
+  });
+
+  it('Should return an error when incorrect values are provided', async () => {
+    const outputTokenAmountBN = BigNumber(100);
+    const negativeInputTokenReserveQtyBN = BigNumber(-1000);
+    const outputTokenReserveQtyBN = BigNumber(1000);
+    const slippagePercentBN = BigNumber(5);
+    const liquidityFeeInBasisPointsBN = BigNumber(3000);
+
+    // ZERO case
+    expect(() =>
+      calculateInputAmountFromOutputAmount(
+        outputTokenAmountBN,
+        ZERO,
+        outputTokenReserveQtyBN,
+        slippagePercentBN,
+        liquidityFeeInBasisPointsBN,
+      ),
+    ).to.throw(INSUFFICIENT_LIQUIDITY);
+
+    // Negative inputs provided
+    expect(() =>
+      calculateInputAmountFromOutputAmount(
+        outputTokenAmountBN,
+        negativeInputTokenReserveQtyBN,
+        outputTokenReserveQtyBN,
+        slippagePercentBN,
+        liquidityFeeInBasisPointsBN,
+      ),
+    ).to.throw(NEGATIVE_INPUT);
+
+    // Nan cases
+    expect(() =>
+      calculateInputAmountFromOutputAmount(
+        outputTokenAmountBN,
+        null,
+        outputTokenReserveQtyBN,
+        slippagePercentBN,
+        liquidityFeeInBasisPointsBN,
+      ),
+    ).to.throw(NAN_ERROR);
+
+    expect(() =>
+      calculateInputAmountFromOutputAmount(
+        outputTokenAmountBN,
+        undefined,
+        outputTokenReserveQtyBN,
+        slippagePercentBN,
+        liquidityFeeInBasisPointsBN,
+      ),
+    ).to.throw(NAN_ERROR);
   });
 });
