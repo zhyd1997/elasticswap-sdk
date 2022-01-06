@@ -114,7 +114,7 @@ export default class Exchange extends Base {
    * OALFLS - outputAmountLessFessLessSlippage
    * IOA - initialOutputAmount = input / exchangeRate
    */
-  async calculateAlternativePriceImpact(
+  async calculatePriceImpact(
     inputTokenAmount,
     inputTokenAddress,
     slippagePercent,
@@ -125,7 +125,8 @@ export default class Exchange extends Base {
         inputTokenAddress,
         slippagePercent,
       );
-
+    
+    // this exchange rate is prior to swap occurance
     const calculatedExchangeRate = await this.calculateExchangeRate(
       inputTokenAddress,
     );
@@ -135,9 +136,9 @@ export default class Exchange extends Base {
     const ratioMultiplier = calculatedOutputAmountLessFeesLessSlippage
       .dividedBy(iniialOutputAmount)
       .multipliedBy(toBigNumber(100));
-    const alternativePriceImpact = toBigNumber(100).minus(ratioMultiplier);
+    const priceImpact = toBigNumber(100).minus(ratioMultiplier);
 
-    return alternativePriceImpact;
+    return priceImpact;
   }
 
   async calculateBaseTokenQty(quoteTokenQty, baseTokenQtyMin) {

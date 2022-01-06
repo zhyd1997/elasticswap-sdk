@@ -1515,8 +1515,8 @@ describe('Exchange', () => {
     });
   });
 
-  describe('calculateAlterNativePriceImpact', () => {
-    it('should calculate the alternative price impact, accounting for fees and 0 slippage', async () => {
+  describe('calculatePriceImpact', () => {
+    it('should calculate the price impact, accounting for fees and 0 slippage', async () => {
       // create expiration 50 minutes from now.
       const expiration = Math.round(new Date().getTime() / 1000 + 60 * 50);
       const liquidityProvider = accounts[1];
@@ -1633,12 +1633,11 @@ describe('Exchange', () => {
         .multipliedBy(BigNumber(100));
       const calculatedPriceImpactBN = toBigNumber(100).minus(ratioMultiplier);
 
-      const expectedPriceImpact =
-        await exchangeClass.calculateAlternativePriceImpact(
-          swapAmount,
-          quoteToken.address,
-          slippagePercent,
-        );
+      const expectedPriceImpact = await exchangeClass.calculatePriceImpact(
+        swapAmount,
+        quoteToken.address,
+        slippagePercent,
+      );
 
       expect(expectedPriceImpact.toString()).to.equal(
         calculatedPriceImpactBN.toString(),
@@ -1762,12 +1761,11 @@ describe('Exchange', () => {
         .multipliedBy(BigNumber(100));
       const calculatedPriceImpactBN = toBigNumber(100).minus(ratioMultiplier);
 
-      const expectedPriceImpact =
-        await exchangeClass.calculateAlternativePriceImpact(
-          swapAmount,
-          quoteToken.address,
-          slippagePercent,
-        );
+      const expectedPriceImpact = await exchangeClass.calculatePriceImpact(
+        swapAmount,
+        quoteToken.address,
+        slippagePercent,
+      );
 
       expect(expectedPriceImpact.toString()).to.equal(
         calculatedPriceImpactBN.toString(),
