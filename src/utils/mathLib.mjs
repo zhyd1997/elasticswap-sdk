@@ -660,6 +660,73 @@ export const calculateFees = (feesInBasisPoints, swapAmount) => {
   return fees;
 };
 
+export const calculateInputAmountFromOutputAmount = (
+  outputTokenAmount,
+  inputTokenReserveQty, // a
+  outputTokenReserveQty, // b
+  slippagePercent,
+  liquidityFeeInBasisPoints,
+) => {
+  // cleanse input to BN
+  // here it is assumed that outputTokenAmount is what the
+  // user wants accounting for fees and slippage
+  // i.e outputTokenAmount is actually outputTokenAmountLessFeesLessSlippage
+  const outputTokenAmountBN = toBigNumber(outputTokenAmount);
+  const inputTokenReserveQtyBN = toBigNumber(inputTokenReserveQty);
+  const outputTokenReserveQtyBN = toBigNumber(outputTokenReserveQty);
+  const slippagePercentBN = toBigNumber(slippagePercent);
+  const liquidityFeeInBasisPointsBN = toBigNumber(liquidityFeeInBasisPoints);
+
+  if (
+    outputTokenAmountBN.isNaN() ||
+    inputTokenReserveQtyBN.isNaN() ||
+    outputTokenReserveQtyBN.isNaN() ||
+    slippagePercentBN.isNaN() ||
+    liquidityFeeInBasisPointsBN.isNaN()
+  ) {
+    throw NAN_ERROR;
+  }
+
+  if (
+    outputTokenAmountBN.isNegative() ||
+    inputTokenReserveQtyBN.isNegative() ||
+    outputTokenReserveQtyBN.isNegative() ||
+    slippagePercentBN.isNegative() ||
+    liquidityFeeInBasisPointsBN.isNegative()
+  ) {
+    throw NEGATIVE_INPUT;
+  }
+
+  if (
+    inputTokenReserveQtyBN.isEqualTo(ZERO) ||
+    outputTokenReserveQtyBN.isEqualTo(ZERO)
+  ) {
+    throw INSUFFICIENT_LIQUIDITY;
+  }
+
+  const numerator = outputTokenAmountBN
+    .multipliedBy(inputTokenReserveQtyBN)
+    .multipliedBy(BASIS_POINTS)
+    .dp(18, ROUND_DOWN);
+
+  const basisPointDifference = BASIS_POINTS.minus(liquidityFeeInBasisPointsBN);
+
+  const outputSlippageMultiplier = outputTokenReserveQtyBN
+    .multipliedBy(slippagePercentBN.dividedBy(toBigNumber(100)))
+    .dp(18, ROUND_DOWN);
+
+  const outputSlippageTerm = outputTokenAmountBN
+    .plus(outputSlippageMultiplier)
+    .minus(outputTokenReserveQtyBN)
+    .dp(18, ROUND_DOWN);
+
+  const denominator = outputSlippageTerm.multipliedBy(basisPointDifference);
+
+  const inputAmountFromOutputAmount = numerator.dividedBy(denominator).abs();
+
+  return inputAmountFromOutputAmount;
+};
+
 /**
  * @dev calculates the qty of liquidity tokens that should be sent to the DAO due to the
  * growth in K from trading.
