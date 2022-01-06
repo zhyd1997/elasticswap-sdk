@@ -679,7 +679,7 @@ export const calculateFees = (feesInBasisPoints, swapAmount) => {
  */
 export const calculateInputAmountFromOutputAmount = (
   outputTokenAmount,
-  inputTokenReserveQty, 
+  inputTokenReserveQty,
   outputTokenReserveQty,
   slippagePercent,
   liquidityFeeInBasisPoints,
