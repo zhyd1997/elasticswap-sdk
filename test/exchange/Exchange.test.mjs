@@ -10,7 +10,7 @@ import { toBigNumber } from '../../src/utils/utils.mjs';
 
 const { ethers, deployments } = hardhat;
 const { expect, assert } = chai;
-const { ROUND_UP } = BigNumber;
+const { ROUND_UP, ROUND_DOWN } = BigNumber;
 
 const storageAdapter = new LocalStorageAdapterMock();
 
@@ -2044,6 +2044,141 @@ describe('Exchange', () => {
 
       expect(expectedPriceImpact.toString()).to.equal(
         calculatedPriceImpactBN.toString(),
+      );
+    });
+  });
+
+  describe('calculateInputAmountFromOutputAmount', () => {
+    it('should calculate the input amount from output amount correctly, accounting for fees and 0 slippage', async () => {
+      // create expiration 50 minutes from now.
+      const expiration = Math.round(new Date().getTime() / 1000 + 60 * 50);
+      const liquidityProvider = accounts[1];
+      const trader = accounts[2];
+      const liquidityProviderInitialBalances = 1000000;
+      const amountToAdd = 1000000;
+      const baseTokenQtyToAdd = 10000;
+      const quoteTokenQtyToAdd = 50000;
+
+      await sdk.changeSigner(liquidityProvider);
+      exchangeClass = new elasticSwapSDK.Exchange(
+        sdk,
+        exchange.address,
+        baseToken.address,
+        quoteToken.address,
+      );
+
+      // send users (liquidity provider) base and quote tokens for easy accounting.
+      await baseToken.transfer(
+        liquidityProvider.address,
+        liquidityProviderInitialBalances,
+      );
+
+      await quoteToken.transfer(
+        liquidityProvider.address,
+        liquidityProviderInitialBalances,
+      );
+
+      // add approvals
+      await exchangeClass.quoteToken.approve(
+        exchangeClass.address,
+        liquidityProviderInitialBalances,
+      );
+
+      await exchangeClass.baseToken.approve(
+        exchangeClass.address,
+        liquidityProviderInitialBalances,
+      );
+
+      await exchangeClass.addLiquidity(
+        baseTokenQtyToAdd,
+        quoteTokenQtyToAdd,
+        1,
+        1,
+        liquidityProvider.address,
+        expiration,
+      );
+
+      await sdk.changeSigner(trader);
+      exchangeClass = new elasticSwapSDK.Exchange(
+        sdk,
+        exchange.address,
+        baseToken.address,
+        quoteToken.address,
+      );
+
+      // send trader quote tokens - 1000000
+      await quoteToken.transfer(trader.address, amountToAdd);
+
+      // add approvals for exchange to trade their quote tokens
+      await exchangeClass.quoteToken.approve(
+        exchangeClass.address,
+        amountToAdd,
+      );
+      // confirm no balance before trade.
+      expect((await baseToken.balanceOf(trader.address)).toNumber()).to.equal(
+        0,
+      );
+      expect((await quoteToken.balanceOf(trader.address)).toNumber()).to.equal(
+        amountToAdd,
+      );
+
+      const outputAmount = 10000;
+      const outputAmountBN = toBigNumber(outputAmount);
+
+      const liquidityFeeInBasisPointsBN = toBigNumber(
+        liquidityFeeInBasisPoints,
+      );
+
+      const quoteTokenReserveBalance = await quoteToken.balanceOf(
+        exchangeClass.address,
+      );
+      const quoteTokenReserveBalanceBN = toBigNumber(quoteTokenReserveBalance);
+
+      const pricingConstantK = (
+        await exchangeClass.baseToken.balanceOf(exchangeClass.address)
+      ).multipliedBy(
+        await exchangeClass.quoteToken.balanceOf(exchangeClass.address),
+      );
+      const pricingConstantKBN = toBigNumber(pricingConstantK);
+
+      const baseTokenQtyReserveBN = pricingConstantKBN.dividedBy(
+        quoteTokenReserveBalanceBN,
+      );
+
+      const slippagePercentBN = toBigNumber(0);
+      const BASIS_POINTS = toBigNumber(10000);
+
+      const numerator = outputAmountBN
+        .multipliedBy(quoteTokenReserveBalanceBN)
+        .multipliedBy(BASIS_POINTS)
+        .dp(18, ROUND_DOWN);
+
+      const basisPointDifference = BASIS_POINTS.minus(
+        liquidityFeeInBasisPointsBN,
+      );
+
+      const outputSlippageMultiplier = baseTokenQtyReserveBN
+        .multipliedBy(slippagePercentBN.dividedBy(BigNumber(100)))
+        .dp(18, ROUND_DOWN);
+
+      const outputSlippageTerm = outputAmountBN
+        .plus(outputSlippageMultiplier)
+        .minus(baseTokenQtyReserveBN)
+        .dp(18, ROUND_DOWN);
+
+      const denominator = outputSlippageTerm.multipliedBy(basisPointDifference);
+
+      const calculatedInputAmount = numerator.dividedBy(denominator).abs();
+
+      const expectedInputAmount =
+        await exchangeClass.calculateInputAmountFromOutputAmount(
+          outputAmountBN,
+          baseToken.address,
+          slippagePercentBN,
+        );
+
+      expect(expectedInputAmount.toNumber()).to.equal(
+        calculatedInputAmount.toNumber(),
       );
     });
   });
