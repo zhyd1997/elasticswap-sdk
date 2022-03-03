@@ -32,7 +32,16 @@ export default class ERC20 extends Base {
     return this.constructor.contract(this.sdk, this.address, true);
   }
 
+  async totalSupply() {
+    return this.contract.totalSupply();
+  }
+
+  async symbol() {
+    return this.contract.symbol();
+  }
+
   async approve(spenderAddress, amount, overrides = {}) {
+    this._contract = this.confirmSigner(this.contract);
     const txStatus = await this.contract.approve(
       spenderAddress,
       this.toEthersBigNumber(amount),

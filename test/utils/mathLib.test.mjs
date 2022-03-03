@@ -1,19 +1,15 @@
 /* eslint import/extensions: 0 */
 import { expect } from 'chai';
 import BigNumber from 'bignumber.js';
-import mathLib from '../../src/utils/mathLib.mjs';
-
-// const { assert } = chai;
-const { ROUND_DOWN } = BigNumber;
-const {
+import {
   BASIS_POINTS,
   calculateExchangeRate,
   calculateFees,
+  calculateInputAmountFromOutputAmount,
   calculateLiquidityTokenQtyForDoubleAssetEntry,
   calculateLiquidityTokenQtyForSingleAssetEntry,
   calculateLPTokenAmount,
   calculateOutputAmountLessFees,
-  calculatePriceImpact,
   calculateQty,
   calculateQtyToReturnAfterFees,
   calculateTokenAmountsFromLPTokens,
@@ -21,7 +17,10 @@ const {
   INSUFFICIENT_QTY,
   NAN_ERROR,
   NEGATIVE_INPUT,
-} = mathLib;
+} from '../../src/utils/mathLib.mjs';
+
+// const { assert } = chai;
+const { ROUND_DOWN } = BigNumber;
 
 const ZERO = BigNumber(0);
 
@@ -32,13 +31,9 @@ describe('calculateQty', () => {
   });
 
   it('Should revert if any value is 0', async () => {
-    expect(() => mathLib.calculateQty(0, 100, 500)).to.throw(INSUFFICIENT_QTY);
-    expect(() => mathLib.calculateQty(500, 0, 1000)).to.throw(
-      INSUFFICIENT_LIQUIDITY,
-    );
-    expect(() => mathLib.calculateQty(500, 100, 0)).to.throw(
-      INSUFFICIENT_LIQUIDITY,
-    );
+    expect(() => calculateQty(0, 100, 500)).to.throw(INSUFFICIENT_QTY);
+    expect(() => calculateQty(500, 0, 1000)).to.throw(INSUFFICIENT_LIQUIDITY);
+    expect(() => calculateQty(500, 100, 0)).to.throw(INSUFFICIENT_LIQUIDITY);
   });
 });
 
@@ -242,7 +237,7 @@ describe('calculateExchangeRate', () => {
 
   it('Should return an error when incorrect values are provided', async () => {
     const quoteTokenReserveQty1 = BigNumber('12.123456789123456789');
-    const negativequoteTokenReserveQty = BigNumber('-12.123456789123456789');
+    const negativeQuoteTokenReserveQty = BigNumber('-12.123456789123456789');
 
     // ZERO case
     expect(() => calculateExchangeRate(ZERO, quoteTokenReserveQty1)).to.throw(
@@ -256,16 +251,16 @@ describe('calculateExchangeRate', () => {
     expect(() =>
       calculateExchangeRate(
         quoteTokenReserveQty1,
-        negativequoteTokenReserveQty,
+        negativeQuoteTokenReserveQty,
       ),
     ).to.throw(NEGATIVE_INPUT);
 
     // Nan cases
+    expect(() => calculateExchangeRate(null, quoteTokenReserveQty1)).to.throw(
+      NAN_ERROR,
+    );
     expect(() =>
-      calculateExchangeRate(null, negativequoteTokenReserveQty),
-    ).to.throw(NAN_ERROR);
-    expect(() =>
-      calculateExchangeRate(undefined, negativequoteTokenReserveQty),
+      calculateExchangeRate(undefined, quoteTokenReserveQty1),
     ).to.throw(NAN_ERROR);
   });
 });
@@ -420,187 +415,6 @@ describe('calculateOutputAmountLessFees', () => {
         slippage,
         feeInBasisPoints,
       ),
-    ).to.throw(NAN_ERROR);
-  });
-});
-
-describe('calculatePriceImpact', () => {
-  it('Should calculate price impact correctly accounting for 0 fees and 0 slippage ', async () => {
-    // no slippage no fees
-    const tokenSwapQty = BigNumber(15);
-    const tokenAReserveQtyBeforeTrade = BigNumber(2000);
-
-    const tokenAReserveQtyAfterTrade =
-      tokenAReserveQtyBeforeTrade.plus(tokenSwapQty);
-
-    const tokenBReserveQtyBeforeTrade = BigNumber(3000);
-
-    const tokenBOutAmount = calculateOutputAmountLessFees(
-      tokenSwapQty,
-      tokenAReserveQtyAfterTrade,
-      tokenBReserveQtyBeforeTrade,
-      0,
-      0,
-    );
-
-    const tokenBQtyReserveAfterTrade =
-      tokenBReserveQtyBeforeTrade.minus(tokenBOutAmount);
-
-    const initialPrice = BigNumber(tokenAReserveQtyBeforeTrade).dividedBy(
-      BigNumber(tokenBReserveQtyBeforeTrade),
-    );
-
-    const finalPrice = BigNumber(tokenAReserveQtyAfterTrade).dividedBy(
-      BigNumber(tokenBQtyReserveAfterTrade),
-    );
-
-    const priceDiff = BigNumber(finalPrice).minus(BigNumber(initialPrice));
-    const priceDiffRatio = priceDiff.dividedBy(BigNumber(initialPrice));
-    const priceImpact = priceDiffRatio.multipliedBy(BigNumber(100));
-
-    expect(
-      calculatePriceImpact(
-        tokenSwapQty,
-        tokenAReserveQtyBeforeTrade,
-        tokenBReserveQtyBeforeTrade,
-        ZERO,
-        ZERO,
-      ).toNumber(),
-    ).to.equal(priceImpact.toNumber());
-  });
-
-  it('should calculate priceImpact correctly accounting for fees and 0 slippage', async () => {
-    const feesInBasisPoints = 3000;
-    const tokenSwapQty = BigNumber(15);
-    const tokenAReserveQtyBeforeTrade = BigNumber(2000);
-
-    const tokenAReserveQtyAfterTrade =
-      tokenAReserveQtyBeforeTrade.plus(tokenSwapQty);
-
-    const tokenBReserveQtyBeforeTrade = BigNumber(3000);
-
-    const tokenBOutAmount = calculateOutputAmountLessFees(
-      tokenSwapQty,
-      tokenAReserveQtyAfterTrade,
-      tokenBReserveQtyBeforeTrade,
-      0,
-      feesInBasisPoints,
-    );
-
-    const tokenBQtyReserveAfterTrade =
-      tokenBReserveQtyBeforeTrade.minus(tokenBOutAmount);
-
-    const initialPrice = BigNumber(tokenAReserveQtyBeforeTrade).dividedBy(
-      BigNumber(tokenBReserveQtyBeforeTrade),
-    );
-
-    const finalPrice = BigNumber(tokenAReserveQtyAfterTrade).dividedBy(
-      BigNumber(tokenBQtyReserveAfterTrade),
-    );
-
-    const priceDiff = BigNumber(finalPrice).minus(BigNumber(initialPrice));
-    const priceDiffRatio = priceDiff.dividedBy(BigNumber(initialPrice));
-    const priceImpact = priceDiffRatio.multipliedBy(BigNumber(100));
-
-    expect(
-      calculatePriceImpact(
-        tokenSwapQty,
-        tokenAReserveQtyBeforeTrade,
-        tokenBReserveQtyBeforeTrade,
-        ZERO,
-        feesInBasisPoints,
-      ).toNumber(),
-    ).to.equal(priceImpact.toNumber());
-  });
-
-  it('should calculate the priceImpact correctly accounting for fees and slippage', async () => {
-    const feesInBasisPoints = 3000;
-    const slippage = 5;
-    const tokenSwapQty = BigNumber(15);
-    const tokenAReserveQtyBeforeTrade = BigNumber(2000);
-
-    const tokenAReserveQtyAfterTrade =
-      tokenAReserveQtyBeforeTrade.plus(tokenSwapQty);
-
-    const tokenBReserveQtyBeforeTrade = BigNumber(3000);
-
-    const tokenBOutAmount = calculateOutputAmountLessFees(
-      tokenSwapQty,
-      tokenAReserveQtyAfterTrade,
-      tokenBReserveQtyBeforeTrade,
-      slippage,
-      feesInBasisPoints,
-    );
-
-    const tokenBQtyReserveAfterTrade =
-      tokenBReserveQtyBeforeTrade.minus(tokenBOutAmount);
-
-    const initialPrice = BigNumber(tokenAReserveQtyBeforeTrade).dividedBy(
-      BigNumber(tokenBReserveQtyBeforeTrade),
-    );
-
-    const finalPrice = BigNumber(tokenAReserveQtyAfterTrade).dividedBy(
-      BigNumber(tokenBQtyReserveAfterTrade),
-    );
-
-    const priceDiff = BigNumber(finalPrice).minus(BigNumber(initialPrice));
-    const priceDiffRatio = priceDiff.dividedBy(BigNumber(initialPrice));
-    const priceImpact = priceDiffRatio.multipliedBy(BigNumber(100));
-
-    expect(
-      calculatePriceImpact(
-        tokenSwapQty,
-        tokenAReserveQtyBeforeTrade,
-        tokenBReserveQtyBeforeTrade,
-        slippage,
-        feesInBasisPoints,
-      ).toNumber(),
-    ).to.equal(priceImpact.toNumber());
-  });
-
-  it('should return an error when incorrect values are provided', async () => {
-    // no slippage no fees
-    const tokenSwapQty = BigNumber(15);
-    const tokenBReserveQtyBeforeTrade = BigNumber(3000);
-
-    expect(() =>
-      calculatePriceImpact(
-        tokenSwapQty,
-        BigNumber(-100),
-        tokenBReserveQtyBeforeTrade,
-        ZERO,
-        ZERO,
-      ).toNumber(),
-    ).to.throw(NEGATIVE_INPUT);
-
-    expect(() =>
-      calculatePriceImpact(
-        tokenSwapQty,
-        0,
-        tokenBReserveQtyBeforeTrade,
-        ZERO,
-        ZERO,
-      ).toNumber(),
-    ).to.throw(INSUFFICIENT_LIQUIDITY);
-
-    expect(() =>
-      calculatePriceImpact(
-        tokenSwapQty,
-        null,
-        tokenBReserveQtyBeforeTrade,
-        ZERO,
-        ZERO,
-      ).toNumber(),
-    ).to.throw(NAN_ERROR);
-
-    expect(() =>
-      calculatePriceImpact(
-        tokenSwapQty,
-        undefined,
-        tokenBReserveQtyBeforeTrade,
-        ZERO,
-        ZERO,
-      ).toNumber(),
     ).to.throw(NAN_ERROR);
   });
 });
@@ -1528,5 +1342,128 @@ describe('calculateFees', () => {
     expect(calculateFees(feesInBasisPoints2, swapAmount2).toNumber()).to.equal(
       answer2.toNumber(),
     );
+  });
+});
+
+describe('calculateInputAmountFromOutputAmount', () => {
+  it('Should calculate correct input amount accounting for fees and 0 slippage', async () => {
+    const outputTokenAmountBN = BigNumber(100);
+    const inputTokenReserveQtyBN = BigNumber(1000);
+    const outputTokenReserveQtyBN = BigNumber(1000);
+    const slippagePercentBN = BigNumber(0);
+    const liquidityFeeInBasisPointsBN = BigNumber(3000);
+
+    const numerator = outputTokenAmountBN
+      .multipliedBy(inputTokenReserveQtyBN)
+      .multipliedBy(BASIS_POINTS);
+    const basisPointDifference = BASIS_POINTS.minus(
+      liquidityFeeInBasisPointsBN,
+    );
+    const outputSlippageMultiplier = outputTokenReserveQtyBN.multipliedBy(
+      slippagePercentBN.dividedBy(BigNumber(100)),
+    );
+    const outputSlippageTerm = outputTokenAmountBN
+      .plus(outputSlippageMultiplier)
+      .minus(outputTokenReserveQtyBN);
+    const denominator = outputSlippageTerm.multipliedBy(basisPointDifference);
+    const calculatedInputAmount = numerator.dividedBy(denominator).abs();
+
+    const expectedInputAmount = calculateInputAmountFromOutputAmount(
+      outputTokenAmountBN,
+      inputTokenReserveQtyBN,
+      outputTokenReserveQtyBN,
+      slippagePercentBN,
+      liquidityFeeInBasisPointsBN,
+    );
+
+    expect(expectedInputAmount.toNumber()).to.equal(
+      calculatedInputAmount.toNumber(),
+    );
+  });
+
+  it('Should calculate correct input amount accounting for fees and slippage', async () => {
+    const outputTokenAmountBN = BigNumber(100);
+    const inputTokenReserveQtyBN = BigNumber(1000);
+    const outputTokenReserveQtyBN = BigNumber(1000);
+    const slippagePercentBN = BigNumber(5);
+    const liquidityFeeInBasisPointsBN = BigNumber(3000);
+
+    const numerator = outputTokenAmountBN
+      .multipliedBy(inputTokenReserveQtyBN)
+      .multipliedBy(BASIS_POINTS);
+    const basisPointDifference = BASIS_POINTS.minus(
+      liquidityFeeInBasisPointsBN,
+    );
+    const outputSlippageMultiplier = outputTokenReserveQtyBN.multipliedBy(
+      slippagePercentBN.dividedBy(BigNumber(100)),
+    );
+    const outputSlippageTerm = outputTokenAmountBN
+      .plus(outputSlippageMultiplier)
+      .minus(outputTokenReserveQtyBN);
+    const denominator = outputSlippageTerm.multipliedBy(basisPointDifference);
+    const calculatedInputAmount = numerator.dividedBy(denominator).abs();
+
+    const expectedInputAmount = calculateInputAmountFromOutputAmount(
+      outputTokenAmountBN,
+      inputTokenReserveQtyBN,
+      outputTokenReserveQtyBN,
+      slippagePercentBN,
+      liquidityFeeInBasisPointsBN,
+    );
+
+    expect(expectedInputAmount.toNumber()).to.equal(
+      calculatedInputAmount.toNumber(),
+    );
+  });
+
+  it('Should return an error when incorrect values are provided', async () => {
+    const outputTokenAmountBN = BigNumber(100);
+    const negativeInputTokenReserveQtyBN = BigNumber(-1000);
+    const outputTokenReserveQtyBN = BigNumber(1000);
+    const slippagePercentBN = BigNumber(5);
+    const liquidityFeeInBasisPointsBN = BigNumber(3000);
+
+    // ZERO case
+    expect(() =>
+      calculateInputAmountFromOutputAmount(
+        outputTokenAmountBN,
+        ZERO,
+        outputTokenReserveQtyBN,
+        slippagePercentBN,
+        liquidityFeeInBasisPointsBN,
+      ),
+    ).to.throw(INSUFFICIENT_LIQUIDITY);
+
+    // Negative inputs provided
+    expect(() =>
+      calculateInputAmountFromOutputAmount(
+        outputTokenAmountBN,
+        negativeInputTokenReserveQtyBN,
+        outputTokenReserveQtyBN,
+        slippagePercentBN,
+        liquidityFeeInBasisPointsBN,
+      ),
+    ).to.throw(NEGATIVE_INPUT);
+
+    // Nan cases
+    expect(() =>
+      calculateInputAmountFromOutputAmount(
+        outputTokenAmountBN,
+        null,
+        outputTokenReserveQtyBN,
+        slippagePercentBN,
+        liquidityFeeInBasisPointsBN,
+      ),
+    ).to.throw(NAN_ERROR);
+
+    expect(() =>
+      calculateInputAmountFromOutputAmount(
+        outputTokenAmountBN,
+        undefined,
+        outputTokenReserveQtyBN,
+        slippagePercentBN,
+        liquidityFeeInBasisPointsBN,
+      ),
+    ).to.throw(NAN_ERROR);
   });
 });

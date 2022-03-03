@@ -57,4 +57,26 @@ export default class Base extends Subscribable {
   toNumber(value, decimalShift = 0) {
     return toNumber(value, decimalShift);
   }
+
+  /**
+   * Checks to ensure that we have the same signer attached to our contract as the
+   * sdk signer that is registered.  If not this will return a new contract object
+   * with the signer connected.  If there is no change the original contract is returned.
+   * @param contract ethers contract object
+   * @returns
+   */
+  confirmSigner(contract) {
+    if (!contract.signer) {
+      return contract.connect(this.sdk.signer);
+    }
+
+    if (
+      this.sdk.signer &&
+      contract.signer.address !== this.sdk.signer.address
+    ) {
+      return contract.connect(this.sdk.signer);
+    }
+
+    return contract;
+  }
 }

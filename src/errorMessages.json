@@ -26,6 +26,10 @@
       "NOT_ENOUGH_LP_TOKEN_BALANCE": {
         "message": "NOT_ENOUGH_LP_TOKEN_BALANCE",
         "code": "16"
+      },
+      "SLIPPAGE_MUST_BE_PERCENT": {
+        "message": "SLIPPAGE_MUST_BE_PERCENT",
+        "code": "17"
       }
     }
   },
