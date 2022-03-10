@@ -46,7 +46,7 @@ export const ErrorHandling = ErrorHandlingClass;
 export class SDK extends Subscribable {
   constructor({ account, customFetch, env, provider, signer, storageAdapter }) {
     super();
-    this.provider = provider || ethers.getDefaultProvider();
+    this._provider = provider || ethers.getDefaultProvider();
     this._contract = ({ address, abi }) => new ethers.Contract(address, abi);
     this._storageAdapter = storageAdapter || new LocalStorageAdapter();
     this.signer = signer;
@@ -115,6 +115,10 @@ export class SDK extends Subscribable {
     return this._fetch;
   }
 
+  get provider() {
+    return this.signer ? this.signer.provider : this._provider;
+  }
+
   get storageAdapter() {
     return this._storageAdapter;
   }
@@ -134,10 +138,11 @@ export class SDK extends Subscribable {
   }
 
   async changeSigner(signer) {
-    this.account = signer.address;
-    if (!this.account && signer.getAddress) {
-      this.account = await signer.getAddress();
+    let newAccount = signer.address;
+    if (!newAccount && signer.getAddress) {
+      newAccount = await signer.getAddress();
     }
+    this.account = newAccount;
     this.signer = signer;
     this.balanceOf(this.account);
     await this.setName();
