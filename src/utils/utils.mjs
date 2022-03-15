@@ -154,6 +154,11 @@ export const amountFormatter = ({
   return base;
 };
 
+export const toHex = (num) => {
+  const dec = BigNumber(num).toNumber();
+  return `0x${dec.toString(16).toLowerCase()}`;
+};
+
 /*
 Rounding Types:
   ROUND_UP: 0 - Rounds away from zero
@@ -270,6 +275,13 @@ export const shortenAddress = (address, digits = 4) => {
 
   const a = address.substring(0, digits + 2);
   const b = address.substring(42 - digits);
+
+  return `${a}...${b}`;
+};
+
+export const shortenHash = (address, digits = 4) => {
+  const a = address.substring(0, digits + 2);
+  const b = address.substring(66 - digits);
 
   return `${a}...${b}`;
 };
