@@ -26,7 +26,7 @@ describe('SDK', () => {
     it('Sets the block number', async () => {
       const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
       const sdk = new elasticSwapSDK.SDK({ env, customFetch: fetch, provider, storageAdapter });
-
+      await sdk.awaitInitialized();
       await provider.getBlockNumber();
 
       assert.isNumber(sdk.blockNumber);
@@ -41,22 +41,22 @@ describe('SDK', () => {
   });
 
   describe('setName', () => {
-    it('sets name correctly with address that has no ENS name', async () => {
+    it.only('sets name correctly with address that has no ENS name', async () => {
       const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
-      let sdk = new elasticSwapSDK.SDK({ account: '0xC9e4c8a2F2D8D684fB9de60aBFE3Fb5Ea7565366', env, customFetch: fetch, provider, storageAdapter });
-      await sdk.setName();
-      assert.equal('0xC9e4...5366', sdk.name);
+      const signer = new ethers.VoidSigner("0xC9e4c8a2F2D8D684fB9de60aBFE3Fb5Ea7565366", provider);
+      let sdk = new elasticSwapSDK.SDK({env, customFetch: fetch, provider, signer, storageAdapter });
+      await sdk.awaitInitialized();
+      assert.equal('0xC9e4...5366', sdk.accountName);
 
       sdk = new elasticSwapSDK.SDK({ account: '0xE16584424F34380DBf798f547Af684597788FbC7', env, customFetch: fetch, provider, storageAdapter });
-      await sdk.setName();
-      assert.equal('0xean.eth', sdk.name);
+      assert.equal('0xean.eth', sdk.accountName);
     });
 
     it('sets name correctly with address that has an ENS name', async () => {
       const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
       const sdk = new elasticSwapSDK.SDK({ account: '0xE16584424F34380DBf798f547Af684597788FbC7', env, customFetch: fetch, provider, storageAdapter });
-      await sdk.setName();
-      assert.equal('0xean.eth', sdk.name);
+      await sdk.awaitInitialized();
+      assert.equal('0xean.eth', sdk.accountName);
     });
   });
 
