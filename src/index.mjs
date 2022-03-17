@@ -109,10 +109,8 @@ export class SDK extends Subscribable {
       );
     }
 
-    console.log('Signer1', signer);
     this.changeProvider(provider || ethers.getDefaultProvider()).then(() => {
       if (signer) {
-        console.log('Signer', signer);
         this.changeSigner(signer).then(() => {
           this._initialized = true;
         });
