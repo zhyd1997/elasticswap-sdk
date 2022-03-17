@@ -214,9 +214,30 @@ export default class StakingPools extends Base {
     // Every other rewarded pool is assumed to be half TIC and half something else of equal value
     // Ergo each token deposited represents 2x TIC
     // Any non-TIC pool token should be adjusted (div 2*TIC price, mul actual price)
+
+    // 0xean's comments - totalDeposited is the LP token which is not being rewarded, 
+    // so we need to turn this into TIC deposited in order to get an accurate APR. 
+    const lpToken = this.sdk.contract({ address: poolToken });
+    const ticToken = this.sdk.contract({address:this.sdk.contractAddress('TicToken') })
+    
+    const [lpTokenTotalSupplyBN, lpTokenInStakingBN, lpTicBalanceBN] = await Promise.all([
+      lpToken.totalSupply(),
+      lpToken.balanceOf(this._address),
+      ticToken.balanceOf(poolToken),
+    ])
+
+    const lpTokenTotalSupply = this.toBigNumber(lpTokenTotalSupplyBN, 18);
+    const lpTokenInStaking = this.toBigNumber(lpTokenInStakingBN, 18);
+    const lpTicBalance =  this.toBigNumber(lpTicBalanceBN, 18);
+    
+    const percentOfLPStaked = lpTokenInStaking.div(lpTokenTotalSupply);
+    const ticStaked = lpTicBalance.multipliedBy(percentOfLPStaked);
+    const valueStaked = ticStaked.multipliedBy(2); // 1/2 tic and 1/2 USDC
+
+    console.log("valueStaked" , valueStaked.toString());
     return poolRate
       .multipliedBy(SECONDS_PER_YEAR)
-      .dividedBy(totalDeposited.multipliedBy(2));
+      .dividedBy(valueStaked);
   }
 
   /**
