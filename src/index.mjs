@@ -330,7 +330,9 @@ export class SDK extends Subscribable {
       return this._balances[key];
     }
     this._balances[key] = toBigNumber(await this.provider.getBalance(key), 18);
-    this.touch();
+    this.touch({
+      reason: `Retrieved balance for EVM address ${key}`,
+    });
     if (!this._balancesToTrack.includes(key)) {
       this._balancesToTrack.push(key);
     }
@@ -361,7 +363,9 @@ export class SDK extends Subscribable {
 
     this._configureNotify();
 
-    this.touch();
+    this.touch({
+      reason: `Finished processing change of provider and started to listen for block updates.`,
+    });
   }
 
   /**
@@ -398,7 +402,9 @@ export class SDK extends Subscribable {
 
     this._configureNotify();
 
-    this.touch();
+    this.touch({
+      reason: `Changed the signer to ${this._signer} in network ${this._networkName} and began to listen for block updates.`,
+    });
   }
 
   /**
@@ -610,7 +616,9 @@ export class SDK extends Subscribable {
       this._updateBalances().catch((e) => {
         console.warn('Failed to update balances', e.message);
       });
-      this.touch();
+      this.touch({
+        reason: `Finished processing block update and queued balance check for the current provider.`,
+      });
     });
   }
 
@@ -657,7 +665,9 @@ export class SDK extends Subscribable {
     }
 
     if (touch) {
-      this.touch();
+      this.touch({
+        reason: `Got the current balance for all tracked accounts from the chain and updated the local cache.`,
+      });
     }
 
     return this.balances;

@@ -4,10 +4,12 @@ export default class Subscribable {
   }
 
   subscribe(callback) {
-    callback(this);
+    callback(this, {
+      reason: `Initial call issued upon event subscriber registration.`,
+    });
 
-    const subscriber = (obj) => {
-      callback(obj);
+    const subscriber = (obj, eventPayload) => {
+      callback(obj, eventPayload);
     };
 
     this._subscribers.push(subscriber);
@@ -17,7 +19,7 @@ export default class Subscribable {
     };
   }
 
-  touch() {
-    this._subscribers.forEach((subscriber) => subscriber(this));
+  touch(eventPayload = {}) {
+    this._subscribers.forEach((subscriber) => subscriber(this, eventPayload));
   }
 }
