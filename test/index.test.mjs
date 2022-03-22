@@ -4,16 +4,18 @@ import { ethers } from 'ethers';
 import fetch from 'node-fetch';
 import * as elasticSwapSDK from '../src/index.mjs';
 import LocalStorageAdapterMock from './adapters/LocalStorageAdapterMock.mjs';
+import 'dotenv/config'
+import * as protocolDeployments from '@elasticswap/elasticswap/artifacts/deployments.json';
 
 const { assert } = chai;
-const RPC_URL = 'https://mainnet.infura.io/v3/48f877fa4aa4490bb0c988368dc8e373';
+const RPC_URL = process.env.RPC_URL;
 
 const storageAdapter = new LocalStorageAdapterMock();
 
 describe('SDK', () => {
   const env = {
     networkId: 1,
-    exchangeFactoryAddress: '0x8C2251e028043e38f58Ac64c00E1F940D305Aa62',
+    contracts: protocolDeployments,
   };
 
   describe('Constructor', () => {
@@ -35,29 +37,28 @@ describe('SDK', () => {
 
     it('Creates the ExchangeFactory', async () => {
       const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
-      const sdk = new elasticSwapSDK.SDK({ env, customFetch: fetch, provider, storageAdapter });
+      const signer = new ethers.VoidSigner("0x79f52199acc20d7c661094297347b7cf812d3424", provider);
+      const sdk = new elasticSwapSDK.SDK({env, customFetch: fetch, provider, signer, storageAdapter });
+      await sdk.awaitInitialized();
       assert.isNotNull(sdk.exchangeFactory);
     });
   });
 
   describe('setName', () => {
-    it.only('sets name correctly with address that has no ENS name', async () => {
+    it('sets name correctly with address that has no ENS name', async () => {
       const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
-      const signer = new ethers.VoidSigner("0xC9e4c8a2F2D8D684fB9de60aBFE3Fb5Ea7565366", provider);
-      let sdk = new elasticSwapSDK.SDK({env, customFetch: fetch, provider, signer, storageAdapter });
+      const signer = new ethers.VoidSigner("0x79f52199acc20d7c661094297347b7cf812d3424", provider);
+      const sdk = new elasticSwapSDK.SDK({env, customFetch: fetch, provider, signer, storageAdapter });
       await sdk.awaitInitialized();
-      assert.equal('0xC9e4...5366', sdk.accountName);
-
-      sdk = new elasticSwapSDK.SDK({ account: '0xE16584424F34380DBf798f547Af684597788FbC7', env, customFetch: fetch, provider, storageAdapter });
-      assert.equal('0xean.eth', sdk.accountName);
+      assert.equal('0x79f5...3424', sdk.accountName);
     });
 
-    it('sets name correctly with address that has an ENS name', async () => {
-      const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
-      const sdk = new elasticSwapSDK.SDK({ account: '0xE16584424F34380DBf798f547Af684597788FbC7', env, customFetch: fetch, provider, storageAdapter });
-      await sdk.awaitInitialized();
-      assert.equal('0xean.eth', sdk.accountName);
-    });
+    // it.only('sets name correctly with address that has an ENS name', async () => {
+    //   const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
+    //   const sdk = new elasticSwapSDK.SDK({ account: '0xd8da6bf26964af9d7eed9e03e53415d37aa96045', env, customFetch: fetch, provider, storageAdapter });
+    //   await sdk.awaitInitialized();
+    //   assert.equal('vitalik.eth', sdk.accountName);
+    // });
   });
 
   describe('isValidETHAddress', () => {
@@ -65,7 +66,7 @@ describe('SDK', () => {
     const sdk = new elasticSwapSDK.SDK({ env, customFetch: fetch, provider, storageAdapter });
 
     it('returns true for a valid address', async () => {
-      const isValid = await sdk.isValidETHAddress('0xC9e4c8a2F2D8D684fB9de60aBFE3Fb5Ea7565366');
+      const isValid = await sdk.isValidETHAddress('0x79f52199acc20d7c661094297347b7cf812d3424');
       assert.isTrue(isValid);
     });
 
@@ -75,7 +76,7 @@ describe('SDK', () => {
     });
 
     it('returns true for a valid ens address', async () => {
-      const isValid = await sdk.isValidETHAddress('0xean.eth');
+      const isValid = await sdk.isValidETHAddress('vitalik.eth');
       assert.isTrue(isValid);
     });
 
@@ -83,7 +84,7 @@ describe('SDK', () => {
       let isValid = await sdk.isValidETHAddress('0x.eth');
       assert.isFalse(isValid);
 
-      isValid = await sdk.isValidETHAddress('0xean.th');
+      isValid = await sdk.isValidETHAddress('vit.th');
       assert.isFalse(isValid);
     });
   });

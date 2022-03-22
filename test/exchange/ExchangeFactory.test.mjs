@@ -27,14 +27,17 @@ describe('ExchangeFactory', () => {
       exchangeFactoryAddress: ExchangeFactory.address,
     };
 
+    accounts = await ethers.getSigners();
+    
     sdk = new elasticSwapSDK.SDK({
       env,
       customFetch: fetch,
       provider: hardhat.ethers.provider,
+      signer: accounts[0],
       storageAdapter,
     });
 
-    accounts = await ethers.getSigners();
+    await sdk.awaitInitialized();
 
     const BaseToken = await deployments.get('BaseToken');
     baseToken = new ethers.Contract(
@@ -65,7 +68,6 @@ describe('ExchangeFactory', () => {
       );
       assert.isNotNull(exchangeFactory);
       assert.equal(ExchangeFactory.address, exchangeFactory.address);
-      assert.isNotNull(sdk.exchangeFactory);
     });
   });
 
@@ -111,8 +113,6 @@ describe('ExchangeFactory', () => {
       assert.equal(zeroAddress, ethers.constants.AddressZero);
 
       await exchangeFactory.createNewExchange(
-        'TestPair',
-        'ELP',
         baseToken.address,
         quoteToken.address,
       );
@@ -139,8 +139,6 @@ describe('ExchangeFactory', () => {
       );
 
       await exchangeFactory.createNewExchange(
-        'TestPair',
-        'ELP',
         baseToken.address,
         quoteToken.address,
       );
@@ -148,8 +146,6 @@ describe('ExchangeFactory', () => {
       await expectThrowsAsync(
         exchangeFactory.createNewExchange.bind(
           exchangeFactory,
-          'TestPair',
-          'ELP',
           baseToken.address,
           quoteToken.address,
         ),
@@ -168,8 +164,6 @@ describe('ExchangeFactory', () => {
       await expectThrowsAsync(
         exchangeFactory.createNewExchange.bind(
           exchangeFactory,
-          'TestPair',
-          'ELP',
           baseToken.address,
           baseToken.address,
         ),
@@ -179,8 +173,6 @@ describe('ExchangeFactory', () => {
       await expectThrowsAsync(
         exchangeFactory.createNewExchange.bind(
           exchangeFactory,
-          'TestPair',
-          'ELP',
           baseToken.address,
           'not an address',
         ),
@@ -190,8 +182,6 @@ describe('ExchangeFactory', () => {
       await expectThrowsAsync(
         exchangeFactory.createNewExchange.bind(
           exchangeFactory,
-          'TestPair',
-          'ELP',
           'not an address',
           baseToken.address,
         ),
@@ -201,8 +191,6 @@ describe('ExchangeFactory', () => {
       await expectThrowsAsync(
         exchangeFactory.createNewExchange.bind(
           exchangeFactory,
-          'TestPair',
-          'ELP',
           baseToken.address,
           ethers.constants.AddressZero,
         ),
@@ -212,8 +200,6 @@ describe('ExchangeFactory', () => {
       await expectThrowsAsync(
         exchangeFactory.createNewExchange.bind(
           exchangeFactory,
-          'TestPair',
-          'ELP',
           ethers.constants.AddressZero,
           baseToken.address,
         ),

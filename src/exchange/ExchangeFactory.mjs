@@ -120,14 +120,10 @@ export default class ExchangeFactory extends QueryFilterable {
   }
 
   async createNewExchange(
-    name,
-    symbol,
     baseTokenAddress,
     quoteTokenAddress,
     overrides = {},
   ) {
-    validateIsString(name);
-    validateIsString(symbol);
     validateIsAddress(baseTokenAddress);
     validateIsAddress(quoteTokenAddress);
 
@@ -161,8 +157,6 @@ export default class ExchangeFactory extends QueryFilterable {
 
     this._contract = this.confirmSigner(this.contract);
     const txStatus = await this.contract.createNewExchange(
-      name,
-      symbol,
       baseTokenAddress,
       quoteTokenAddress,
       this.sanitizeOverrides(overrides),
