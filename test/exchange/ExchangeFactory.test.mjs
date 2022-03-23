@@ -28,7 +28,7 @@ describe('ExchangeFactory', () => {
     };
 
     accounts = await ethers.getSigners();
-    
+
     sdk = new elasticSwapSDK.SDK({
       env,
       customFetch: fetch,

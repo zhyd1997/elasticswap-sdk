@@ -6,7 +6,7 @@ import BaseEvents from '../BaseEvents.mjs';
 import ErrorHandling from '../ErrorHandling.mjs';
 import Exchange from './Exchange.mjs';
 import QueryFilterable from '../QueryFilterable.mjs';
-import { validateIsString, validateIsAddress, toKey } from '../utils/utils.mjs';
+import { validateIsAddress, toKey } from '../utils/utils.mjs';
 
 class Events extends BaseEvents {
   async NewExchange() {
@@ -119,11 +119,7 @@ export default class ExchangeFactory extends QueryFilterable {
     return exchange;
   }
 
-  async createNewExchange(
-    baseTokenAddress,
-    quoteTokenAddress,
-    overrides = {},
-  ) {
+  async createNewExchange(baseTokenAddress, quoteTokenAddress, overrides = {}) {
     validateIsAddress(baseTokenAddress);
     validateIsAddress(quoteTokenAddress);
 
