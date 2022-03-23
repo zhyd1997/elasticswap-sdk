@@ -8,7 +8,7 @@
   "license": "GPL-3.0",
   "private": false,
   "engines": {
-    "node": ">=16.0.0",
+    "node": "=16.14.2",
     "npm": ">=7.0.0"
   },
   "scripts": {
@@ -21,7 +21,7 @@
     "prettier": "npx prettier --write src/*.mjs --write src/**/*.mjs --write test/**/*.mjs --write test/**/*.js",
     "release": "npm publish --access=public",
     "stats": "npx webpack -c ./webpack.config.js --json > stats.json",
-    "test": "mocha -timeout 10000 -exit './test/**/**.test.mjs' --experimental-json-modules"
+    "test": "mocha -timeout 60000 -exit './test/**/**.test.mjs' --experimental-json-modules"
   },
   "devDependencies": {
     "@babel/cli": "^7.15.7",

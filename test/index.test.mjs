@@ -5,7 +5,7 @@ import fetch from 'node-fetch';
 import * as elasticSwapSDK from '../src/index.mjs';
 import LocalStorageAdapterMock from './adapters/LocalStorageAdapterMock.mjs';
 import 'dotenv/config'
-import * as protocolDeployments from '@elasticswap/elasticswap/artifacts/deployments.json';
+import * as protocolDeployments from '@elasticswap/elasticswap/artifacts/deployments.json' assert { type: 'json'};
 
 const { assert } = chai;
 const RPC_URL = process.env.RPC_URL;
