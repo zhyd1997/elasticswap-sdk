@@ -1,12 +1,12 @@
 /* eslint class-methods-use-this: 0 */
 
 import { ethers } from 'ethers';
-import ExchangeFactorySolidity from '@elasticswap/elasticswap/artifacts/src/contracts/ExchangeFactory.sol/ExchangeFactory.json';
+import ExchangeFactorySolidity from '@elasticswap/elasticswap/artifacts/src/contracts/ExchangeFactory.sol/ExchangeFactory.json' assert { type: 'json'};
 import BaseEvents from '../BaseEvents.mjs';
 import ErrorHandling from '../ErrorHandling.mjs';
 import Exchange from './Exchange.mjs';
 import QueryFilterable from '../QueryFilterable.mjs';
-import { validateIsString, validateIsAddress, toKey } from '../utils/utils.mjs';
+import { validateIsAddress, toKey } from '../utils/utils.mjs';
 
 class Events extends BaseEvents {
   async NewExchange() {
@@ -119,15 +119,7 @@ export default class ExchangeFactory extends QueryFilterable {
     return exchange;
   }
 
-  async createNewExchange(
-    name,
-    symbol,
-    baseTokenAddress,
-    quoteTokenAddress,
-    overrides = {},
-  ) {
-    validateIsString(name);
-    validateIsString(symbol);
+  async createNewExchange(baseTokenAddress, quoteTokenAddress, overrides = {}) {
     validateIsAddress(baseTokenAddress);
     validateIsAddress(quoteTokenAddress);
 
@@ -161,8 +153,6 @@ export default class ExchangeFactory extends QueryFilterable {
 
     this._contract = this.confirmSigner(this.contract);
     const txStatus = await this.contract.createNewExchange(
-      name,
-      symbol,
       baseTokenAddress,
       quoteTokenAddress,
       this.sanitizeOverrides(overrides),

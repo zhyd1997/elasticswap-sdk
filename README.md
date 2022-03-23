@@ -1,2 +1,24 @@
 # elasticswap-sdk
-Official SDK for ElasticSwap
+The official SDK for ElasticSwap protocol and token contracts
+
+### Requirements
+
+- Yarn
+- Node 16
+- an api key for ethereum node from Infura or Alchemy (free for development use)
+
+### Getting started
+
+1. check out repo. Please note if you want to create a pull request, you will need to fork the repo first. 
+
+    `git clone https://github.com/ElasticSwap/elasticswap-sdk.git`
+
+2. Install all dependencies 
+
+    `yarn`
+
+3. copy the `.env.example` and rename to `.env` adding your api key.
+
+4. Run tests to confirm functionality
+
+    `yarn test`

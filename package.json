@@ -8,7 +8,7 @@
   "license": "GPL-3.0",
   "private": false,
   "engines": {
-    "node": ">=16.0.0",
+    "node": "=16.14.2",
     "npm": ">=7.0.0"
   },
   "scripts": {
@@ -21,7 +21,7 @@
     "prettier": "npx prettier --write src/*.mjs --write src/**/*.mjs --write test/**/*.mjs --write test/**/*.js",
     "release": "npm publish --access=public",
     "stats": "npx webpack -c ./webpack.config.js --json > stats.json",
-    "test": "mocha -timeout 10000 -exit './test/**/**.test.mjs' --experimental-json-modules"
+    "test": "mocha -timeout 60000 -exit './test/**/**.test.mjs' --experimental-json-modules"
   },
   "devDependencies": {
     "@babel/cli": "^7.15.7",
@@ -33,6 +33,7 @@
     "babel-loader": "^8.2.3",
     "babel-polyfill": "^6.26.0",
     "chai": "^4.3.4",
+    "dotenv": "^16.0.0",
     "eslint": "^8.1.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.25.2",
@@ -48,7 +49,7 @@
     "webpack-cli": "^4.9.1"
   },
   "dependencies": {
-    "@elasticswap/elasticswap": "^0.0.5",
+    "@elasticswap/elasticswap": "^0.0.10",
     "bignumber.js": "^9.0.1",
     "bnc-notify": "^1.9.1",
     "ethers": "^5.5.1",

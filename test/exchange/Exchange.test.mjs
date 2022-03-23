@@ -1503,13 +1503,14 @@ describe('Exchange', () => {
         expiration,
       );
 
+      // should remove all but some min_liquidity that is locked.
       expect(
         (await baseToken.balanceOf(exchangeClass.address)).toNumber(),
-      ).to.equal(0);
+      ).to.equal(448);
 
       expect(
         (await quoteToken.balanceOf(exchangeClass.address)).toNumber(),
-      ).to.equal(0);
+      ).to.equal(2237);
 
       expect((await exchangeClass.lpTokenBalance).toNumber()).to.equal(0);
     });
