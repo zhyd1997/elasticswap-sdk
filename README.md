@@ -17,8 +17,6 @@ The official SDK for ElasticSwap protocol and token contracts
 
     `yarn`
 
-3. copy the `.env.example` and rename to `.env` adding your api key.
-
-4. Run tests to confirm functionality
+3. Run tests to confirm functionality
 
     `yarn test`
