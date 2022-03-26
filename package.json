@@ -16,9 +16,11 @@
     "build": "npx webpack -c ./webpack.config.production.js",
     "dev": "yarn lint && npx webpack -c ./webpack.config.js --watch",
     "docs": "npx jsdoc2md -c .jsdoc.json src/index.mjs > dist/readme.md",
-    "lint": "yarn prettier && npx eslint src/*.mjs src/**/*.mjs test/**/*.mjs test/**/*.js",
+    "lint": "npx eslint src/*.mjs src/**/*.mjs test/**/*.mjs test/**/*.js",
+    "lint:fix": "npx eslint src/*.mjs src/**/*.mjs test/**/*.mjs test/**/*.js --fix",
     "prerelease": "yarn build",
-    "prettier": "npx prettier --write src/*.mjs --write src/**/*.mjs --write test/**/*.mjs --write test/**/*.js",
+    "prettier": "npx prettier --check src/*.mjs src/**/*.mjs test/**/*.mjs test/**/*.js",
+    "prettier:fix": "npx prettier --write src/*.mjs src/**/*.mjs test/**/*.mjs test/**/*.js",
     "release": "npm publish --access=public",
     "stats": "npx webpack -c ./webpack.config.js --json > stats.json",
     "test": "mocha -timeout 5000 -exit './test/**/**.test.mjs' --experimental-json-modules"
