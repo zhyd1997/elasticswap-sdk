@@ -12,9 +12,16 @@ module.exports = {
     Atomics: 'readonly',
     SharedArrayBuffer: 'readonly',
   },
+  parser: "@babel/eslint-parser",
   parserOptions: {
     ecmaVersion: 2019,
     sourceType: 'module',
+    requireConfigFile: false,
+    babelOptions: {
+      plugins: [
+        '@babel/plugin-syntax-import-assertions'
+      ],
+    },
   },
   rules: {
     'function-paren-newline': 0,

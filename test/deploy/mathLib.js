@@ -12,7 +12,8 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   });
   if (deployResult.newlyDeployed) {
     log(
-      `contract MathLib deployed at ${deployResult.address} using ${deployResult.receipt.gasUsed} gas`,
+      `contract MathLib deployed at ${deployResult.address}\
+       using ${deployResult.receipt.gasUsed} gas`,
     );
   }
 };

@@ -201,7 +201,8 @@ export const sanitizeOverrides = (requested = {}, readonlyMethod = false) => {
         overrides.blockTag = BigNumber(requested.blockTag).toNumber();
       } catch (e) {
         console.warn(
-          `${prefix}: Requested override 'blockTag' (${requested.blockTag}) is invalid and was excluded (${e.message})`,
+          `${prefix}: Requested override 'blockTag' (${requested.blockTag}) \
+           is invalid and was excluded (${e.message})`,
         );
       }
     }
@@ -216,7 +217,8 @@ export const sanitizeOverrides = (requested = {}, readonlyMethod = false) => {
       overrides.from = requested.from;
     } else if (requested.from) {
       console.warn(
-        `${prefix}: Requested override 'from' (${requested.from}) is not a valid address and was excluded`,
+        `${prefix}: Requested override 'from' (${requested.from}) \
+        is not a valid address and was excluded`,
       );
     }
 
@@ -225,7 +227,8 @@ export const sanitizeOverrides = (requested = {}, readonlyMethod = false) => {
         overrides.gasLimit = toEthersBigNumber(requested.gasLimit);
       } catch (e) {
         console.warn(
-          `${prefix}: Requested override 'gasLimit' (${requested.gasLimit}) is invalid and was excluded (${e.message})`,
+          `${prefix}: Requested override 'gasLimit' (${requested.gasLimit}) \
+           is invalid and was excluded (${e.message})`,
         );
       }
     }
@@ -235,7 +238,8 @@ export const sanitizeOverrides = (requested = {}, readonlyMethod = false) => {
         overrides.gasPrice = toEthersBigNumber(requested.gasPrice);
       } catch (e) {
         console.warn(
-          `${prefix}: Requested override 'gasPrice' (${requested.gasPrice}) is invalid and was excluded (${e.message})`,
+          `${prefix}: Requested override 'gasPrice' (${requested.gasPrice}) \
+           is invalid and was excluded (${e.message})`,
         );
       }
     }
@@ -244,7 +248,8 @@ export const sanitizeOverrides = (requested = {}, readonlyMethod = false) => {
       overrides.nonce = requested.nonce;
     } else if (requested.nonce) {
       console.warn(
-        `${prefix}: Requested override 'nonce' (${requested.nonce}) is not a valid number and was excluded`,
+        `${prefix}: Requested override 'nonce' (${requested.nonce}) is not \
+        a valid number and was excluded`,
       );
     }
 
@@ -253,7 +258,8 @@ export const sanitizeOverrides = (requested = {}, readonlyMethod = false) => {
         overrides.value = toEthersBigNumber(requested.value, 18);
       } catch (e) {
         console.warn(
-          `${prefix}: Requested override 'value' (${requested.value}) is invalid and was excluded (${e.message})`,
+          `${prefix}: Requested override 'value' (${requested.value}) is \
+          invalid and was excluded (${e.message})`,
         );
       }
     }
