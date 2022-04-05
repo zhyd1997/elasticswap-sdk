@@ -1,4 +1,4 @@
-import errorMessages from './errorMessages.json' assert { type: 'json'};
+import errorMessages from './errorMessages.json' assert { type: 'json' };
 
 export default class ErrorHandling {
   constructor(origin) {
