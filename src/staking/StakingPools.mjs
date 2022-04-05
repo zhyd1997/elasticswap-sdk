@@ -1,4 +1,4 @@
-import StakingPoolsContract from '../abi/StakingPools.json';
+import StakingPoolsContract from '../abi/StakingPools.json' assert { type: 'json' };
 import Base from '../Base.mjs';
 
 // 365.25 * 24 * 60 * 60
