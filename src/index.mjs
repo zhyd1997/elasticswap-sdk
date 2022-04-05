@@ -1,7 +1,7 @@
 /* eslint consistent-return: 0 */
 
 import Notify from 'bnc-notify';
-import ERC20Contract from '@elasticswap/elasticswap/artifacts/@openzeppelin/contracts/token/ERC20/ERC20.sol/ERC20.json' assert { type: 'json' };
+import { readFileSync } from 'fs';
 
 import { ethers } from 'ethers';
 
@@ -29,6 +29,8 @@ import {
   upTo,
   validateIsAddress,
 } from './utils/utils.mjs';
+
+const ERC20Contract = JSON.parse(readFileSync('@elasticswap/elasticswap/artifacts/@openzeppelin/contracts/token/ERC20/ERC20.sol/ERC20.json'));
 
 export const utils = {
   amountFormatter,
