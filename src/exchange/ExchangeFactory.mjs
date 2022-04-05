@@ -8,7 +8,11 @@ import Exchange from './Exchange.mjs';
 import QueryFilterable from '../QueryFilterable.mjs';
 import { validateIsAddress, toKey } from '../utils/utils.mjs';
 
-const ExchangeFactorySolidity = JSON.parse(readFileSync('@elasticswap/elasticswap/artifacts/src/contracts/ExchangeFactory.sol/ExchangeFactory.json'));
+const ExchangeFactorySolidity = JSON.parse(
+  readFileSync(
+    '@elasticswap/elasticswap/artifacts/src/contracts/ExchangeFactory.sol/ExchangeFactory.json',
+  ),
+);
 
 class Events extends BaseEvents {
   async NewExchange() {

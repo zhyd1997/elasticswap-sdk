@@ -30,7 +30,11 @@ import {
   validateIsAddress,
 } from './utils/utils.mjs';
 
-const ERC20Contract = JSON.parse(readFileSync('@elasticswap/elasticswap/artifacts/@openzeppelin/contracts/token/ERC20/ERC20.sol/ERC20.json'));
+const ERC20Contract = JSON.parse(
+  readFileSync(
+    '@elasticswap/elasticswap/artifacts/@openzeppelin/contracts/token/ERC20/ERC20.sol/ERC20.json',
+  ),
+);
 
 export const utils = {
   amountFormatter,

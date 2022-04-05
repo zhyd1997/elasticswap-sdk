@@ -14,7 +14,11 @@ import {
 } from '../utils/mathLib.mjs';
 import { toBigNumber, toEthersBigNumber } from '../utils/utils.mjs';
 
-const ExchangeSolidity = JSON.parse(readFileSync('@elasticswap/elasticswap/artifacts/src/contracts/Exchange.sol/Exchange.json'));
+const ExchangeSolidity = JSON.parse(
+  readFileSync(
+    '@elasticswap/elasticswap/artifacts/src/contracts/Exchange.sol/Exchange.json',
+  ),
+);
 
 export default class Exchange extends Base {
   constructor(sdk, exchangeAddress, baseTokenAddress, quoteTokenAddress) {

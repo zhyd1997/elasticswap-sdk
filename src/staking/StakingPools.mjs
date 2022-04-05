@@ -1,7 +1,9 @@
 import { readFileSync } from 'fs';
 import Base from '../Base.mjs';
 
-const StakingPoolsContract = JSON.parse(readFileSync('../abi/StakingPools.json'));
+const StakingPoolsContract = JSON.parse(
+  readFileSync('../abi/StakingPools.json'),
+);
 
 // 365.25 * 24 * 60 * 60
 const SECONDS_PER_YEAR = 31557600;
