@@ -27,7 +27,8 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   });
   if (deployResult.newlyDeployed) {
     log(
-      `contract Exchange deployed at ${deployResult.address} using ${deployResult.receipt.gasUsed} gas`,
+      `contract Exchange deployed at ${deployResult.address}\
+       using ${deployResult.receipt.gasUsed} gas`,
     );
   }
 };

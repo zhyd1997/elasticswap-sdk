@@ -12,7 +12,8 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   });
   if (deployResult.newlyDeployed) {
     log(
-      `contract BaseToken deployed at ${deployResult.address} using ${deployResult.receipt.gasUsed} gas`,
+      `contract BaseToken deployed at ${deployResult.address}\
+       using ${deployResult.receipt.gasUsed} gas`,
     );
   }
 };

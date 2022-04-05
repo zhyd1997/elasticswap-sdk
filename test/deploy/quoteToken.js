@@ -12,7 +12,8 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   });
   if (deployResult.newlyDeployed) {
     log(
-      `contract QuoteToken deployed at ${deployResult.address} using ${deployResult.receipt.gasUsed} gas`,
+      `contract QuoteToken deployed at ${deployResult.address}\
+      using ${deployResult.receipt.gasUsed} gas`,
     );
   }
 };

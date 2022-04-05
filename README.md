@@ -1,5 +1,5 @@
 # elasticswap-sdk
-The official SDK for ElasticSwap protocol and token contracts
+The official SDK for ElasticSwap protocol and token contracts.
 
 ### Requirements
 

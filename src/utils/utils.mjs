@@ -201,6 +201,7 @@ export const sanitizeOverrides = (requested = {}, readonlyMethod = false) => {
         overrides.blockTag = BigNumber(requested.blockTag).toNumber();
       } catch (e) {
         console.warn(
+          // eslint-disable-next-line max-len
           `${prefix}: Requested override 'blockTag' (${requested.blockTag}) is invalid and was excluded (${e.message})`,
         );
       }
@@ -216,6 +217,7 @@ export const sanitizeOverrides = (requested = {}, readonlyMethod = false) => {
       overrides.from = requested.from;
     } else if (requested.from) {
       console.warn(
+        // eslint-disable-next-line max-len
         `${prefix}: Requested override 'from' (${requested.from}) is not a valid address and was excluded`,
       );
     }
@@ -225,6 +227,7 @@ export const sanitizeOverrides = (requested = {}, readonlyMethod = false) => {
         overrides.gasLimit = toEthersBigNumber(requested.gasLimit);
       } catch (e) {
         console.warn(
+          // eslint-disable-next-line max-len
           `${prefix}: Requested override 'gasLimit' (${requested.gasLimit}) is invalid and was excluded (${e.message})`,
         );
       }
@@ -235,6 +238,7 @@ export const sanitizeOverrides = (requested = {}, readonlyMethod = false) => {
         overrides.gasPrice = toEthersBigNumber(requested.gasPrice);
       } catch (e) {
         console.warn(
+          // eslint-disable-next-line max-len
           `${prefix}: Requested override 'gasPrice' (${requested.gasPrice}) is invalid and was excluded (${e.message})`,
         );
       }
@@ -244,6 +248,7 @@ export const sanitizeOverrides = (requested = {}, readonlyMethod = false) => {
       overrides.nonce = requested.nonce;
     } else if (requested.nonce) {
       console.warn(
+        // eslint-disable-next-line max-len
         `${prefix}: Requested override 'nonce' (${requested.nonce}) is not a valid number and was excluded`,
       );
     }
@@ -253,6 +258,7 @@ export const sanitizeOverrides = (requested = {}, readonlyMethod = false) => {
         overrides.value = toEthersBigNumber(requested.value, 18);
       } catch (e) {
         console.warn(
+          // eslint-disable-next-line max-len
           `${prefix}: Requested override 'value' (${requested.value}) is invalid and was excluded (${e.message})`,
         );
       }
@@ -262,6 +268,7 @@ export const sanitizeOverrides = (requested = {}, readonlyMethod = false) => {
   Object.keys(requested).forEach((key) => {
     if (!validKeys.includes(key)) {
       console.warn(
+        // eslint-disable-next-line max-len
         `${prefix}: Requested override '${key}' is not supported and was excluded`,
       );
     }
