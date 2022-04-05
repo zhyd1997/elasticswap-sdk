@@ -1,6 +1,4 @@
-import { readFileSync } from 'fs';
-
-const errorMessages = JSON.parse(readFileSync('./errorMessages.json'));
+import errorMessages from './errorMessages.json' assert { type: 'json'};
 
 export default class ErrorHandling {
   constructor(origin) {

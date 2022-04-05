@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs';
+import ExchangeSolidity from '@elasticswap/elasticswap/artifacts/src/contracts/Exchange.sol/Exchange.json' assert { type: 'json'};
 import ERC20 from '../tokens/ERC20.mjs';
 import Base from '../Base.mjs';
 import ErrorHandling from '../ErrorHandling.mjs';
@@ -13,12 +13,6 @@ import {
   calculateOutputAmountLessFees,
 } from '../utils/mathLib.mjs';
 import { toBigNumber, toEthersBigNumber } from '../utils/utils.mjs';
-
-const ExchangeSolidity = JSON.parse(
-  readFileSync(
-    '@elasticswap/elasticswap/artifacts/src/contracts/Exchange.sol/Exchange.json',
-  ),
-);
 
 export default class Exchange extends Base {
   constructor(sdk, exchangeAddress, baseTokenAddress, quoteTokenAddress) {

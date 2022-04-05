@@ -1,18 +1,12 @@
 /* eslint class-methods-use-this: 0 */
-import { readFileSync } from 'fs';
 
 import { ethers } from 'ethers';
+import ExchangeFactorySolidity from '@elasticswap/elasticswap/artifacts/src/contracts/ExchangeFactory.sol/ExchangeFactory.json' assert { type: 'json'};
 import BaseEvents from '../BaseEvents.mjs';
 import ErrorHandling from '../ErrorHandling.mjs';
 import Exchange from './Exchange.mjs';
 import QueryFilterable from '../QueryFilterable.mjs';
 import { validateIsAddress, toKey } from '../utils/utils.mjs';
-
-const ExchangeFactorySolidity = JSON.parse(
-  readFileSync(
-    '@elasticswap/elasticswap/artifacts/src/contracts/ExchangeFactory.sol/ExchangeFactory.json',
-  ),
-);
 
 class Events extends BaseEvents {
   async NewExchange() {

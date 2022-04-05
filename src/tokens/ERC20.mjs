@@ -1,11 +1,5 @@
-import { readFileSync } from 'fs';
+import ERC20Contract from '@elasticswap/elasticswap/artifacts/@openzeppelin/contracts/token/ERC20/ERC20.sol/ERC20.json' assert { type: 'json'};
 import Base from '../Base.mjs';
-
-const ERC20Contract = JSON.parse(
-  readFileSync(
-    '@elasticswap/elasticswap/artifacts/@openzeppelin/contracts/token/ERC20/ERC20.sol/ERC20.json',
-  ),
-);
 
 export default class ERC20 extends Base {
   constructor(sdk, address) {
