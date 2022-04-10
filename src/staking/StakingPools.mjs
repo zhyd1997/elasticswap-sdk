@@ -1,4 +1,3 @@
-import StakingPoolsContract from '../abi/StakingPools.json' assert { type: 'json' };
 import Base from '../Base.mjs';
 
 // 365.25 * 24 * 60 * 60
@@ -23,28 +22,31 @@ export default class StakingPools extends Base {
   constructor(sdk, address) {
     super(sdk);
     this._address = address;
-    this._contract = sdk.contract({
-      abi: StakingPoolsContract.abi,
-      address,
-    });
   }
 
   /**
    * Provides an ethers contract object via the sdk.
    *
    * @param {SDK} sdk - An instance of the SDK class
-   * @param {string} address - An EVM compatible wallet address
+   * @param {string} address - An EVM compatible contract address
    * @param {boolean} [readonly=false] - Readonly contracts use the provider even if a signer exists
    * @returns {ether.Contract}
    * @see {@link SDK#contract}
    * @memberof StakingPools
    */
   static contract(sdk, address, readonly = false) {
-    return sdk.contract({
-      abi: StakingPoolsContract.abi,
-      address,
-      readonly,
-    });
+    const abi = sdk.contractAbi('StakingPools');
+    return sdk.contract({ abi, address, readonly });
+  }
+
+  /**
+   * Returns the abi for the underlying contract
+   *
+   * @readonly
+   * @memberof StakingPools
+   */
+  get abi() {
+    return this.sdk.contractAbi('StakingPools');
   }
 
   /**
@@ -64,7 +66,7 @@ export default class StakingPools extends Base {
    * @memberof StakingPools
    */
   get contract() {
-    return this._contract;
+    return this.constructor.contract(this.sdk, this.address);
   }
 
   /**
@@ -89,10 +91,7 @@ export default class StakingPools extends Base {
    */
   async claim(poolId, overrides = {}) {
     return this._handleTransaction(
-      await this.contract.claim(
-        this.toNumber(poolId),
-        this.sanitizeOverrides(overrides),
-      ),
+      await this.contract.claim(this.toNumber(poolId), this.sanitizeOverrides(overrides)),
     );
   }
 
@@ -127,10 +126,7 @@ export default class StakingPools extends Base {
    */
   async exit(poolId, overrides = {}) {
     return this._handleTransaction(
-      await this.contract.exit(
-        this.toNumber(poolId),
-        this.sanitizeOverrides(overrides),
-      ),
+      await this.contract.exit(this.toNumber(poolId), this.sanitizeOverrides(overrides)),
     );
   }
 
@@ -222,12 +218,11 @@ export default class StakingPools extends Base {
       address: this.sdk.contractAddress('TicToken'),
     });
 
-    const [lpTokenTotalSupplyBN, lpTokenInStakingBN, lpTicBalanceBN] =
-      await Promise.all([
-        lpToken.totalSupply(),
-        lpToken.balanceOf(this._address),
-        ticToken.balanceOf(poolToken),
-      ]);
+    const [lpTokenTotalSupplyBN, lpTokenInStakingBN, lpTicBalanceBN] = await Promise.all([
+      lpToken.totalSupply(),
+      lpToken.balanceOf(this._address),
+      ticToken.balanceOf(poolToken),
+    ]);
 
     const lpTokenTotalSupply = this.toBigNumber(lpTokenTotalSupplyBN, 18);
     const lpTokenInStaking = this.toBigNumber(lpTokenInStakingBN, 18);
@@ -237,7 +232,6 @@ export default class StakingPools extends Base {
     const ticStaked = lpTicBalance.multipliedBy(percentOfLPStaked);
     const valueStaked = ticStaked.multipliedBy(2); // 1/2 tic and 1/2 USDC
 
-    console.log('valueStaked', valueStaked.toString());
     return poolRate.multipliedBy(SECONDS_PER_YEAR).dividedBy(valueStaked);
   }
 
@@ -371,9 +365,7 @@ export default class StakingPools extends Base {
    * @memberof StakingPools
    */
   async rewardRate(overrides = {}) {
-    const rate = await this.contract.rewardRate(
-      this.sanitizeOverrides(overrides, true),
-    );
+    const rate = await this.contract.rewardRate(this.sanitizeOverrides(overrides, true));
 
     return this.toBigNumber(rate, 18);
   }
@@ -386,9 +378,7 @@ export default class StakingPools extends Base {
    * @memberof StakingPools
    */
   async poolCount(overrides = {}) {
-    const count = await this.contract.poolCount(
-      this.sanitizeOverrides(overrides, true),
-    );
+    const count = await this.contract.poolCount(this.sanitizeOverrides(overrides, true));
 
     return this.toNumber(count);
   }
@@ -401,9 +391,7 @@ export default class StakingPools extends Base {
    * @memberof StakingPools
    */
   async totalRewardWeight(overrides = {}) {
-    const rate = await this.contract.totalRewardWeight(
-      this.sanitizeOverrides(overrides, true),
-    );
+    const rate = await this.contract.totalRewardWeight(this.sanitizeOverrides(overrides, true));
 
     return this.toBigNumber(rate);
   }

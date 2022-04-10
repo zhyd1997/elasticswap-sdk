@@ -14,7 +14,7 @@
   "scripts": {
     "analyzer": "yarn stats && yarn webpack-bundle-analyzer stats.json",
     "build": "npx webpack -c ./webpack.config.production.js",
-    "dev": "yarn lint && npx webpack -c ./webpack.config.js --watch",
+    "dev": "yarn prettier:fix && yarn lint:fix && npx webpack -c ./webpack.config.js --watch",
     "docs": "npx jsdoc2md -c .jsdoc.json src/index.mjs > dist/readme.md",
     "lint": "npx eslint src/*.mjs src/**/*.mjs test/**/*.mjs test/**/*.js",
     "lint:fix": "npx eslint src/*.mjs src/**/*.mjs test/**/*.mjs test/**/*.js --fix",
@@ -23,7 +23,7 @@
     "prettier:fix": "npx prettier --write src/*.mjs src/**/*.mjs test/**/*.mjs test/**/*.js",
     "release": "npm publish --access=public",
     "stats": "npx webpack -c ./webpack.config.js --json > stats.json",
-    "test": "mocha -timeout 5000 -exit './test/**/**.test.mjs' --experimental-json-modules"
+    "test": "mocha -timeout 10000 -exit './test/**/**.test.mjs' --experimental-json-modules"
   },
   "devDependencies": {
     "@babel/cli": "^7.15.7",
@@ -52,10 +52,12 @@
     "webpack-cli": "^4.9.1"
   },
   "dependencies": {
-    "@elasticswap/elasticswap": "^0.0.10",
+    "@elasticswap/elasticswap": "0.0.11",
     "bignumber.js": "^9.0.1",
     "bnc-notify": "^1.9.1",
     "ethers": "^5.5.1",
+    "ethers-multicall": "^0.2.2",
+    "is-plain-object": "^5.0.0",
     "rxjs": "^7.4.0"
   }
 }

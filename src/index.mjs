@@ -6,13 +6,23 @@ import ERC20Contract from '@elasticswap/elasticswap/artifacts/@openzeppelin/cont
 import { ethers } from 'ethers';
 
 import ERC20Class from './tokens/ERC20.mjs';
-import ErrorHandlingClass from './ErrorHandling.mjs';
 import ExchangeClass from './exchange/Exchange.mjs';
 import ExchangeFactoryClass from './exchange/ExchangeFactory.mjs';
 import LocalStorageAdapterClass from './adapters/LocalStorageAdapter.mjs';
+import MulticallClass from './Multicall.mjs';
 import StakingPoolsClass from './staking/StakingPools.mjs';
 import StorageAdapterClass from './adapters/StorageAdapter.mjs';
 import SubscribableClass from './Subscribable.mjs';
+import TokenListClass from './tokens/TokenList.mjs';
+import TokensByAddressClass from './tokens/TokensByAddress.mjs';
+
+import {
+  areArraysEqual,
+  areObjectsEqual,
+  areFunctionsEqual,
+  arePrimativesEqual,
+  isEqual,
+} from './utils/equality.mjs';
 
 import {
   amountFormatter,
@@ -27,11 +37,53 @@ import {
   toNumber,
   truncate,
   upTo,
-  validateIsAddress,
 } from './utils/utils.mjs';
+
+import {
+  isAddress,
+  isArray,
+  isBigNumber,
+  isDate,
+  isFunction,
+  isNumber,
+  isPOJO,
+  isSet,
+  isString,
+  isTransactionHash,
+} from './utils/typeChecks.mjs';
+
+import {
+  validate,
+  validateIsAddress,
+  validateIsArray,
+  validateIsBigNumber,
+  validateIsDate,
+  validateIsFunction,
+  validateIsNumber,
+  validateIsPOJO,
+  validateIsSet,
+  validateIsString,
+} from './utils/validations.mjs';
+
+const FEE_DATA_INTERVAL = 1000;
 
 export const utils = {
   amountFormatter,
+  areArraysEqual,
+  areFunctionsEqual,
+  areObjectsEqual,
+  arePrimativesEqual,
+  isAddress,
+  isArray,
+  isBigNumber,
+  isDate,
+  isEqual,
+  isFunction,
+  isNumber,
+  isPOJO,
+  isSet,
+  isString,
+  isTransactionHash,
   round,
   shortenAddress,
   shortenHash,
@@ -43,17 +95,28 @@ export const utils = {
   toNumber,
   truncate,
   upTo,
+  validate,
   validateIsAddress,
+  validateIsArray,
+  validateIsBigNumber,
+  validateIsDate,
+  validateIsFunction,
+  validateIsNumber,
+  validateIsPOJO,
+  validateIsSet,
+  validateIsString,
 };
 
 export const ERC20 = ERC20Class;
-export const ErrorHandling = ErrorHandlingClass;
 export const Exchange = ExchangeClass;
 export const ExchangeFactory = ExchangeFactoryClass;
 export const LocalStorageAdapter = LocalStorageAdapterClass;
+export const Multicall = MulticallClass;
 export const StakingPools = StakingPoolsClass;
 export const StorageAdapter = StorageAdapterClass;
 export const Subscribable = SubscribableClass;
+export const TokenList = TokenListClass;
+export const TokensByAddress = TokensByAddressClass;
 
 /**
  * Primary class. All things extend from here. SDK proxies ethers.js to provide an interface for
@@ -76,7 +139,7 @@ export class SDK extends Subscribable {
    * @param {hardhat-deploy.MultiExport} config.env.deployments - deployed contract configuration
    * @param {ethers.providers.Provider} config.provider - default provider (optional)
    * @param {ethers.Signer} config.signer - initial ethers signer (optional)
-   * @param {StorageProvider} config.storageProvider - (optional)
+   * @param {StorageAdapter} config.storageAdapter - (optional)
    * @memberof SDK
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API}
    * @see {@link https://docs.blocknative.com/notify#initialization}
@@ -94,9 +157,16 @@ export class SDK extends Subscribable {
 
     this._contract = ({ address, abi }) => new ethers.Contract(address, abi);
     this._storageAdapter = storageAdapter || new LocalStorageAdapter();
+    this._tokenLists = {}; // TokenLists persist across network / provider changes
 
+    // tracks all the addresses we interact with under the current provider for filtering reasons
+    this._addresses = new Set();
+
+    // ETH / AVAX / native token balances
     this._balances = {};
-    this._balancesToTrack = [];
+
+    // ERC20 contracts
+    this._erc20s = {};
 
     if (customFetch) {
       this._fetch = customFetch;
@@ -170,10 +240,7 @@ export class SDK extends Subscribable {
     }
 
     try {
-      this._exchangeFactory = new ExchangeFactory(
-        this,
-        this.contractAddress('ExchangeFactory'),
-      );
+      this._exchangeFactory = new ExchangeFactory(this, this.contractAddress('ExchangeFactory'));
     } catch (e) {
       console.error('Unable to load exchangeFactory:', e);
     }
@@ -193,11 +260,55 @@ export class SDK extends Subscribable {
 
   /**
    * @readonly
+   * @returns {BigNumber} - The current estimated gas price
+   * @see {@link https://docs.ethers.io/v5/api/providers/provider/#Provider-getFeeData}
+   * @memberof SDK
+   */
+  get gasPrice() {
+    return this._gasPrice || toBigNumber(0);
+  }
+
+  /**
+   * @readonly
    * @returns {boolean} - true after the provider and (if applicable) signer have been loaded
    * @memberof SDK
    */
   get initialized() {
     return this._initialized;
+  }
+
+  /**
+   * @readonly
+   * @returns {BigNumber} - The current estimated max fee per gas
+   * @see {@link https://docs.ethers.io/v5/api/providers/provider/#Provider-getFeeData}
+   * @memberof SDK
+   */
+  get maxFeePerGas() {
+    return this._maxFeePerGas || toBigNumber(0);
+  }
+
+  /**
+   * @readonly
+   * @returns {BigNumber} - The current estimated max priority fee per gas
+   * @see {@link https://docs.ethers.io/v5/api/providers/provider/#Provider-getFeeData}
+   * @memberof SDK
+   */
+  get maxPriorityFeePerGas() {
+    return this._maxPriorityFeePerGas || toBigNumber(0);
+  }
+
+  /**
+   * @readonly
+   * @returns {Multicall} - The Multicall wrapper instance
+   * @memberof SDK
+   */
+  get multicall() {
+    if (this._multicall) {
+      return this._multicall;
+    }
+
+    this._multicall = new Multicall(this);
+    return this._multicall;
   }
 
   /**
@@ -272,10 +383,9 @@ export class SDK extends Subscribable {
     }
 
     try {
-      this._stakingPools = new StakingPools(
-        this,
-        this.contractAddress('StakingPools'),
-      );
+      const stakingPoolsAddress = this.contractAddress('StakingPools');
+      this._stakingPools = new StakingPools(this, stakingPoolsAddress);
+      this.trackAddress(stakingPoolsAddress);
     } catch (e) {
       console.error('Unable to load stakingPools:', e);
     }
@@ -291,6 +401,38 @@ export class SDK extends Subscribable {
    */
   get storageAdapter() {
     return this._storageAdapter;
+  }
+
+  /**
+   * @readonly
+   * @returns {Array<string>} - An array of addresses we track
+   * @memberof SDK
+   */
+  get trackedAddresses() {
+    return Array.from(this._addresses);
+  }
+
+  /**
+   * @readonly
+   * @returns {Array<TokenList>} - An array of token lists that have been loaded
+   * @memberof SDK
+   */
+  get tokenLists() {
+    return this._tokenLists || [];
+  }
+
+  /**
+   * @readonly
+   * @returns {TokensByAddress}
+   * @memberof SDK
+   */
+  get tokensByAddress() {
+    if (this._tokensByAddress) {
+      return this._tokensByAddress;
+    }
+
+    this._tokensByAddress = new TokensByAddress(this);
+    return this._tokensByAddress;
   }
 
   /**
@@ -325,15 +467,13 @@ export class SDK extends Subscribable {
   async balanceOf(address) {
     validateIsAddress(address);
     const key = address.toLowerCase();
+    this.trackAddress(key);
 
     if (this._balances[key]) {
       return this._balances[key];
     }
     this._balances[key] = toBigNumber(await this.provider.getBalance(key), 18);
     this.touch();
-    if (!this._balancesToTrack.includes(key)) {
-      this._balancesToTrack.push(key);
-    }
   }
 
   /**
@@ -348,17 +488,21 @@ export class SDK extends Subscribable {
 
     const network = await provider.getNetwork();
 
+    // if the network is changing, reset the cached factories and staking pools
+    if (this.networkId !== network.chainId) {
+      delete this._exchangeFactory;
+      delete this._stakingPools;
+    }
+
     this._provider = provider;
     this._networkId = network.chainId;
     this._networkName = network.name;
-
-    delete this._exchangeFactory;
-    delete this._stakingPools;
 
     await this._listenToChain().catch((errors) => {
       console.error('@elasticswap/sdk: error switching networks', errors);
     });
 
+    this._updateFeeData();
     this._configureNotify();
 
     this.touch();
@@ -380,21 +524,22 @@ export class SDK extends Subscribable {
       signer.provider.getNetwork(),
     ]);
 
+    // if the network is changing, reset the cached factories and staking pools
+    if (this.networkId !== network.chainId) {
+      delete this._exchangeFactory;
+      delete this._stakingPools;
+    }
+
     this._account = newAccount;
     this._signer = signer;
     this._networkId = network.chainId;
     this._networkName = network.name;
 
-    delete this._exchangeFactory;
-    delete this._stakingPools;
-
     this.balanceOf(this.account);
 
-    await Promise.all([this._listenToChain(), this._setName()]).catch(
-      (errors) => {
-        console.error('@elasticswap/sdk: error switching networks', errors);
-      },
-    );
+    await Promise.all([this._listenToChain(), this._setName()]).catch((errors) => {
+      console.error('@elasticswap/sdk: error switching networks', errors);
+    });
 
     this._configureNotify();
 
@@ -416,6 +561,8 @@ export class SDK extends Subscribable {
   contract({ abi, address, readonly = false }) {
     const { provider, signer } = this;
 
+    this.trackAddress(address);
+
     const connection = readonly ? provider : signer || provider;
     const contract = this._contract({
       abi: abi || ERC20Contract.abi,
@@ -426,11 +573,28 @@ export class SDK extends Subscribable {
   }
 
   /**
+   * Looks up the abi of the named contract on the current chain. ABIs are derived from the
+   * options.env.contracts object passed when the SDK was created.
+   *
+   * @param {string} contractName
+   * @return {Array<Object>} - The abi of the contract
+   * @memberof SDK
+   */
+  contractAbi(contractName) {
+    const deployedContract = this.env.contracts[this.networkHex][contractName];
+
+    if (deployedContract) {
+      return deployedContract.abi;
+    }
+  }
+
+  /**
    * Looks up the address of the named contract on the current chain. Addresses are derived from the
    * options.env.contracts object passed when the SDK was created.
    *
    * @param {string} contractName
-   * @returns {string|undefined} - The deployed address (lowercase) of the contract
+   * @return {string|undefined} - The deployed address (lowercase) of the contract
+   * @memberof SDK
    */
   contractAddress(contractName) {
     const deployedContract = this.env.contracts[this.networkHex][contractName];
@@ -455,6 +619,68 @@ export class SDK extends Subscribable {
   }
 
   /**
+   * Instantiates an ERC20 object for the given address.
+   *
+   * @param {string} address - The contract address
+   * @return {ERC20} - An ERC20 instance representing the contract
+   * @memberof SDK
+   */
+  erc20(address) {
+    const lowerAddress = address.toLowerCase();
+    validateIsAddress(lowerAddress);
+    if (this._erc20s[lowerAddress]) {
+      return this._erc20s[lowerAddress];
+    }
+
+    this._erc20s[lowerAddress] = new ERC20(this, lowerAddress);
+    return this._erc20s[lowerAddress];
+  }
+
+  /**
+   * returns true is the address is tracked
+   *
+   * @param {string} address
+   * @return {boolean}
+   * @memberof SDK
+   */
+  isTrackedAddress(address) {
+    if (isAddress(address)) {
+      return this._addresses.has(address.toLowerCase());
+    }
+
+    return false;
+  }
+
+  /**
+   * Checks if the address or ENS name is valid.
+   *
+   * @param {string} address - The address or ENS name to check
+   * @return {boolean} true if the address is valid, false otherwise
+   * @memberof SDK
+   */
+  async isValidETHAddress(address) {
+    if (!address) {
+      return false;
+    }
+
+    if (isAddress(address)) {
+      return true;
+    }
+
+    // attempt to to resolve address from ENS
+    try {
+      const ensResolvedAddress = await this.provider.resolveName(address);
+      if (!ensResolvedAddress) {
+        // resolving address failed.
+        return false;
+      }
+    } catch (error) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
    * Uses bnc-notify to provide clean UI notifcations. Only possible in a browser environment.
    *
    * @todo Mimic {@link https://docs.blocknative.com/notify#transaction} for non-Ethereum chains.
@@ -467,8 +693,6 @@ export class SDK extends Subscribable {
    * @memberof SDK
    */
   notify({ hash, obj, wait }) {
-    console.log('hash', hash, this._notify);
-
     if (!this._notify) {
       return;
     }
@@ -485,7 +709,7 @@ export class SDK extends Subscribable {
 
         const txSuccess = (finalHash) => {
           update({
-            autoDismiss: 2000,
+            autoDismiss: 4000,
             type: 'success',
             message: `Transaction ${shortenHash(finalHash)} succeeded.`,
           });
@@ -494,9 +718,7 @@ export class SDK extends Subscribable {
         const handleError = ({ reason, replacement }) => {
           if (reason && replacement && replacement.hash) {
             update({
-              message: `Transaction ${shortenHash(
-                replacement.hash,
-              )} is processing...`,
+              message: `Transaction ${shortenHash(replacement.hash)} is processing...`,
             });
 
             wait(1)
@@ -504,14 +726,15 @@ export class SDK extends Subscribable {
               .catch((err) => handleError(err));
           } else {
             update({
-              autoDismiss: 2000,
+              autoDismiss: 4000,
               type: 'error',
               message: `Transaction ${shortenHash(replacement.hash)} failed.`,
             });
           }
         };
 
-        wait(1)
+        // wait 2 blocks because some networks lag on read
+        wait(2)
           .then(() => txSuccess(hash))
           .catch((err) => handleError(err));
 
@@ -535,7 +758,9 @@ export class SDK extends Subscribable {
    * @memberof SDK
    */
   async sendETH(recipient, value) {
-    let to = recipient;
+    let to = recipient.toLowerCase();
+    validateIsAddress(to);
+    this.trackAddress(to);
     if (!ethers.utils.isAddress(to)) {
       // attempt to to resolve address from ENS
       to = await this.provider.resolveName(to);
@@ -554,32 +779,36 @@ export class SDK extends Subscribable {
   }
 
   /**
-   * Checks if the address or ENS name is valid.
+   * Loads a TokenList by URL or returns the already loaded list. TokenLists persist across network
+   * and provider changes because they reorganize themselves accordingly. Each token in a token list
+   * is an instance of the ERC20 class and automatically tracks the balance of sdk.account.
    *
-   * @param {string} address - The address or ENS name to check
-   * @returns {boolean} true if the address is valid, false otherwise
+   * @param {string} url - url to load the tokenList from
+   * @return {TokenList}
    * @memberof SDK
    */
-  async isValidETHAddress(address) {
-    if (!address) {
-      return false;
+  async tokenList(url) {
+    const key = btoa(url.toLowerCase());
+
+    if (this._tokenLists[key]) {
+      await this._tokenLists[key].awaitInitialized;
+      return this._tokenLists[key];
     }
 
-    if (ethers.utils.isAddress(address)) {
-      return true;
-    }
+    this._tokenLists[key] = new TokenList(this, url);
+    await this._tokenLists[key].awaitInitialized;
+    return this._tokenLists[key];
+  }
 
-    // attempt to to resolve address from ENS
-    try {
-      const ensResolvedAddress = await this.provider.resolveName(address);
-      if (!ensResolvedAddress) {
-        // resolving address failed.
-        return false;
-      }
-    } catch (error) {
-      return false;
-    }
-    return true;
+  /**
+   * adds an address to the addresses set
+   *
+   * @param {string} address
+   * @memberof SDK
+   */
+  trackAddress(address) {
+    validateIsAddress(address);
+    this._addresses.add(address.toLowerCase());
   }
 
   // sets up blocknative notify
@@ -632,14 +861,17 @@ export class SDK extends Subscribable {
           this._accountName = ensName;
         }
       } catch (e) {
-        console.error('unable to look up ens name', e.message);
+        // console.error('unable to look up ens name', e.message);
       }
     }
   }
 
   // Removes all listeners from the current provider. Used when changing providers or signers to
-  // prevent O(n) query issues.
+  // prevent O(n) query issues. Clears all tracked addresses and balances.
   _stopListeningToChain() {
+    this._addresses = new Set();
+    this._balances = {};
+
     if (this.provider) {
       this.provider.removeAllListeners();
     }
@@ -648,12 +880,14 @@ export class SDK extends Subscribable {
   // Gets the current balance for all tracked accounts from the chain and updates the local cache.
   // If touch is false, a subscriber update will not be triggered.
   async _updateBalances(touch = true) {
+    const addresses = this.trackedAddresses;
+    // TODO: Use multicall
     const balances = await Promise.all(
-      this._balancesToTrack.map((address) => this.provider.getBalance(address)),
+      addresses.map((address) => this.provider.getBalance(address)),
     );
 
     for (let i = 0; i < balances.length; i += 1) {
-      this._balances[this._balancesToTrack[i]] = toBigNumber(balances[i], 18);
+      this._balances[addresses[i]] = toBigNumber(balances[i], 18);
     }
 
     if (touch) {
@@ -661,6 +895,17 @@ export class SDK extends Subscribable {
     }
 
     return this.balances;
+  }
+
+  // updates fetches the latest gas price from the provider
+  async _updateFeeData() {
+    clearTimeout(this._feeDataUpdatePid);
+    const { gasPrice, maxFeePerGas, maxPriorityFeePerGas } = await this.provider.getFeeData();
+    this._gasPrice = toBigNumber(gasPrice, 9); // GWEI
+    this._maxFeePerGas = toBigNumber(maxFeePerGas, 9); // GWEI
+    this._maxPriorityFeePerGas = toBigNumber(maxPriorityFeePerGas, 9); // GWEI
+    this.touch();
+    this._feeDataUpdatePid = setTimeout(() => this._updateFeeData, FEE_DATA_INTERVAL);
   }
 }
 
