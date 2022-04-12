@@ -24,7 +24,7 @@
     "release": "npm publish --access=public",
     "stats": "npx webpack -c ./webpack.config.js --json > stats.json",
     "test": "mocha -timeout 10000 -exit './test/**/**.test.mjs' --experimental-json-modules",
-    "coverage": "nyc --reporter=html --reporter=text --reporter=lcov yarn test"
+    "coverage": "nyc --reporter=html --reporter=text --reporter=lcov --reporter=clover yarn test"
   },
   "devDependencies": {
     "@babel/cli": "^7.15.7",
