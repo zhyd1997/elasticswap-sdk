@@ -23,7 +23,8 @@
     "prettier:fix": "npx prettier --write src/*.mjs src/**/*.mjs test/**/*.mjs test/**/*.js",
     "release": "npm publish --access=public",
     "stats": "npx webpack -c ./webpack.config.js --json > stats.json",
-    "test": "mocha -timeout 10000 -exit './test/**/**.test.mjs' --experimental-json-modules"
+    "test": "mocha -timeout 10000 -exit './test/**/**.test.mjs' --experimental-json-modules",
+    "coverage": "nyc --reporter=html --reporter=text yarn test"
   },
   "devDependencies": {
     "@babel/cli": "^7.15.7",
@@ -46,6 +47,7 @@
     "jsdoc-to-markdown": "^7.1.1",
     "mocha": "^9.1.3",
     "node-fetch": "^3.0.0",
+    "nyc": "^15.1.0",
     "prettier": "^2.4.1",
     "terser-webpack-plugin": "^5.2.4",
     "webpack": "^5.60.0",
