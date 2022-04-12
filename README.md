@@ -1,7 +1,7 @@
 # elasticswap-sdk
 The official SDK for ElasticSwap protocol and token contracts.
 
-[![codecov](https://codecov.io/gh/zhyd1997/elasticswap-sdk/branch/development/graph/badge.svg?token=Q6MSEE6HUN)](https://codecov.io/gh/zhyd1997/elasticswap-sdk)
+[![codecov](https://codecov.io/gh/ElasticSwap/elasticswap-sdk/branch/development/graph/badge.svg?token=6EZNC42GFZ)](https://codecov.io/gh/ElasticSwap/elasticswap-sdk)
 
 ### Requirements
 
