@@ -23,7 +23,8 @@
     "prettier:fix": "npx prettier --write src/*.mjs src/**/*.mjs test/**/*.mjs test/**/*.js",
     "release": "npm publish --access=public",
     "stats": "npx webpack -c ./webpack.config.js --json > stats.json",
-    "test": "mocha -timeout 10000 -exit './test/**/**.test.mjs' --experimental-json-modules"
+    "test": "mocha -timeout 10000 -exit './test/**/**.test.mjs' --experimental-json-modules",
+    "coverage": "c8 yarn test"
   },
   "devDependencies": {
     "@babel/cli": "^7.15.7",
@@ -36,6 +37,7 @@
     "@nomiclabs/hardhat-waffle": "^2.0.1",
     "babel-loader": "^8.2.3",
     "babel-polyfill": "^6.26.0",
+    "c8": "^7.11.0",
     "chai": "^4.3.4",
     "eslint": "^8.12.0",
     "eslint-config-airbnb-base": "^14.2.1",
