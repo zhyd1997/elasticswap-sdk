@@ -36,9 +36,7 @@ describe('MathLib', async () => {
   });
 
   describe('calculateQtyToReturnAfterFees', () => {
-
-    it.only('Should return the correct values', async () => {
-      
+    it('Should return the correct values', async () => {
       const tokenSwapQty = BigNumber(1);
       const tokenAReserveQtyBeforeTrade = BigNumber(3170);
       const tokenBReserveQtyBeforeTrade = BigNumber(3175.79385113);
@@ -46,8 +44,9 @@ describe('MathLib', async () => {
 
       const differenceInBP = BASIS_POINTS.minus(feeInBasisPoints);
       const tokenASwapQtyLessFee = tokenSwapQty.multipliedBy(differenceInBP).dp(18, ROUND_DOWN);
-      
-      const numerator = tokenASwapQtyLessFee.multipliedBy(tokenBReserveQtyBeforeTrade).dp(18, ROUND_DOWN);
+
+      const numerator =
+        tokenASwapQtyLessFee.multipliedBy(tokenBReserveQtyBeforeTrade).dp(18, ROUND_DOWN);
       const denominator = tokenAReserveQtyBeforeTrade
         .multipliedBy(BASIS_POINTS)
         .dp(18, ROUND_DOWN)
@@ -55,7 +54,7 @@ describe('MathLib', async () => {
 
       // what the sdk should be doing
       const qtyToReturn = numerator.dividedBy(denominator).dp(18, ROUND_DOWN);
-      
+
       // Here passing in normal decimals, sdk will convert to BN for calcs
       const SdkCalculatedQtyToReturnAfterFees = calculateQtyToReturnAfterFees(
         1,
@@ -64,22 +63,20 @@ describe('MathLib', async () => {
         50,
       );
 
-      console.log(qtyToReturn.toString(), SdkCalculatedQtyToReturnAfterFees.toString());
-      
       expect(SdkCalculatedQtyToReturnAfterFees.toString()).to.equal(qtyToReturn.toString());
     });
 
-    it.only('Should return the correct value when fees are zero', async () => {
-           
+    it('Should return the correct value when fees are zero', async () => {
       const tokenSwapQty = BigNumber(1);
-      const tokenAReserveQtyBeforeTrade = BigNumber(970.420420420420420420420); // 21 digits after decimal point
-      const tokenBReserveQtyBeforeTrade = BigNumber(3175.696969696969696969696); // 21 digits after decimal point
+      const tokenAReserveQtyBeforeTrade = BigNumber(970.420420420420420420420);
+      const tokenBReserveQtyBeforeTrade = BigNumber(3175.696969696969696969696);
       const feeInBasisPoints = BigNumber(0);
 
       const differenceInBP = BASIS_POINTS.minus(feeInBasisPoints);
       const tokenASwapQtyLessFee = tokenSwapQty.multipliedBy(differenceInBP).dp(18, ROUND_DOWN);
-      
-      const numerator = tokenASwapQtyLessFee.multipliedBy(tokenBReserveQtyBeforeTrade).dp(18, ROUND_DOWN);
+
+      const numerator =
+        tokenASwapQtyLessFee.multipliedBy(tokenBReserveQtyBeforeTrade).dp(18, ROUND_DOWN);
       const denominator = tokenAReserveQtyBeforeTrade
         .multipliedBy(BASIS_POINTS)
         .dp(18, ROUND_DOWN)
@@ -87,7 +84,7 @@ describe('MathLib', async () => {
 
       // what the sdk should be doing
       const qtyToReturn = numerator.dividedBy(denominator).dp(18, ROUND_DOWN);
-      
+
       // Here passing in normal decimals, sdk will convert to BN for calcs
       const SdkCalculatedQtyToReturnAfterFees = calculateQtyToReturnAfterFees(
         1,
@@ -96,10 +93,7 @@ describe('MathLib', async () => {
         0,
       );
 
-      console.log(qtyToReturn.toString(), SdkCalculatedQtyToReturnAfterFees.toString());
-      
       expect(SdkCalculatedQtyToReturnAfterFees.toString()).to.equal(qtyToReturn.toString());
-
     });
   });
 
@@ -261,7 +255,7 @@ describe('MathLib', async () => {
   });
 
   describe('calculateOutputAmountLessFees', () => {
-    it.only('Should calculateOutputAmount correctly, accounting for fees and  slippage', async () => {
+    it('Should calculateOutputAmount correctly, accounting for fees and  slippage', async () => {
       // slippage and fees
       // 5 percent slippage
       const slippage = BigNumber(5);
@@ -272,8 +266,9 @@ describe('MathLib', async () => {
 
       const differenceInBP = BASIS_POINTS.minus(feeInBasisPoints);
       const tokenASwapQtyLessFee = tokenSwapQty.multipliedBy(differenceInBP).dp(18, ROUND_DOWN);
-      
-      const numerator = tokenASwapQtyLessFee.multipliedBy(tokenBReserveQtyBeforeTrade).dp(18, ROUND_DOWN);
+
+      const numerator =
+        tokenASwapQtyLessFee.multipliedBy(tokenBReserveQtyBeforeTrade).dp(18, ROUND_DOWN);
       const denominator = tokenAReserveQtyBeforeTrade
         .multipliedBy(BASIS_POINTS)
         .dp(18, ROUND_DOWN)
@@ -281,7 +276,7 @@ describe('MathLib', async () => {
 
       // what the sdk should be doing
       const qtyToReturn = numerator.dividedBy(denominator).dp(18, ROUND_DOWN);
-      
+
       // Here passing in normal decimals, sdk will convert to BN for calcs
       const SdkCalculatedQtyToReturnAfterFees = calculateQtyToReturnAfterFees(
         1,
@@ -290,14 +285,11 @@ describe('MathLib', async () => {
         50,
       );
 
-      console.log(qtyToReturn.toString(), SdkCalculatedQtyToReturnAfterFees.toString());
-      
       expect(SdkCalculatedQtyToReturnAfterFees.toString()).to.equal(qtyToReturn.toString());
-      
+
       const slippageMultiplier = BigNumber(1).minus(slippage.dividedBy(BigNumber(100)));
       const tokenBQtyExpectedLessSlippage = qtyToReturn.multipliedBy(slippageMultiplier);
-      console.log("after slippage: ", tokenBQtyExpectedLessSlippage.toString());
-      
+
       // Here passing in normal decimals, sdk will convert to BN for calcs
       expect(
         calculateOutputAmountLessFees(
@@ -310,7 +302,7 @@ describe('MathLib', async () => {
       ).to.equal(tokenBQtyExpectedLessSlippage.toString());
     });
 
-    it.only('Should calculateOutputAmount correctly, accounting for fees and 0 slippage', async () => {
+    it('Should calculateOutputAmount correctly, accounting for fees and 0 slippage', async () => {
       // no slippage
       const slippage = ZERO;
       const tokenSwapQty = BigNumber(1);
@@ -320,8 +312,9 @@ describe('MathLib', async () => {
 
       const differenceInBP = BASIS_POINTS.minus(feeInBasisPoints);
       const tokenASwapQtyLessFee = tokenSwapQty.multipliedBy(differenceInBP).dp(18, ROUND_DOWN);
-      
-      const numerator = tokenASwapQtyLessFee.multipliedBy(tokenBReserveQtyBeforeTrade).dp(18, ROUND_DOWN);
+
+      const numerator =
+        tokenASwapQtyLessFee.multipliedBy(tokenBReserveQtyBeforeTrade).dp(18, ROUND_DOWN);
       const denominator = tokenAReserveQtyBeforeTrade
         .multipliedBy(BASIS_POINTS)
         .dp(18, ROUND_DOWN)
@@ -329,7 +322,7 @@ describe('MathLib', async () => {
 
       // what the sdk should be doing
       const qtyToReturn = numerator.dividedBy(denominator).dp(18, ROUND_DOWN);
-      
+
       // Here passing in normal decimals, sdk will convert to BN for calcs
       const SdkCalculatedQtyToReturnAfterFees = calculateQtyToReturnAfterFees(
         1,
@@ -338,14 +331,11 @@ describe('MathLib', async () => {
         50,
       );
 
-      console.log(qtyToReturn.toString(), SdkCalculatedQtyToReturnAfterFees.toString());
-      
       expect(SdkCalculatedQtyToReturnAfterFees.toString()).to.equal(qtyToReturn.toString());
-      
+
       const slippageMultiplier = BigNumber(1).minus(slippage.dividedBy(BigNumber(100)));
       const tokenBQtyExpectedLessSlippage = qtyToReturn.multipliedBy(slippageMultiplier);
-      console.log("after slippage: ", tokenBQtyExpectedLessSlippage.toString());
-      
+
       // Here passing in normal decimals, sdk will convert to BN for calcs
       expect(
         calculateOutputAmountLessFees(
@@ -356,11 +346,9 @@ describe('MathLib', async () => {
           50,
         ).toString(),
       ).to.equal(tokenBQtyExpectedLessSlippage.toString());
-
-
     });
 
-    it.only('Should calculateOutputAmount correctly, accounting for 0 fees and 0 slippage', async () => {
+    it('Should calculateOutputAmount correctly, accounting for 0 fees and 0 slippage', async () => {
       // no slippage no fees
       const slippage = ZERO;
       const tokenSwapQty = BigNumber(1);
@@ -370,8 +358,9 @@ describe('MathLib', async () => {
 
       const differenceInBP = BASIS_POINTS.minus(feeInBasisPoints);
       const tokenASwapQtyLessFee = tokenSwapQty.multipliedBy(differenceInBP).dp(18, ROUND_DOWN);
-      
-      const numerator = tokenASwapQtyLessFee.multipliedBy(tokenBReserveQtyBeforeTrade).dp(18, ROUND_DOWN);
+
+      const numerator =
+        tokenASwapQtyLessFee.multipliedBy(tokenBReserveQtyBeforeTrade).dp(18, ROUND_DOWN);
       const denominator = tokenAReserveQtyBeforeTrade
         .multipliedBy(BASIS_POINTS)
         .dp(18, ROUND_DOWN)
@@ -379,7 +368,7 @@ describe('MathLib', async () => {
 
       // what the sdk should be doing
       const qtyToReturn = numerator.dividedBy(denominator).dp(18, ROUND_DOWN);
-      
+
       // Here passing in normal decimals, sdk will convert to BN for calcs
       const SdkCalculatedQtyToReturnAfterFees = calculateQtyToReturnAfterFees(
         1,
@@ -388,14 +377,12 @@ describe('MathLib', async () => {
         0,
       );
 
-      console.log(qtyToReturn.toString(), SdkCalculatedQtyToReturnAfterFees.toString());
-      
       expect(SdkCalculatedQtyToReturnAfterFees.toString()).to.equal(qtyToReturn.toString());
-      
+
       const slippageMultiplier = BigNumber(1).minus(slippage.dividedBy(BigNumber(100)));
       const tokenBQtyExpectedLessSlippage = qtyToReturn.multipliedBy(slippageMultiplier);
-      console.log("after slippage: ", tokenBQtyExpectedLessSlippage.toString());
-      
+      console.log('after slippage: ', tokenBQtyExpectedLessSlippage.toString());
+
       // Here passing in normal decimals, sdk will convert to BN for calcs
       expect(
         calculateOutputAmountLessFees(
@@ -406,8 +393,6 @@ describe('MathLib', async () => {
           0,
         ).toString(),
       ).to.equal(tokenBQtyExpectedLessSlippage.toString());
-
-
     });
 
     it('Should return an error when incorrect values are provided', async () => {

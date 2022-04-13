@@ -697,8 +697,6 @@ export const calculateQtyToReturnAfterFees = (
 
   const qtyToReturn = numerator.dividedBy(denominator).dp(18, ROUND_DOWN);
 
-  console.log("sdk:", qtyToReturn.toString());
-
   return qtyToReturn;
 };
 
