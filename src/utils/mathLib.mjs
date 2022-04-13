@@ -574,7 +574,6 @@ export const calculateLiquidityTokenQtyForSingleAssetEntryWithBaseTokenDecay = (
     .dividedBy(toBigNumber(1).minus(gamma))
     .dp(18, ROUND_DOWN);
 
-  console.log('liquidityTokenQty: baseTokenDecay', liquidityTokenQty.toString());
 
   return liquidityTokenQty;
 };
@@ -636,7 +635,7 @@ export const calculateLiquidityTokenQtyForSingleAssetEntryWithQuoteTokenDecay = 
     .dividedBy(toBigNumber(1).minus(gamma))
     .dp(18, ROUND_DOWN);
 
-  console.log('liquidityTokenQty: quoteTokenDecay', liquidityTokenQty.toString());
+  
 
   return liquidityTokenQty;
 };
