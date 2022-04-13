@@ -45,8 +45,9 @@ describe('MathLib', async () => {
       const differenceInBP = BASIS_POINTS.minus(feeInBasisPoints);
       const tokenASwapQtyLessFee = tokenSwapQty.multipliedBy(differenceInBP).dp(18, ROUND_DOWN);
 
-      const numerator =
-        tokenASwapQtyLessFee.multipliedBy(tokenBReserveQtyBeforeTrade).dp(18, ROUND_DOWN);
+      const numerator = tokenASwapQtyLessFee
+        .multipliedBy(tokenBReserveQtyBeforeTrade)
+        .dp(18, ROUND_DOWN);
       const denominator = tokenAReserveQtyBeforeTrade
         .multipliedBy(BASIS_POINTS)
         .dp(18, ROUND_DOWN)
@@ -68,15 +69,16 @@ describe('MathLib', async () => {
 
     it('Should return the correct value when fees are zero', async () => {
       const tokenSwapQty = BigNumber(1);
-      const tokenAReserveQtyBeforeTrade = BigNumber(970.420420420420420420420);
+      const tokenAReserveQtyBeforeTrade = BigNumber(970.42042042042042042042);
       const tokenBReserveQtyBeforeTrade = BigNumber(3175.696969696969696969696);
       const feeInBasisPoints = BigNumber(0);
 
       const differenceInBP = BASIS_POINTS.minus(feeInBasisPoints);
       const tokenASwapQtyLessFee = tokenSwapQty.multipliedBy(differenceInBP).dp(18, ROUND_DOWN);
 
-      const numerator =
-        tokenASwapQtyLessFee.multipliedBy(tokenBReserveQtyBeforeTrade).dp(18, ROUND_DOWN);
+      const numerator = tokenASwapQtyLessFee
+        .multipliedBy(tokenBReserveQtyBeforeTrade)
+        .dp(18, ROUND_DOWN);
       const denominator = tokenAReserveQtyBeforeTrade
         .multipliedBy(BASIS_POINTS)
         .dp(18, ROUND_DOWN)
@@ -88,7 +90,7 @@ describe('MathLib', async () => {
       // Here passing in normal decimals, sdk will convert to BN for calcs
       const SdkCalculatedQtyToReturnAfterFees = calculateQtyToReturnAfterFees(
         1,
-        970.420420420420420420,
+        970.42042042042042042,
         3175.696969696969696969,
         0,
       );
@@ -267,8 +269,9 @@ describe('MathLib', async () => {
       const differenceInBP = BASIS_POINTS.minus(feeInBasisPoints);
       const tokenASwapQtyLessFee = tokenSwapQty.multipliedBy(differenceInBP).dp(18, ROUND_DOWN);
 
-      const numerator =
-        tokenASwapQtyLessFee.multipliedBy(tokenBReserveQtyBeforeTrade).dp(18, ROUND_DOWN);
+      const numerator = tokenASwapQtyLessFee
+        .multipliedBy(tokenBReserveQtyBeforeTrade)
+        .dp(18, ROUND_DOWN);
       const denominator = tokenAReserveQtyBeforeTrade
         .multipliedBy(BASIS_POINTS)
         .dp(18, ROUND_DOWN)
@@ -313,8 +316,9 @@ describe('MathLib', async () => {
       const differenceInBP = BASIS_POINTS.minus(feeInBasisPoints);
       const tokenASwapQtyLessFee = tokenSwapQty.multipliedBy(differenceInBP).dp(18, ROUND_DOWN);
 
-      const numerator =
-        tokenASwapQtyLessFee.multipliedBy(tokenBReserveQtyBeforeTrade).dp(18, ROUND_DOWN);
+      const numerator = tokenASwapQtyLessFee
+        .multipliedBy(tokenBReserveQtyBeforeTrade)
+        .dp(18, ROUND_DOWN);
       const denominator = tokenAReserveQtyBeforeTrade
         .multipliedBy(BASIS_POINTS)
         .dp(18, ROUND_DOWN)
@@ -337,30 +341,25 @@ describe('MathLib', async () => {
       const tokenBQtyExpectedLessSlippage = qtyToReturn.multipliedBy(slippageMultiplier);
 
       // Here passing in normal decimals, sdk will convert to BN for calcs
-      expect(
-        calculateOutputAmountLessFees(
-          1,
-          317000,
-          3175.79385113,
-          0,
-          50,
-        ).toString(),
-      ).to.equal(tokenBQtyExpectedLessSlippage.toString());
+      expect(calculateOutputAmountLessFees(1, 317000, 3175.79385113, 0, 50).toString()).to.equal(
+        tokenBQtyExpectedLessSlippage.toString(),
+      );
     });
 
     it('Should calculateOutputAmount correctly, accounting for 0 fees and 0 slippage', async () => {
       // no slippage no fees
       const slippage = ZERO;
       const tokenSwapQty = BigNumber(1);
-      const tokenAReserveQtyBeforeTrade = BigNumber(970.420420420420420420420);
+      const tokenAReserveQtyBeforeTrade = BigNumber(970.42042042042042042042);
       const tokenBReserveQtyBeforeTrade = BigNumber(3175.696969696969696969696);
       const feeInBasisPoints = ZERO;
 
       const differenceInBP = BASIS_POINTS.minus(feeInBasisPoints);
       const tokenASwapQtyLessFee = tokenSwapQty.multipliedBy(differenceInBP).dp(18, ROUND_DOWN);
 
-      const numerator =
-        tokenASwapQtyLessFee.multipliedBy(tokenBReserveQtyBeforeTrade).dp(18, ROUND_DOWN);
+      const numerator = tokenASwapQtyLessFee
+        .multipliedBy(tokenBReserveQtyBeforeTrade)
+        .dp(18, ROUND_DOWN);
       const denominator = tokenAReserveQtyBeforeTrade
         .multipliedBy(BASIS_POINTS)
         .dp(18, ROUND_DOWN)
@@ -372,7 +371,7 @@ describe('MathLib', async () => {
       // Here passing in normal decimals, sdk will convert to BN for calcs
       const SdkCalculatedQtyToReturnAfterFees = calculateQtyToReturnAfterFees(
         1,
-        970.420420420420420420420,
+        970.42042042042042042042,
         3175.696969696969696969696,
         0,
       );
@@ -387,7 +386,7 @@ describe('MathLib', async () => {
       expect(
         calculateOutputAmountLessFees(
           1,
-          970.420420420420420420420,
+          970.42042042042042042042,
           3175.696969696969696969696,
           0,
           0,
