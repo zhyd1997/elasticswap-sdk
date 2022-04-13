@@ -19,6 +19,7 @@ import {
 } from '../../src/utils/mathLib.mjs';
 
 const ZERO = BigNumber(0);
+const { ROUND_DOWN } = BigNumber;
 
 describe('MathLib', async () => {
   describe('calculateQty', () => {
@@ -35,6 +36,7 @@ describe('MathLib', async () => {
   });
 
   describe('calculateQtyToReturnAfterFees', () => {
+
     it('Should return the correct values', async () => {
       const tokenSwapQty = 50;
       const feeInBasisPoints = 30;
@@ -59,6 +61,44 @@ describe('MathLib', async () => {
         ).toNumber(),
       ).to.equal(tokenBQtyExpected);
     });
+
+    it.only('Should return the correct values', async () => {
+      
+      const tokenSwapQty = BigNumber(1);
+      const tokenAReserveQtyBeforeTrade = BigNumber(3170);
+      const tokenBReserveQtyBeforeTrade = BigNumber(3175.79385113);
+      const feeInBasisPoints = BigNumber(50);
+
+      const differenceInBP = BASIS_POINTS.minus(feeInBasisPoints);
+      const tokenASwapQtyLessFee = tokenSwapQty.multipliedBy(differenceInBP).dp(18, ROUND_DOWN);
+      
+      const numerator = tokenASwapQtyLessFee.multipliedBy(tokenBReserveQtyBeforeTrade).dp(18, ROUND_DOWN);
+      const denominator = tokenAReserveQtyBeforeTrade
+        .multipliedBy(BASIS_POINTS)
+        .dp(18, ROUND_DOWN)
+        .plus(tokenASwapQtyLessFee);
+
+      // what the sdk should be doing
+      const qtyToReturn = numerator.dividedBy(denominator).dp(18, ROUND_DOWN);
+      
+      // Here passing in normal decimals, sdk will convert to BN for calcs
+      const SdkCalculatedQtyToReturnAfterFees = calculateQtyToReturnAfterFees(
+        1,
+        3170,
+        3175.79385113,
+        50,
+      );
+
+      console.log(qtyToReturn.toString(), SdkCalculatedQtyToReturnAfterFees.toString());
+      
+      // failing test - confirming that an incorrect decimal shift is happening
+      expect(SdkCalculatedQtyToReturnAfterFees.toString()).to.equal(qtyToReturn.toString());
+    });
+
+
+
+
+
 
     it('Should return the correct value when fees are zero', async () => {
       const tokenSwapQty = 15;
