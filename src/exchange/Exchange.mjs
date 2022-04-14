@@ -594,7 +594,7 @@ export default class Exchange extends ERC20 {
    * Computes the expected amounts of base and quote tokens to be returned to a user for a give
    * amount of lpTokenQty
    * @param {string | BigNumber | number} lpTokenQty in decimal format of lp token
-   * @returns 
+   * @returns {object} { baseTokenQty: BigNumber, quoteTokenQty: BigNumber }
    */
   async getTokenQtysFromLPTokenQty(lpTokenQty) {
     const [baseTokenReserveQty, quoteTokenReserveQty, totalSupply] = await Promise.all([
