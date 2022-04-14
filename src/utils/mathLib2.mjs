@@ -76,9 +76,9 @@ export const getTokenQtysFromLPTokenQty = (
   quoteTokenReserveQty,
   totalLPTokenSupply,
 ) => {
-  const lpRatio = lpTokenQty.mul(totalLPTokenSupply);
-  const baseTokenQty = baseTokenReserveQty.mul(lpRatio);
-  const quoteTokenQty = quoteTokenReserveQty.mul(lpRatio);
+  const lpRatio = wDiv(lpTokenQty, totalLPTokenSupply);
+  const baseTokenQty = baseTokenReserveQty.mul(lpRatio).div(WAD);
+  const quoteTokenQty = quoteTokenReserveQty.mul(lpRatio).div(WAD);
 
   const tokenQtys = {
     baseTokenQty,

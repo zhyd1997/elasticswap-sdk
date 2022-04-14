@@ -606,9 +606,8 @@ export default class Exchange extends ERC20 {
       ]),
       this.sdk.multicall.enqueue(this.abi, this.address, 'totalSupply'),
     ]);
-
     const rawTokenQtys = getTokenQtysFromLPTokenQty(
-      this.toEthersBigNumber(lpTokenQty, this.decimals),
+      this.toEthersBigNumber(lpTokenQty, this._decimals),
       baseTokenReserveQty,
       quoteTokenReserveQty,
       totalSupply,
