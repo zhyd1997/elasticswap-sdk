@@ -13,6 +13,7 @@ import {
 import {
   getBaseTokenQtyFromQuoteTokenQty,
   getQuoteTokenQtyFromBaseTokenQty,
+  getTokenQtysFromLPTokenQty,
 } from '../utils/mathLib2.mjs';
 
 const prefix = 'Exchange';
@@ -573,7 +574,7 @@ export default class Exchange extends ERC20 {
 
   /**
    * gets the expected output amount of quote tokens tokens given the input
-   * @param {string | BigNumber | Number } baseTokenQty in native, decimal format of the baseToken
+   * @param {string | BigNumber | number} baseTokenQty in native, decimal format of the baseToken
    * @returns BigNumber decimal representation of expected output amount
    */
   async getQuoteTokenQtyFromBaseTokenQty(baseTokenQty) {
@@ -587,6 +588,35 @@ export default class Exchange extends ERC20 {
       internalBalances,
     );
     return this.toBigNumber(rawQuoteTokenQty, this.quoteToken.decimals);
+  }
+
+  /**
+   * Computes the expected amounts of base and quote tokens to be returned to a user for a give
+   * amount of lpTokenQty
+   * @param {string | BigNumber | number} lpTokenQty in decimal format of lp token
+   * @returns 
+   */
+  async getTokenQtysFromLPTokenQty(lpTokenQty) {
+    const [baseTokenReserveQty, quoteTokenReserveQty, totalSupply] = await Promise.all([
+      this.sdk.multicall.enqueue(this.baseToken.abi, this.baseToken.address, 'balanceOf', [
+        this.address,
+      ]),
+      this.sdk.multicall.enqueue(this.quoteToken.abi, this.quoteToken.address, 'balanceOf', [
+        this.address,
+      ]),
+      this.sdk.multicall.enqueue(this.abi, this.address, 'totalSupply'),
+    ]);
+
+    const rawTokenQtys = getTokenQtysFromLPTokenQty(
+      this.toEthersBigNumber(lpTokenQty, this.decimals),
+      baseTokenReserveQty,
+      quoteTokenReserveQty,
+      totalSupply,
+    );
+    return {
+      baseTokenQty: this.toBigNumber(rawTokenQtys.baseTokenQty, this.baseToken.decimals),
+      quoteTokenQty: this.toBigNumber(rawTokenQtys.quoteTokenQty, this.quoteToken.decimals),
+    };
   }
 
   // wraps the transaction in a notification popup and resolves when it has been mined

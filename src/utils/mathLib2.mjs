@@ -64,11 +64,37 @@ export const getQuoteTokenQtyFromBaseTokenQty = (baseTokenQty, fee, internalBala
 
 /**
  *
+ * @param {ethers.BigNumber} lpTokenQty
+ * @param {ethers.BigNumber} baseTokenReserveQty α baseToken.balanceOf(exchange)
+ * @param {ethers.BigNumber} quoteTokenReserveQty β quoteToken.balanceOf(exchange)
+ * @param {ethers.BigNumber} totalLPTokenSupply exchange.totalSupply();
+ * @returns {object} { baseTokenQty: ethers.BigNumber, quoteTokenQty: ethers.BigNumber }
+ */
+export const getTokenQtysFromLPTokenQty = (
+  lpTokenQty,
+  baseTokenReserveQty,
+  quoteTokenReserveQty,
+  totalLPTokenSupply,
+) => {
+  const lpRatio = lpTokenQty.mul(totalLPTokenSupply);
+  const baseTokenQty = baseTokenReserveQty.mul(lpRatio);
+  const quoteTokenQty = quoteTokenReserveQty.mul(lpRatio);
+
+  const tokenQtys = {
+    baseTokenQty,
+    quoteTokenQty,
+  };
+
+  return tokenQtys;
+};
+
+/**
+ *
  * @param {ethers.BigNumber} tokenASwapQty
  * @param {ethers.BigNumber} tokenAReserveQty
  * @param {ethers.BigNumber} tokenBReserveQty
  * @param {ethers.BigNumber} fee fee amount in basis points
- * @returns token qty
+ * @returns ethers.BigNumber token qty
  */
 export const calculateQtyToReturnAfterFees = (
   tokenASwapQty,
@@ -99,4 +125,5 @@ export default {
   calculateQtyToReturnAfterFees,
   getBaseTokenQtyFromQuoteTokenQty,
   getQuoteTokenQtyFromBaseTokenQty,
+  getTokenQtysFromLPTokenQty,
 };
