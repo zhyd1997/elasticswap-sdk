@@ -4,13 +4,19 @@
 import ERC20 from '../tokens/ERC20.mjs';
 import { isPOJO } from '../utils/typeChecks.mjs';
 import { toBigNumber } from '../utils/utils.mjs';
-import { validate, validateIsAddress, validateIsBigNumber } from '../utils/validations.mjs';
+import {
+  validate,
+  validateIsAddress,
+  validateIsBigNumber,
+  validateIsNumber,
+} from '../utils/validations.mjs';
 import {
   getBaseTokenQtyFromQuoteTokenQty,
   getQuoteTokenQtyFromBaseTokenQty,
 } from '../utils/mathLib2.mjs';
 
 const prefix = 'Exchange';
+const BASIS_POINTS = 10000;
 
 export default class Exchange extends ERC20 {
   constructor(sdk, exchangeAddress, baseTokenAddress, quoteTokenAddress) {
@@ -434,6 +440,34 @@ export default class Exchange extends ERC20 {
   }
 
   /**
+   * Convenience wrapper for swapBaseTokenForQuoteTokens
+   * @param {} baseTokenQty amount of base tokens to swap
+   * @param {*} slippagePercentageBP allowed slippage percentage in basis points
+   * @param {*} requestTimeoutSeconds number of seconds from now to expire request
+   * @param {Object} [overrides={}] - @see {@link Base#sanitizeOverrides}
+   * @return {TransactionResponse}
+   */
+  async swapBaseTokens(baseTokenQty, slippagePercentageBP, requestTimeoutSeconds, overrides = {}) {
+    const baseTokenQtyBN = this.toBigNumber(baseTokenQty);
+    validateIsBigNumber(baseTokenQtyBN, { prefix });
+    validateIsNumber(slippagePercentageBP, prefix);
+    validateIsNumber(requestTimeoutSeconds, prefix);
+
+    const expectedQuoteTokenQty = await this.getQuoteTokenQtyFromBaseTokenQty(baseTokenQtyBN);
+    const slippageAmount = expectedQuoteTokenQty
+      .multipliedBy(slippagePercentageBP)
+      .dividedBy(BASIS_POINTS);
+    const minQuoteTokenQty = expectedQuoteTokenQty.minus(slippageAmount);
+    const expiration = Math.floor(Date.now() / 1000 + requestTimeoutSeconds);
+    return this.swapBaseTokenForQuoteTokens(
+      baseTokenQtyBN,
+      minQuoteTokenQty,
+      expiration,
+      overrides,
+    );
+  }
+
+  /**
    * Called to swap quote tokens for base tokens.
    * @param {string | BigNumber | Number} quoteTokenQty amount of quote tokens to swap
    * @param {string | BigNumber | Number} baseTokenQtyMin min amount of baseTokens to receive back
@@ -491,6 +525,28 @@ export default class Exchange extends ERC20 {
     return receipt;
   }
 
+  /**
+   * Convenience wrapper for swapQuoteTokenForBaseToken to swapQuoteTokens
+   * @param {} quoteTokenQty amount of quote tokens to swap
+   * @param {*} slippagePercentageBP allowed slippage percentage in basis points
+   * @param {*} requestTimeoutSeconds number of seconds from now to expire request
+   * @param {Object} [overrides={}] - @see {@link Base#sanitizeOverrides}
+   * @return {TransactionResponse}
+   */
+  async swapQuoteTokens(quoteTokenQty, slippagePercentageBP, requestTimeoutSeconds, overrides) {
+    const quoteTokenQtyBN = this.toBigNumber(quoteTokenQty);
+    validateIsBigNumber(quoteTokenQtyBN, { prefix });
+    validateIsNumber(slippagePercentageBP, prefix);
+    validateIsNumber(requestTimeoutSeconds, prefix);
+
+    const expectedBaseTokenQty = await this.getBaseTokenQtyFromQuoteTokenQty(quoteTokenQtyBN);
+    const slippageAmount = expectedBaseTokenQty
+      .multipliedBy(slippagePercentageBP)
+      .dividedBy(BASIS_POINTS);
+    const minBaseTokenQty = expectedBaseTokenQty.minus(slippageAmount);
+    const expiration = Math.floor(Date.now() / 1000 + requestTimeoutSeconds);
+    return this.swapQuoteTokenForBaseToken(quoteTokenQtyBN, minBaseTokenQty, expiration, overrides);
+  }
   // CALCULATIONS
 
   /**
