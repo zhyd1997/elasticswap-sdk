@@ -375,6 +375,14 @@ export default class Exchange extends ERC20 {
     );
   }
 
+  /**
+   * Called to swap base tokens for quote tokens.
+   * @param {string | BigNumber | Number} baseTokenQty amount of base tokens desired to swap
+   * @param {string | BigNumber | Number} quoteTokenQtyMin min amount of quote tokens to be received
+   * @param {number} expirationTimestamp - a unix timestamp representing when this request expires
+   * @param {Object} [overrides={}] - @see {@link Base#sanitizeOverrides}
+   * @return {TransactionResponse}
+   */
   async swapBaseTokenForQuoteToken(
     baseTokenQty,
     quoteTokenQtyMin,
@@ -425,6 +433,14 @@ export default class Exchange extends ERC20 {
     return receipt;
   }
 
+  /**
+   * Called to swap quote tokens for base tokens.
+   * @param {string | BigNumber | Number} quoteTokenQty amount of quote tokens to swap
+   * @param {string | BigNumber | Number} baseTokenQtyMin min amount of baseTokens to receive back
+   * @param {number} expirationTimestamp - a unix timestamp representing when this request expires
+   * @param {Object} [overrides={}] - @see {@link Base#sanitizeOverrides}
+   * @return {TransactionResponse}
+   */
   async swapQuoteTokenForBaseToken(
     quoteTokenQty,
     baseTokenQtyMin,
