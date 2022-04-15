@@ -166,7 +166,6 @@ export const getLPTokenQtyFromTokenQtys = (
       ),
     );
   }
-
   return lpTokensGenerated;
 };
 
@@ -267,7 +266,7 @@ const calculateAddBaseTokenLiquidityQuantities = (
   totalSupplyOfLP,
   internalBalances,
 ) => {
-  const maxBaseTokenQty = internalBalances.baseTokenReserveQty.sub(baseTokenQty);
+  const maxBaseTokenQty = internalBalances.baseTokenReserveQty.sub(baseTokenReserveQty);
 
   let baseTokenQtyUsed;
   if (baseTokenQty.gt(maxBaseTokenQty)) {
@@ -357,7 +356,7 @@ const calculateLiquidityTokenQtyForSingleAssetEntryWithBaseTokenDecay = (
   internalBaseTokenToQuoteTokenRatio,
 ) => {
   const ratio = wDiv(baseTokenReserveQty, internalBaseTokenToQuoteTokenRatio);
-  const denominator = ratio + internalTokenAReserveQty;
+  const denominator = ratio.add(internalTokenAReserveQty);
   const gamma = wDiv(tokenAQty, denominator);
   return wDiv(wMul(totalLPTokenSupply.mul(WAD), gamma), WAD.sub(gamma)).div(WAD);
 };
