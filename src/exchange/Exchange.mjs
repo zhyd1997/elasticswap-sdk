@@ -627,7 +627,7 @@ export default class Exchange extends ERC20 {
    * @returns BigNumber lp token qty
    */
   async getLPTokenQtyFromTokenQtys(baseTokenQty, quoteTokenQty) {
-    const [baseTokenReserveQty, totalSupply, internalBalances, decimals] = await Promise.all([
+    const [baseTokenReserveQty, totalSupply, internalBalances] = await Promise.all([
       this.sdk.multicall.enqueue(this.baseToken.abi, this.baseToken.address, 'balanceOf', [
         this.address,
       ]),
