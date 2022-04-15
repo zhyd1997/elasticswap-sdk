@@ -613,6 +613,7 @@ export default class Exchange extends ERC20 {
       quoteTokenReserveQty,
       totalSupply,
     );
+
     return {
       baseTokenQty: this.toBigNumber(rawTokenQtys.baseTokenQty, this.baseToken.decimals),
       quoteTokenQty: this.toBigNumber(rawTokenQtys.quoteTokenQty, this.quoteToken.decimals),
@@ -626,14 +627,13 @@ export default class Exchange extends ERC20 {
    * @returns BigNumber lp token qty
    */
   async getLPTokenQtyFromTokenQtys(baseTokenQty, quoteTokenQty) {
-    const [baseTokenReserveQty, totalSupply, internalBalances] = await Promise.all([
+    const [baseTokenReserveQty, totalSupply, internalBalances, decimals] = await Promise.all([
       this.sdk.multicall.enqueue(this.baseToken.abi, this.baseToken.address, 'balanceOf', [
         this.address,
       ]),
       this.sdk.multicall.enqueue(this.abi, this.address, 'totalSupply'),
       this.sdk.multicall.enqueue(this.abi, this.address, 'internalBalances'),
     ]);
-
     const rawLPTokenQty = getLPTokenQtyFromTokenQtys(
       this.toEthersBigNumber(baseTokenQty, this.baseToken.decimals),
       this.toEthersBigNumber(quoteTokenQty, this.quoteToken.decimals),

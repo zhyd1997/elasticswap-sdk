@@ -116,7 +116,7 @@ export const getLPTokenQtyFromTokenQtys = (
       totalLPTokenSupplyWFees,
       quoteTokenQtyToConsume,
       internalBalances.quoteTokenReserveQty,
-    ).lpTokenQty;
+    );
   }
 
   let lpTokensGenerated;
@@ -158,12 +158,13 @@ export const getLPTokenQtyFromTokenQtys = (
       remainingQuoteTokenQty,
       updatedInternalBalances,
     );
-    const doubleAssetValues = calculateLiquidityTokenQtyForDoubleAssetEntry(
-      updatedTotalSupplyOfLPTokens,
-      remQuoteTokenQtyToConsume,
-      updatedInternalBalances.quoteTokenReserveQty,
+    lpTokensGenerated = lpTokensGenerated.add(
+      calculateLiquidityTokenQtyForDoubleAssetEntry(
+        updatedTotalSupplyOfLPTokens,
+        remQuoteTokenQtyToConsume,
+        updatedInternalBalances.quoteTokenReserveQty,
+      ),
     );
-    lpTokensGenerated = lpTokensGenerated.add(doubleAssetValues.lpTokenQty);
   }
 
   return lpTokensGenerated;
