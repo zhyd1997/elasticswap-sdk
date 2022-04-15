@@ -12,6 +12,7 @@ import {
 } from '../utils/validations.mjs';
 import {
   getBaseTokenQtyFromQuoteTokenQty,
+  getLPTokenQtyFromTokenQtys,
   getQuoteTokenQtyFromBaseTokenQty,
   getTokenQtysFromLPTokenQty,
 } from '../utils/mathLib2.mjs';
@@ -616,6 +617,31 @@ export default class Exchange extends ERC20 {
       baseTokenQty: this.toBigNumber(rawTokenQtys.baseTokenQty, this.baseToken.decimals),
       quoteTokenQty: this.toBigNumber(rawTokenQtys.quoteTokenQty, this.quoteToken.decimals),
     };
+  }
+
+  /**
+   * Calculates the number of LP tokens generated given the inputs
+   * @param {string | BigNumber | number} baseTokenQty base tokens to contribute
+   * @param {string | BigNumber | number} quoteTokenQty quote tokens to contribute
+   * @returns BigNumber lp token qty
+   */
+  async getLPTokenQtyFromTokenQtys(baseTokenQty, quoteTokenQty) {
+    const [baseTokenReserveQty, totalSupply, internalBalances] = await Promise.all([
+      this.sdk.multicall.enqueue(this.baseToken.abi, this.baseToken.address, 'balanceOf', [
+        this.address,
+      ]),
+      this.sdk.multicall.enqueue(this.abi, this.address, 'totalSupply'),
+      this.sdk.multicall.enqueue(this.abi, this.address, 'internalBalances'),
+    ]);
+
+    const rawLPTokenQty = getLPTokenQtyFromTokenQtys(
+      this.toEthersBigNumber(baseTokenQty, this.baseToken.decimals),
+      this.toEthersBigNumber(quoteTokenQty, this.quoteToken.decimals),
+      baseTokenReserveQty,
+      totalSupply,
+      internalBalances,
+    );
+    return this.toBigNumber(rawLPTokenQty, this._decimals);
   }
 
   // wraps the transaction in a notification popup and resolves when it has been mined
