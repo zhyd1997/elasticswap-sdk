@@ -11,6 +11,10 @@ import {
   validateIsNumber,
 } from '../utils/validations.mjs';
 import {
+  isSufficientDecayPresent,
+  calculateMaxBaseTokenQtyWhenQuoteDecayIsPresentForSingleAssetEntry,
+  calculateMaxQuoteTokenQtyWhenBaseDecayIsPresentForSingleAssetEnty,
+  calculateQty,
   getBaseTokenQtyFromQuoteTokenQty,
   getLPTokenQtyFromTokenQtys,
   getQuoteTokenQtyFromBaseTokenQty,
@@ -550,6 +554,95 @@ export default class Exchange extends ERC20 {
     return this.swapQuoteTokenForBaseToken(quoteTokenQtyBN, minBaseTokenQty, expiration, overrides);
   }
   // CALCULATIONS
+
+  // async getAddLiquidityBaseTokenQtyFromQuoteTokenQty(quoteTokenQty) {
+  //   // no decay
+  //   // base decay
+  //   // if quoteTokenQty > reqdQuoteTokenForBaseDecay -> then = (quoteTokenqty - reqdQt) for DAE
+  //   // this amount of BT is to be returned
+  //   // if quoteTokenQty <= reqdQuoteTokenForBaseDecay => then 0 BT
+  //   // quote decay
+  //   // then bas
+  // }
+
+  async getAddLiquidityQuoteTokenQtyFromBaseTokenQty(baseTokenQty) {
+    // remove BN variable, jsut validate if BN
+    let quoteTokenQty = this.toBigNumber('0', this.quoteToken.decimals);
+    const baseTokenQtyBN = this.toBigNumber(baseTokenQty);
+    validateIsBigNumber(baseTokenQtyBN, { prefix });
+
+    const [baseTokenReserveQty, internalBalances] = await Promise.all([
+      this.sdk.multicall.enqueue(this.baseToken.abi, this.baseToken.address, 'balanceOf', [
+        this.address,
+      ]),
+      this.sdk.multicall.enqueue(this.abi, this.address, 'internalBalances'),
+    ]);
+
+    // check if Decay (base or quote is present)
+    if (
+      isSufficientDecayPresent(
+        this.toEthersBigNumber(baseTokenReserveQty, this.baseToken.decimals),
+        internalBalances,
+      )
+    ) {
+      // if base token decay is present
+      if (baseTokenReserveQty.gt(internalBalances.baseTokenReserveQty)) {
+        // quoteTokenQty = quoteToken(for base token decay) + amount to satisfy the baseTokenQty
+        const rawQuoteTokenToRemoveDecay =
+          calculateMaxQuoteTokenQtyWhenBaseDecayIsPresentForSingleAssetEnty(
+            this.toEthersBigNumber(baseTokenReserveQty, this.baseToken.decimals),
+            internalBalances,
+          );
+        const quoteTokenToRemoveDecay = this.toBigNumber(
+          rawQuoteTokenToRemoveDecay,
+          this.quoteToken.decimals,
+        );
+
+        const rawQuoteTokenQtyToMatchBaseTokenQty = calculateQty(
+          this.toEthersBigNumber(baseTokenQtyBN, this.baseToken.decimals),
+          internalBalances.baseTokenReserveQty,
+          internalBalances.quoteTokenReserveQty,
+        );
+        const quoteTokenQtyToMatchBaseTokenQty = this.toBigNumber(
+          rawQuoteTokenQtyToMatchBaseTokenQty,
+          this.quoteToken.decimals,
+        );
+        quoteTokenQty = quoteTokenToRemoveDecay.sum(quoteTokenQtyToMatchBaseTokenQty);
+      } else {
+        // quoteTokenDecay is present
+        const rawBaseTokenQtyRequiredToMatchQuoteTokenDecay =
+          calculateMaxBaseTokenQtyWhenQuoteDecayIsPresentForSingleAssetEntry(
+            this.toEthersBigNumber(baseTokenReserveQty, this.baseToken.decimals),
+            internalBalances,
+          );
+        const baseTokenQtyRequiredToMatchQuoteTokenDecay = this.toBigNumber(
+          rawBaseTokenQtyRequiredToMatchQuoteTokenDecay,
+          this.baseToken.decimals,
+        );
+
+        // if baseTokenQty <= reqdbaseToken amnt: quoteToken qty = 0
+        if (baseTokenQtyBN.gt(baseTokenQtyRequiredToMatchQuoteTokenDecay)) {
+          // more than reqd baseTokenQty
+          const remBaseTokenQty = baseTokenQtyBN.minus(baseTokenQtyRequiredToMatchQuoteTokenDecay);
+          const rawQuoteTokenQtyToReturn = calculateQty(
+            this.toEthersBigNumber(remBaseTokenQty, this.baseToken.decimals),
+            internalBalances.baseTokenReserveQty,
+            internalBalances.quoteTokenReserveQty,
+          );
+          quoteTokenQty = this.toBigNumber(rawQuoteTokenQtyToReturn, this.quoteToken.decimals);
+        }
+      }
+    } else {
+      // no decay is present - quoteTokenAmount such that the ratio is same
+      const rawQuoteTokenQtyToReturn = calculateQty(
+        this.toEthersBigNumber(baseTokenQtyBN, this.baseToken.decimals),
+        internalBalances.baseTokenReserveQty,
+        internalBalances.quoteTokenReserveQty,
+      );
+      quoteTokenQty = this.toBigNumber(rawQuoteTokenQtyToReturn, this.quoteToken.decimals);
+    }
+    return quoteTokenQty;
+  }
 
   /**
    * gets the expected output amount of base tokens given the input
