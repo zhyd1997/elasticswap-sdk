@@ -555,15 +555,88 @@ export default class Exchange extends ERC20 {
   }
   // CALCULATIONS
 
-  // async getAddLiquidityBaseTokenQtyFromQuoteTokenQty(quoteTokenQty) {
-  //   // no decay
-  //   // base decay
-  //   // if quoteTokenQty > reqdQuoteTokenForBaseDecay -> then = (quoteTokenqty - reqdQt) for DAE
-  //   // this amount of BT is to be returned
-  //   // if quoteTokenQty <= reqdQuoteTokenForBaseDecay => then 0 BT
-  //   // quote decay
-  //   // then bas
-  // }
+  async getAddLiquidityBaseTokenQtyFromQuoteTokenQty(quoteTokenQty) {
+    validateIsBigNumber(quoteTokenQty, { prefix });
+    let baseTokenQty = this.toBigNumber('0', this.baseToken.decimals);
+
+    const [baseTokenReserveQty, internalBalances] = await Promise.all([
+      this.sdk.multicall.enqueue(this.baseToken.abi, this.baseToken.address, 'balanceOf', [
+        this.address,
+      ]),
+      this.sdk.multicall.enqueue(this.abi, this.address, 'internalBalances'),
+    ]);
+
+    // check if Decay (base or quote) is present
+    if (
+      isSufficientDecayPresent(
+        this.toEthersBigNumber(baseTokenReserveQty, this.baseToken.decimals),
+        internalBalances,
+      )
+    ) {
+      // check if base token decay is present
+      if (baseTokenReserveQty.gt(internalBalances.baseTokenReserveQty)) {
+        const rawQuoteTokenToRemoveBaseTokenDecayCompletely =
+          calculateMaxQuoteTokenQtyWhenBaseDecayIsPresentForSingleAssetEnty(
+            this.toEthersBigNumber(quoteTokenQty, this.quoteToken.decimals),
+            internalBalances,
+          );
+        const quoteTokenToRemoveBaseTokenDecayCompletely = this.toBigNumber(
+          rawQuoteTokenToRemoveBaseTokenDecayCompletely,
+          this.quoteToken.decimals,
+        );
+
+        // if quoteTokenQty > reqdQuoteTokenQty => baseTokenQty :: qt - reqdQuoteToken
+        if (quoteTokenQty.gt(quoteTokenToRemoveBaseTokenDecayCompletely)) {
+          const remQuoteTokenQty = quoteTokenQty.minus(quoteTokenToRemoveBaseTokenDecayCompletely);
+
+          const rawBaseTokenQtyToMatchRemQuoteTokenQty = calculateQty(
+            this.toEthersBigNumber(remQuoteTokenQty, this.quoteToken.decimals),
+            internalBalances.quoteTokenReserveQty,
+            internalBalances.baseTokenReserveQty,
+          );
+          baseTokenQty = this.toBigNumber(
+            rawBaseTokenQtyToMatchRemQuoteTokenQty,
+            this.baseToken.decimals,
+          );
+        }
+      } else {
+        // quoteToken decay is present
+        // baseTokenQty = baseTokenQtyReqdToMitigateDecay + (baseTokenQty :: quoteTokenQty)
+        const rawBaseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely =
+          calculateMaxBaseTokenQtyWhenQuoteDecayIsPresentForSingleAssetEntry(
+            this.toEthersBigNumber(baseTokenReserveQty, this.baseToken.decimals),
+            internalBalances,
+          );
+        const baseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely = this.toBigNumber(
+          rawBaseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely,
+          this.baseToken.decimals,
+        );
+
+        const rawBaseTokenQtyToMatchQuoteTokenQty = calculateQty(
+          this.toEthersBigNumber(quoteTokenQty, this.quoteToken.decimals),
+          internalBalances.quoteTokenReserveQty,
+          internalBalances.baseTokenReserveQty,
+        );
+        const baseTokenQtyToMatchQuoteTokenQty = this.toBigNumber(
+          rawBaseTokenQtyToMatchQuoteTokenQty,
+          this.baseToken.decimals,
+        );
+        baseTokenQty = baseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely.sum(
+          baseTokenQtyToMatchQuoteTokenQty,
+        );
+      }
+    } else {
+      // no decay is present => baseToken :: quoteTokenQty
+      const rawBaseTokenQtyToMatchQuoteTokenQty = calculateQty(
+        this.toEthersBigNumber(quoteTokenQty, this.quoteToken.decimals),
+        internalBalances.quoteTokenReserveQty,
+        internalBalances.baseTokenReserveQty,
+      );
+      baseTokenQty = this.toBigNumber(rawBaseTokenQtyToMatchQuoteTokenQty, this.baseToken.decimals);
+    }
+
+    return baseTokenQty;
+  }
 
   async getAddLiquidityQuoteTokenQtyFromBaseTokenQty(baseTokenQty) {
     // remove BN variable, jsut validate if BN
