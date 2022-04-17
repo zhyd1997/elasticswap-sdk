@@ -243,14 +243,22 @@ const calculateLiquidityTokenFees = (totalLPTokenSupply, internalBalances) => {
  * @returns boolean
  */
 export const isSufficientDecayPresent = (baseTokenReserveQty, internalBalances) => {
+  console.log("mathLib:");
+  console.log("baseTokenReserveQty", baseTokenReserveQty, baseTokenReserveQty.toString());
+//  console.log("internalBalances.baseTokenReserveQty", (internalBalances.baseTokenReserveQty).toString());
   const baseTokenReserveDifference = baseTokenReserveQty
     .sub(internalBalances.baseTokenReserveQty)
     .mul(WAD)
     .abs();
+  
+  console.log("baseTokenReserveDifference", baseTokenReserveDifference.toString());
   const internalBalanceRatio = wDiv(
     internalBalances.baseTokenReserveQty,
     internalBalances.quoteTokenReserveQty,
   );
+  console.log("internalBalanceRatio", internalBalanceRatio.toString());
+  const answer = wDiv(baseTokenReserveDifference, internalBalanceRatio).gte(WAD);
+  console.log("answer", answer.toString());
   return wDiv(baseTokenReserveDifference, internalBalanceRatio).gte(WAD);
 };
 

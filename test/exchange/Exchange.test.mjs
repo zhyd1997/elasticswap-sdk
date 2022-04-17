@@ -1102,6 +1102,178 @@ describe('Exchange', () => {
     });
   });
 
+  describe('getAddLiquidityQuoteTokenQtyFromBaseTokenQty', async () => {
+    it('should return correct amount of quoteToken qty, when no decay is present', async () => {
+      // setup - boiler plate
+      const { baseToken, quoteToken, elasticSwapSDK, sdk } = coreObjects;
+      // create expiration 50 minutes from now.
+      const expiration = Math.round(new Date().getTime() / 1000 + 60 * 50);
+      const liquidityProvider = accounts[1];
+      const liquidityProviderInitialBalances = 1000000;
+      const baseTokenQtyToAdd = 100;
+      const quoteTokenQtyToAdd = 100;
+      const exchangeInstance = new elasticSwapSDK.Exchange(
+        sdk,
+        exchange.address,
+        baseToken.address,
+        quoteToken.address,
+      );
+
+      // send users (liquidity provider) base and quote tokens for easy accounting.
+      await baseToken.transfer(liquidityProvider.address, liquidityProviderInitialBalances);
+      await quoteToken.transfer(liquidityProvider.address, liquidityProviderInitialBalances);
+      await sdk.changeSigner(liquidityProvider);
+
+      // add approvals
+      await exchangeInstance.quoteToken.approve(
+        exchangeInstance.address,
+        liquidityProviderInitialBalances,
+      );
+
+      await exchangeInstance.baseToken.approve(
+        exchangeInstance.address,
+        liquidityProviderInitialBalances,
+      );
+      // LP provides 100 base, 100 quote to exchange
+      await exchangeInstance.addLiquidity(
+        baseTokenQtyToAdd,
+        quoteTokenQtyToAdd,
+        1,
+        1,
+        liquidityProvider.address,
+        expiration,
+      );
+
+      const lpTokenQty = await exchangeInstance.balanceOf(liquidityProvider.address);
+      const tokenQtysToReturn = await exchangeInstance.getTokenQtysFromLPTokenQty(lpTokenQty);
+      console.log(tokenQtysToReturn.baseTokenQty.toString());
+      console.log(tokenQtysToReturn.quoteTokenQty.toString());
+      // console.log(lpTokenQty.toString()); // why is this ~99.99
+
+      // check if quoteToken returned is expected ()
+      const quoteTokenQtyReturned =
+        await exchangeInstance.getAddLiquidityQuoteTokenQtyFromBaseTokenQty(1000);
+
+      console.log(quoteTokenQtyReturned, quoteTokenQtyReturned.toString());
+      expect(quoteTokenQtyReturned.toString()).to.equal('1000');
+    });
+
+    it('should return correct amount of quoteToken qty, when base token decay is present', async () => {
+      // setup - boiler plate
+      const { baseToken, quoteToken, elasticSwapSDK, sdk } = coreObjects;
+      // create expiration 50 minutes from now.
+      const expiration = Math.round(new Date().getTime() / 1000 + 60 * 50);
+      const liquidityProvider = accounts[1];
+      const liquidityProviderInitialBalances = 1000000;
+      const baseTokenQtyToAdd = 100;
+      const quoteTokenQtyToAdd = 100;
+      const exchangeInstance = new elasticSwapSDK.Exchange(
+        sdk,
+        exchange.address,
+        baseToken.address,
+        quoteToken.address,
+      );
+
+      // send users (liquidity provider) base and quote tokens for easy accounting.
+      await baseToken.transfer(liquidityProvider.address, liquidityProviderInitialBalances);
+      await quoteToken.transfer(liquidityProvider.address, liquidityProviderInitialBalances);
+      await sdk.changeSigner(liquidityProvider);
+
+      // add approvals
+      await exchangeInstance.quoteToken.approve(
+        exchangeInstance.address,
+        liquidityProviderInitialBalances,
+      );
+
+      await exchangeInstance.baseToken.approve(
+        exchangeInstance.address,
+        liquidityProviderInitialBalances,
+      );
+      // LP provides 100 base, 100 quote to exchange
+      await exchangeInstance.addLiquidity(
+        baseTokenQtyToAdd,
+        quoteTokenQtyToAdd,
+        1,
+        1,
+        liquidityProvider.address,
+        expiration,
+      );
+      // simulate a 25% rebase by sending more tokens to our exchange contract.
+      const rebaseAmount = baseTokenQtyToAdd * 0.25;
+      await baseToken.transfer(exchange.address, rebaseAmount);
+
+      const lpTokenQty = await exchangeInstance.balanceOf(liquidityProvider.address);
+      const tokenQtysToReturn = await exchangeInstance.getTokenQtysFromLPTokenQty(lpTokenQty);
+      console.log(tokenQtysToReturn.baseTokenQty.toString());
+      console.log(tokenQtysToReturn.quoteTokenQty.toString());
+      // console.log(lpTokenQty.toString()); // why is this ~99.99
+
+      // check if quoteToken returned is expected ()
+      const quoteTokenQtyReturned =
+        await exchangeInstance.getAddLiquidityQuoteTokenQtyFromBaseTokenQty(1000);
+
+      console.log(quoteTokenQtyReturned, quoteTokenQtyReturned.toString());
+      expect(quoteTokenQtyReturned.toString()).to.equal('1025');
+    });
+
+    it.only('should return correct amount of quoteToken qty, when quote token decay is present', async () => {
+      // setup - boiler plate
+      const { baseToken, quoteToken, elasticSwapSDK, sdk } = coreObjects;
+      // create expiration 50 minutes from now.
+      const expiration = Math.round(new Date().getTime() / 1000 + 60 * 50);
+      const liquidityProvider = accounts[1];
+      const liquidityProviderInitialBalances = 1000000;
+      const baseTokenQtyToAdd = 100;
+      const quoteTokenQtyToAdd = 100;
+      const exchangeInstance = new elasticSwapSDK.Exchange(
+        sdk,
+        exchange.address,
+        baseToken.address,
+        quoteToken.address,
+      );
+
+      // send users (liquidity provider) base and quote tokens for easy accounting.
+      await baseToken.transfer(liquidityProvider.address, liquidityProviderInitialBalances);
+      await quoteToken.transfer(liquidityProvider.address, liquidityProviderInitialBalances);
+      await sdk.changeSigner(liquidityProvider);
+
+      // add approvals
+      await exchangeInstance.quoteToken.approve(
+        exchangeInstance.address,
+        liquidityProviderInitialBalances,
+      );
+
+      await exchangeInstance.baseToken.approve(
+        exchangeInstance.address,
+        liquidityProviderInitialBalances,
+      );
+      // LP provides 100 base, 100 quote to exchange
+      await exchangeInstance.addLiquidity(
+        baseTokenQtyToAdd,
+        quoteTokenQtyToAdd,
+        1,
+        1,
+        liquidityProvider.address,
+        expiration,
+      );
+      // simulate a 25% rebase down sending more tokens to our exchange contract.
+      await baseToken.transfer(liquidityProvider.address,)
+
+      const lpTokenQty = await exchangeInstance.balanceOf(liquidityProvider.address);
+      const tokenQtysToReturn = await exchangeInstance.getTokenQtysFromLPTokenQty(lpTokenQty);
+      console.log(tokenQtysToReturn.baseTokenQty.toString());
+      console.log(tokenQtysToReturn.quoteTokenQty.toString());
+      // console.log(lpTokenQty.toString()); // why is this ~99.99
+
+      // check if quoteToken returned is expected ()
+      const quoteTokenQtyReturned =
+        await exchangeInstance.getAddLiquidityQuoteTokenQtyFromBaseTokenQty(1000);
+
+      console.log(quoteTokenQtyReturned, quoteTokenQtyReturned.toString());
+      expect(quoteTokenQtyReturned.toString()).to.equal('1025');
+    });
+  });
+
   /*
   // TODO: Reenable this when the functionality is reintroduced
   describe.skip('removeLiquidity', () => {
