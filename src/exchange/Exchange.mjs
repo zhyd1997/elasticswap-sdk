@@ -639,7 +639,8 @@ export default class Exchange extends ERC20 {
   }
 
   async getAddLiquidityQuoteTokenQtyFromBaseTokenQty(baseTokenQty) {
-    // remove BN variable, jsut validate if BN
+    // remove BN variable, just validate if BN
+    // ^
     let quoteTokenQty = this.toBigNumber('0', this.quoteToken.decimals);
     const baseTokenQtyBN = this.toBigNumber(baseTokenQty);
     validateIsBigNumber(baseTokenQtyBN, { prefix });
@@ -661,13 +662,13 @@ export default class Exchange extends ERC20 {
       // if base token decay is present
       if (baseTokenReserveQty.gt(internalBalances.baseTokenReserveQty)) {
         // quoteTokenQty = quoteToken(for base token decay) + amount to satisfy the baseTokenQty
-        const rawQuoteTokenToRemoveDecay =
+        const rawQuoteTokenToRemoveBaseTokenDecayCompletely =
           calculateMaxQuoteTokenQtyWhenBaseDecayIsPresentForSingleAssetEnty(
             this.toEthersBigNumber(baseTokenReserveQty, this.baseToken.decimals),
             internalBalances,
           );
-        const quoteTokenToRemoveDecay = this.toBigNumber(
-          rawQuoteTokenToRemoveDecay,
+        const quoteTokenToRemoveBaseTokenDecayCompletely = this.toBigNumber(
+          rawQuoteTokenToRemoveBaseTokenDecayCompletely,
           this.quoteToken.decimals,
         );
 
@@ -680,39 +681,49 @@ export default class Exchange extends ERC20 {
           rawQuoteTokenQtyToMatchBaseTokenQty,
           this.quoteToken.decimals,
         );
-        quoteTokenQty = quoteTokenToRemoveDecay.sum(quoteTokenQtyToMatchBaseTokenQty);
+        quoteTokenQty = quoteTokenToRemoveBaseTokenDecayCompletely.sum(
+          quoteTokenQtyToMatchBaseTokenQty,
+        );
       } else {
         // quoteTokenDecay is present
-        const rawBaseTokenQtyRequiredToMatchQuoteTokenDecay =
+        const rawBaseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely =
           calculateMaxBaseTokenQtyWhenQuoteDecayIsPresentForSingleAssetEntry(
             this.toEthersBigNumber(baseTokenReserveQty, this.baseToken.decimals),
             internalBalances,
           );
-        const baseTokenQtyRequiredToMatchQuoteTokenDecay = this.toBigNumber(
-          rawBaseTokenQtyRequiredToMatchQuoteTokenDecay,
+        const baseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely = this.toBigNumber(
+          rawBaseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely,
           this.baseToken.decimals,
         );
 
         // if baseTokenQty <= reqdbaseToken amnt: quoteToken qty = 0
-        if (baseTokenQtyBN.gt(baseTokenQtyRequiredToMatchQuoteTokenDecay)) {
+        if (baseTokenQtyBN.gt(baseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely)) {
           // more than reqd baseTokenQty
-          const remBaseTokenQty = baseTokenQtyBN.minus(baseTokenQtyRequiredToMatchQuoteTokenDecay);
-          const rawQuoteTokenQtyToReturn = calculateQty(
+          const remBaseTokenQty = baseTokenQtyBN.minus(
+            baseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely,
+          );
+          const rawQuoteTokenQtyToMatchRemBaseTokenQty = calculateQty(
             this.toEthersBigNumber(remBaseTokenQty, this.baseToken.decimals),
             internalBalances.baseTokenReserveQty,
             internalBalances.quoteTokenReserveQty,
           );
-          quoteTokenQty = this.toBigNumber(rawQuoteTokenQtyToReturn, this.quoteToken.decimals);
+          quoteTokenQty = this.toBigNumber(
+            rawQuoteTokenQtyToMatchRemBaseTokenQty,
+            this.quoteToken.decimals,
+          );
         }
       }
     } else {
       // no decay is present - quoteTokenAmount such that the ratio is same
-      const rawQuoteTokenQtyToReturn = calculateQty(
+      const rawQuoteTokenQtyToMatchBaseTokenQty = calculateQty(
         this.toEthersBigNumber(baseTokenQtyBN, this.baseToken.decimals),
         internalBalances.baseTokenReserveQty,
         internalBalances.quoteTokenReserveQty,
       );
-      quoteTokenQty = this.toBigNumber(rawQuoteTokenQtyToReturn, this.quoteToken.decimals);
+      quoteTokenQty = this.toBigNumber(
+        rawQuoteTokenQtyToMatchBaseTokenQty,
+        this.quoteToken.decimals,
+      );
     }
     return quoteTokenQty;
   }
