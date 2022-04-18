@@ -18,7 +18,7 @@ export const getAddLiquidityBaseTokenQtyFromQuoteTokenQty = (
     if (baseTokenReserveQty.gt(internalBalances.baseTokenReserveQty)) {
       const baseTokenDecay = baseTokenReserveQty.sub(internalBalances.baseTokenReserveQty);
       const quoteTokenQtyRequiredToRemoveBaseTokenDecayCompletely =
-        calculateMaxQuoteTokenQtyWhenBaseDecayIsPresentForSingleAssetEnty(
+        calculateMaxQuoteTokenQtyWhenBaseDecayIsPresentForSingleAssetEntry(
           baseTokenReserveQty,
           internalBalances,
         );
@@ -84,7 +84,7 @@ export const getAddLiquidityQuoteTokenQtyFromBaseTokenQty = (
       // quoteTokenQty =
       // quoteToken(baseTokenDecay)+amount to for baseTokenQty(assuming the decay got matched)
       const quoteTokenToRemoveBaseTokenDecayCompletely =
-        calculateMaxQuoteTokenQtyWhenBaseDecayIsPresentForSingleAssetEnty(
+        calculateMaxQuoteTokenQtyWhenBaseDecayIsPresentForSingleAssetEntry(
           baseTokenReserveQty,
           internalBalances,
         );
@@ -352,7 +352,7 @@ export const calculateQtyToReturnAfterFees = (
  * @param {*} tokenBReserveQty
  * @returns
  */
-export const calculateQty = (tokenAQty, tokenAReserveQty, tokenBReserveQty) =>
+const calculateQty = (tokenAQty, tokenAReserveQty, tokenBReserveQty) =>
   tokenAQty.mul(tokenBReserveQty).div(tokenAReserveQty);
 
 /**
@@ -456,7 +456,7 @@ const calculateAddQuoteTokenLiquidityQuantities = (
 
   // alphaDecay / omega (A/B)
   // const maxQuoteTokenQty = wDiv(baseTokenDecay, internalBaseTokenToQuoteTokenRatio);
-  const maxQuoteTokenQty = calculateMaxQuoteTokenQtyWhenBaseDecayIsPresentForSingleAssetEnty(
+  const maxQuoteTokenQty = calculateMaxQuoteTokenQtyWhenBaseDecayIsPresentForSingleAssetEntry(
     baseTokenReserveQty,
     internalBalances,
   );
@@ -514,7 +514,7 @@ export const calculateMaxBaseTokenQtyWhenQuoteDecayIsPresentForSingleAssetEntry 
   return maxBaseTokenQty;
 };
 
-export const calculateMaxQuoteTokenQtyWhenBaseDecayIsPresentForSingleAssetEnty = (
+export const calculateMaxQuoteTokenQtyWhenBaseDecayIsPresentForSingleAssetEntry = (
   baseTokenReserveQty,
   internalBalances,
 ) => {

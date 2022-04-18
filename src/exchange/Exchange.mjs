@@ -564,7 +564,7 @@ export default class Exchange extends ERC20 {
     ]);
 
     const rawBaseTokenQty = getAddLiquidityBaseTokenQtyFromQuoteTokenQty(
-      this.toEthersBigNumber(quoteTokenQty, this.baseToken.decimals),
+      this.toEthersBigNumber(quoteTokenQty, this.quoteToken.decimals),
       baseTokenReserveQty,
       internalBalances,
     );

@@ -1144,11 +1144,6 @@ describe('Exchange', () => {
         expiration,
       );
 
-      // const lpTokenQty = await exchangeInstance.balanceOf(liquidityProvider.address);
-      // const tokenQtysToReturn = await exchangeInstance.getTokenQtysFromLPTokenQty(lpTokenQty);
-      // console.log(tokenQtysToReturn.baseTokenQty.toString()); // why is this ~99.99
-      // console.log(tokenQtysToReturn.quoteTokenQty.toString()); // why is this ~99.99
-
       // check if quoteToken returned is expected ()
       const quoteTokenQtyReturned =
         await exchangeInstance.getAddLiquidityQuoteTokenQtyFromBaseTokenQty(1000);
