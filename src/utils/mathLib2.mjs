@@ -21,20 +21,32 @@ export const getAddLiquidityBaseTokenQtyFromQuoteTokenQty = (
       const baseTokenDecay = baseTokenReserveQty.sub(internalBalances.baseTokenReserveQty);
       const quoteTokenQtyRequiredToRemoveBaseTokenDecayCompletely =
         calculateMaxQuoteTokenQtyWhenBaseDecayIsPresentForSingleAssetEnty(
-          quoteTokenQty,
+          baseTokenReserveQty,
           internalBalances,
         );
+      console.log(quoteTokenQtyRequiredToRemoveBaseTokenDecayCompletely.toString())  
+
       if (quoteTokenQty.gt(quoteTokenQtyRequiredToRemoveBaseTokenDecayCompletely)) {
+        console.log("quoteTokenQty > quoteTokenQtyRequiredToRemoveBaseTokenDecayCompletely")
         const remQuoteTokenQty = quoteTokenQty.sub(
           quoteTokenQtyRequiredToRemoveBaseTokenDecayCompletely,
         );
+        console.log("remQuoteTokenQty", remQuoteTokenQty.toString()); // 100
+
+        const updatedInternalBalancesBaseTokenReserveQty =
+        internalBalances.baseTokenReserveQty.add(baseTokenDecay);
+        console.log("updatedInternalBalancesBaseTokenReserveQty", updatedInternalBalancesBaseTokenReserveQty.toString());
+        const updatedInternalBalancesQuoteTokenReserveQty = internalBalances.quoteTokenReserveQty.add(
+          quoteTokenQtyRequiredToRemoveBaseTokenDecayCompletely
+        );
+        console.log("updatedInternalBalancesQuoteTokenReserveQty", updatedInternalBalancesQuoteTokenReserveQty.toString());
+
         const baseTokenQtyToMatchRemQuoteTokenQty = calculateQty(
           remQuoteTokenQty,
-          internalBalances.quoteTokenReserveQty.add(
-            quoteTokenQtyRequiredToRemoveBaseTokenDecayCompletely,
-          ),
-          internalBalances.baseTokenReserveQty.add(baseTokenDecay),
+          updatedInternalBalancesQuoteTokenReserveQty,
+          updatedInternalBalancesBaseTokenReserveQty,
         );
+        console.log(baseTokenQtyToMatchRemQuoteTokenQty.toString())
         baseTokenQtyToReturn = baseTokenQtyToMatchRemQuoteTokenQty;
       }
     } else {
@@ -45,12 +57,14 @@ export const getAddLiquidityBaseTokenQtyFromQuoteTokenQty = (
           baseTokenReserveQty,
           internalBalances,
         );
+      console.log("baseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely", baseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely.toString())  
 
       const baseTokenQtyToMatchQuoteTokenQty = calculateQty(
         quoteTokenQty,
         internalBalances.quoteTokenReserveQty,
         internalBalances.baseTokenReserveQty,
       );
+      console.log("baseTokenQtyToMatchQuoteTokenQty", baseTokenQtyToMatchQuoteTokenQty.toString())  
       baseTokenQtyToReturn = baseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely.add(
         baseTokenQtyToMatchQuoteTokenQty,
       );
