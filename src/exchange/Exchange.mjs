@@ -11,6 +11,7 @@ import {
   validateIsNumber,
 } from '../utils/validations.mjs';
 import {
+  getAddLiquidityBaseTokenQtyFromQuoteTokenQty,
   getAddLiquidityQuoteTokenQtyFromBaseTokenQty,
   getBaseTokenQtyFromQuoteTokenQty,
   getLPTokenQtyFromTokenQtys,
@@ -551,86 +552,28 @@ export default class Exchange extends ERC20 {
   }
   // CALCULATIONS
 
-  // async getAddLiquidityBaseTokenQtyFromQuoteTokenQty(quoteTokenQty) {
-  //   // TODO: not sure if required here - Handling of new LP positions
-  //   validateIsBigNumber(quoteTokenQty, { prefix });
-  //   let baseTokenQty = this.toBigNumber('0', this.baseToken.decimals);
+  async getAddLiquidityBaseTokenQtyFromQuoteTokenQty(quoteTokenQty) {
+    console.log('getAddLiquidityBaseTokenQtyFromQuoteTokenQty');
 
-  //   const [baseTokenReserveQty, internalBalances] = await Promise.all([
-  //     this.sdk.multicall.enqueue(this.baseToken.abi, this.baseToken.address, 'balanceOf', [
-  //       this.address,
-  //     ]),
-  //     this.sdk.multicall.enqueue(this.abi, this.address, 'internalBalances'),
-  //   ]);
+    const quoteTokenQtyBN = this.toBigNumber(quoteTokenQty);
+    validateIsBigNumber(quoteTokenQtyBN, { prefix });
 
-  //   // check if Decay (base or quote) is present
-  //   if (isSufficientDecayPresent(baseTokenReserveQty, internalBalances)) {
-  //     // check if base token decay is present
-  //     if (baseTokenReserveQty.gt(internalBalances.baseTokenReserveQty)) {
-  //       const rawQuoteTokenToRemoveBaseTokenDecayCompletely =
-  //         calculateMaxQuoteTokenQtyWhenBaseDecayIsPresentForSingleAssetEnty(
-  //           this.toEthersBigNumber(quoteTokenQty, this.quoteToken.decimals),
-  //           internalBalances,
-  //         );
-  //       const quoteTokenToRemoveBaseTokenDecayCompletely = this.toBigNumber(
-  //         rawQuoteTokenToRemoveBaseTokenDecayCompletely,
-  //         this.quoteToken.decimals,
-  //       );
+    const [baseTokenReserveQty, internalBalances] = await Promise.all([
+      this.sdk.multicall.enqueue(this.baseToken.abi, this.baseToken.address, 'balanceOf', [
+        this.address,
+      ]),
+      this.sdk.multicall.enqueue(this.abi, this.address, 'internalBalances'),
+    ]);
 
-  //       // if quoteTokenQty > reqdQuoteTokenQty => baseTokenQty :: qt - reqdQuoteToken
-  //       if (quoteTokenQty.gt(quoteTokenToRemoveBaseTokenDecayCompletely)) {
-  //         const remQuoteTokenQty =
-  // quoteTokenQty.minus(quoteTokenToRemoveBaseTokenDecayCompletely);
+    const rawBaseTokenQty = getAddLiquidityBaseTokenQtyFromQuoteTokenQty(
+      this.toEthersBigNumber(quoteTokenQty, this.baseToken.decimals),
+      baseTokenReserveQty,
+      internalBalances,
+    );
 
-  //         const rawBaseTokenQtyToMatchRemQuoteTokenQty = calculateQty(
-  //           this.toEthersBigNumber(remQuoteTokenQty, this.quoteToken.decimals),
-  //           internalBalances.quoteTokenReserveQty,
-  //           internalBalances.baseTokenReserveQty,
-  //         );
-  //         baseTokenQty = this.toBigNumber(
-  //           rawBaseTokenQtyToMatchRemQuoteTokenQty,
-  //           this.baseToken.decimals,
-  //         );
-  //       }
-  //     } else {
-  //       // quoteToken decay is present
-  //       // baseTokenQty = baseTokenQtyReqdToMitigateDecay + (baseTokenQty :: quoteTokenQty)
-  //       const rawBaseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely =
-  //         calculateMaxBaseTokenQtyWhenQuoteDecayIsPresentForSingleAssetEntry(
-  //           baseTokenReserveQty,
-  //           internalBalances,
-  //         );
-  //       const baseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely = this.toBigNumber(
-  //         rawBaseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely,
-  //         this.baseToken.decimals,
-  //       );
-
-  //       const rawBaseTokenQtyToMatchQuoteTokenQty = calculateQty(
-  //         this.toEthersBigNumber(quoteTokenQty, this.quoteToken.decimals),
-  //         internalBalances.quoteTokenReserveQty,
-  //         internalBalances.baseTokenReserveQty,
-  //       );
-  //       const baseTokenQtyToMatchQuoteTokenQty = this.toBigNumber(
-  //         rawBaseTokenQtyToMatchQuoteTokenQty,
-  //         this.baseToken.decimals,
-  //       );
-  //       baseTokenQty = baseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely.plus(
-  //         baseTokenQtyToMatchQuoteTokenQty,
-  //       );
-  //     }
-  //   } else {
-  //     // no decay is present => baseToken :: quoteTokenQty
-  //     const rawBaseTokenQtyToMatchQuoteTokenQty = calculateQty(
-  //       this.toEthersBigNumber(quoteTokenQty, this.quoteToken.decimals),
-  //       internalBalances.quoteTokenReserveQty,
-  //       internalBalances.baseTokenReserveQty,
-  //     );
-  //     baseTokenQty = this.toBigNumber(
-  //         rawBaseTokenQtyToMatchQuoteTokenQty, this.baseToken.decimals);
-  //   }
-
-  //   return baseTokenQty;
-  // }
+    const baseTokenQty = this.toBigNumber(rawBaseTokenQty, this.baseToken.decimals);
+    return baseTokenQty;
+  }
 
   async getAddLiquidityQuoteTokenQtyFromBaseTokenQty(baseTokenQty) {
     console.log('getAddLiquidityQuoteTokenQtyFromBaseTokenQty');
