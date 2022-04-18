@@ -6,6 +6,83 @@ const ONE = ethers.BigNumber.from(1);
 const TWO = ethers.BigNumber.from(2);
 const WAD = ethers.utils.parseUnits('1', 18);
 
+export const getAddLiquidityQuoteTokenQtyFromBaseTokenQty = (
+  baseTokenQty,
+  baseTokenReserveQty,
+  internalBalances,
+) => {
+  let quoteTokenQtyToReturn = ZERO;
+  // check if decay (base or quote) is present
+  if (isSufficientDecayPresent(baseTokenReserveQty, internalBalances)) {
+    console.log('decay');
+    // if base token decay is present
+    if (baseTokenReserveQty.gt(internalBalances.baseTokenReserveQty)) {
+      console.log('base token decay');
+      // quoteTokenQty =
+      // quoteToken(baseTokenDecay)+amount to for baseTokenQty(assuming the decay got matched)
+      const quoteTokenToRemoveBaseTokenDecayCompletely =
+        calculateMaxQuoteTokenQtyWhenBaseDecayIsPresentForSingleAssetEnty(
+          baseTokenReserveQty,
+          internalBalances,
+        );
+
+      const baseTokenDecay = baseTokenReserveQty.sub(internalBalances.baseTokenReserveQty);
+
+      // to match baseTokenQty - assuming baseTokenDecay has been nullified
+      // internalBalances.baseTokenReserveQty = internalBalances.baseTokenReserveQty + alphaDecay
+      // internalBalances.quoteTokenReserveQty
+      // = internalBalances.quoteTokenReserveQty + quoteTokenToRemoveBaseTokenDecayCompletely
+      const updatedInternalBalancesBaseTokenReserveQty =
+        internalBalances.baseTokenReserveQty.add(baseTokenDecay);
+      const updatedInternalBalancesQuoteTokenReserveQty =
+        internalBalances.quoteTokenReserveQty.add(quoteTokenToRemoveBaseTokenDecayCompletely);
+
+      const quoteTokenQtyToMatchBaseTokenQty = calculateQty(
+        baseTokenQty,
+        updatedInternalBalancesBaseTokenReserveQty,
+        updatedInternalBalancesQuoteTokenReserveQty,
+      );
+      quoteTokenQtyToReturn = quoteTokenToRemoveBaseTokenDecayCompletely.add(
+        quoteTokenQtyToMatchBaseTokenQty,
+      );
+    } else {
+      console.log('quoteTokenDecay');
+      // quote token decay is present
+      const baseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely =
+        calculateMaxBaseTokenQtyWhenQuoteDecayIsPresentForSingleAssetEntry(
+          baseTokenReserveQty,
+          internalBalances,
+        );
+      // if baseTokenQty => reqdbaseToken amnt:
+      //    quoteToken qty :: baseTokenQty - reqdBaseTokenToRemoveDecay
+      // else quoteTokenQty = 0
+      if (baseTokenQty.gt(baseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely)) {
+        console.log('quoteTokenDecay: baseTokenQty => reqdbaseToken');
+        const remBaseTokenQty = baseTokenQty.sub(
+          baseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely,
+        );
+
+        const quoteTokenQtyToMatchRemBaseTokenQty = calculateQty(
+          remBaseTokenQty,
+          internalBalances.baseTokenReserveQty,
+          internalBalances.quoteTokenReserveQty,
+        );
+        quoteTokenQtyToReturn = quoteTokenQtyToMatchRemBaseTokenQty;
+      }
+    }
+  } else {
+    console.log('math lib: no decay');
+    // no decay - quoteTokenAmount such that the ratio is same (quoteTokenQty::baseTokenQty)
+    const quoteTokenQtyToMatchBaseTokenQty = calculateQty(
+      baseTokenQty,
+      internalBalances.baseTokenReserveQty,
+      internalBalances.quoteTokenReserveQty,
+    );
+    quoteTokenQtyToReturn = quoteTokenQtyToMatchBaseTokenQty;
+  }
+  return quoteTokenQtyToReturn;
+};
+
 /**
  * get the base qty expected to output (assuming no slippage) based on the quoteTokenQty
  * passed in.
@@ -243,22 +320,15 @@ const calculateLiquidityTokenFees = (totalLPTokenSupply, internalBalances) => {
  * @returns boolean
  */
 export const isSufficientDecayPresent = (baseTokenReserveQty, internalBalances) => {
-  console.log("mathLib:");
-  console.log("baseTokenReserveQty", baseTokenReserveQty, baseTokenReserveQty.toString());
-//  console.log("internalBalances.baseTokenReserveQty", (internalBalances.baseTokenReserveQty).toString());
   const baseTokenReserveDifference = baseTokenReserveQty
     .sub(internalBalances.baseTokenReserveQty)
     .mul(WAD)
     .abs();
-  
-  console.log("baseTokenReserveDifference", baseTokenReserveDifference.toString());
   const internalBalanceRatio = wDiv(
     internalBalances.baseTokenReserveQty,
     internalBalances.quoteTokenReserveQty,
   );
-  console.log("internalBalanceRatio", internalBalanceRatio.toString());
   const answer = wDiv(baseTokenReserveDifference, internalBalanceRatio).gte(WAD);
-  console.log("answer", answer.toString());
   return wDiv(baseTokenReserveDifference, internalBalanceRatio).gte(WAD);
 };
 
