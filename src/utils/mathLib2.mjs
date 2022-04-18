@@ -34,8 +34,9 @@ export const getAddLiquidityQuoteTokenQtyFromBaseTokenQty = (
       // = internalBalances.quoteTokenReserveQty + quoteTokenToRemoveBaseTokenDecayCompletely
       const updatedInternalBalancesBaseTokenReserveQty =
         internalBalances.baseTokenReserveQty.add(baseTokenDecay);
-      const updatedInternalBalancesQuoteTokenReserveQty =
-        internalBalances.quoteTokenReserveQty.add(quoteTokenToRemoveBaseTokenDecayCompletely);
+      const updatedInternalBalancesQuoteTokenReserveQty = internalBalances.quoteTokenReserveQty.add(
+        quoteTokenToRemoveBaseTokenDecayCompletely,
+      );
 
       const quoteTokenQtyToMatchBaseTokenQty = calculateQty(
         baseTokenQty,
@@ -328,7 +329,6 @@ export const isSufficientDecayPresent = (baseTokenReserveQty, internalBalances) 
     internalBalances.baseTokenReserveQty,
     internalBalances.quoteTokenReserveQty,
   );
-  const answer = wDiv(baseTokenReserveDifference, internalBalanceRatio).gte(WAD);
   return wDiv(baseTokenReserveDifference, internalBalanceRatio).gte(WAD);
 };
 

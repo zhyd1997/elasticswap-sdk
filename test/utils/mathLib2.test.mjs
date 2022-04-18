@@ -318,7 +318,7 @@ describe('MathLib2', async () => {
   describe('getAddLiquidityQuoteTokenQtyFromBaseTokenQty', () => {
     it.only('should return correct amount of quoteToken qty, when baseDecay is present', () => {
       // 1000, 5000 -> 1500, 5000 (a rebase up occurs)
-      // quotetokenReqd => alphaDecay * (iOmega) = 2500 
+      // quotetokenReqd => alphaDecay * (iOmega) = 2500
       // if 100 BaseTokenQty -> 2500 quoteTokenQty (for baseDecay) +
       // with (1500,7500) DAE for 100 BaseTokens(100 *(7500/1500) = 500)
       // Hence if 100 Base Token for 500 Basetokendecay, quoteToken reqd is 2500 + 500
@@ -349,7 +349,7 @@ describe('MathLib2', async () => {
       // 1000, 5000 -> 500, 5000 (a rebase down occurs)
       // baseTokenReqd = 1000-500=500
       // hence if baseTokenQty <= 500, quoteToken = 0
-      // if baseToken > 500, then DAE of baseTokenQty :: (1000,1000) 
+      // if baseToken > 500, then DAE of baseTokenQty :: (1000,1000)
       const internalBalanceBaseTokenReserveQty = ethers.utils.parseUnits('1000', 18);
       const internalBalancesQuoteTokenReserveQty = ethers.utils.parseUnits('5000', 18);
       const internalBalancesKLast = internalBalanceBaseTokenReserveQty.mul(
