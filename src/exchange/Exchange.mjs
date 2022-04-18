@@ -553,8 +553,6 @@ export default class Exchange extends ERC20 {
   // CALCULATIONS
 
   async getAddLiquidityBaseTokenQtyFromQuoteTokenQty(quoteTokenQty) {
-    console.log('getAddLiquidityBaseTokenQtyFromQuoteTokenQty');
-
     const quoteTokenQtyBN = this.toBigNumber(quoteTokenQty);
     validateIsBigNumber(quoteTokenQtyBN, { prefix });
 
@@ -576,8 +574,6 @@ export default class Exchange extends ERC20 {
   }
 
   async getAddLiquidityQuoteTokenQtyFromBaseTokenQty(baseTokenQty) {
-    console.log('getAddLiquidityQuoteTokenQtyFromBaseTokenQty');
-
     const baseTokenQtyBN = this.toBigNumber(baseTokenQty);
     validateIsBigNumber(baseTokenQtyBN, { prefix });
 

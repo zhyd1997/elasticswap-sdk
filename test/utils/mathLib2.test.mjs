@@ -146,7 +146,6 @@ describe('MathLib2', async () => {
         totalLPTokenSupply,
         internalBalances,
       );
-      console.log(calculatedLPTokenGenerated.toString());
       expect(calculatedLPTokenGenerated.toString()).to.equal('1000000000000000002400');
     });
 
@@ -178,7 +177,6 @@ describe('MathLib2', async () => {
         totalLPTokenSupply,
         internalBalances,
       );
-      console.log(calculatedLPTokenGenerated.toString());
       expect(calculatedLPTokenGenerated.toString()).to.equal('499999999999999999450');
     });
 
@@ -311,7 +309,6 @@ describe('MathLib2', async () => {
         totalLPTokenSupply,
         internalBalances,
       );
-      console.log(calculatedLPTokenGenerated.toString());
       expect(calculatedLPTokenGenerated.toString()).to.equal('16666666666666666666666');
     });
   });
@@ -431,7 +428,7 @@ describe('MathLib2', async () => {
       expect(baseTokenQty3.toString()).to.equal('0');
     });
 
-    it.only('should return correct amount of baseToken qty, when quoteTokenDecay is present', () => {
+    it('should return correct amount of baseToken qty, when quoteTokenDecay is present', () => {
       const internalBalanceBaseTokenReserveQty = ethers.utils.parseUnits('1000', 18);
       const internalBalancesQuoteTokenReserveQty = ethers.utils.parseUnits('5000', 18);
       const internalBalancesKLast = internalBalanceBaseTokenReserveQty.mul(

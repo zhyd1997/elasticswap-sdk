@@ -14,74 +14,54 @@ export const getAddLiquidityBaseTokenQtyFromQuoteTokenQty = (
   let baseTokenQtyToReturn = ZERO;
   // check if decay (base or quote) is present
   if (isSufficientDecayPresent(baseTokenReserveQty, internalBalances)) {
-    console.log('decay');
     // if base token Decay is present
     if (baseTokenReserveQty.gt(internalBalances.baseTokenReserveQty)) {
-      console.log('base Token decay');
       const baseTokenDecay = baseTokenReserveQty.sub(internalBalances.baseTokenReserveQty);
       const quoteTokenQtyRequiredToRemoveBaseTokenDecayCompletely =
         calculateMaxQuoteTokenQtyWhenBaseDecayIsPresentForSingleAssetEnty(
           baseTokenReserveQty,
           internalBalances,
         );
-      console.log(quoteTokenQtyRequiredToRemoveBaseTokenDecayCompletely.toString());
 
       if (quoteTokenQty.gt(quoteTokenQtyRequiredToRemoveBaseTokenDecayCompletely)) {
-        console.log('quoteTokenQty > quoteTokenQtyRequiredToRemoveBaseTokenDecayCompletely');
         const remQuoteTokenQty = quoteTokenQty.sub(
           quoteTokenQtyRequiredToRemoveBaseTokenDecayCompletely,
         );
-        console.log('remQuoteTokenQty', remQuoteTokenQty.toString()); // 100
 
         const updatedInternalBalancesBaseTokenReserveQty =
           internalBalances.baseTokenReserveQty.add(baseTokenDecay);
-        console.log(
-          'updatedInternalBalancesBaseTokenReserveQty',
-          updatedInternalBalancesBaseTokenReserveQty.toString(),
-        );
+
         const updatedInternalBalancesQuoteTokenReserveQty =
           internalBalances.quoteTokenReserveQty.add(
             quoteTokenQtyRequiredToRemoveBaseTokenDecayCompletely,
           );
-        console.log(
-          'updatedInternalBalancesQuoteTokenReserveQty',
-          updatedInternalBalancesQuoteTokenReserveQty.toString(),
-        );
 
         const baseTokenQtyToMatchRemQuoteTokenQty = calculateQty(
           remQuoteTokenQty,
           updatedInternalBalancesQuoteTokenReserveQty,
           updatedInternalBalancesBaseTokenReserveQty,
         );
-        console.log(baseTokenQtyToMatchRemQuoteTokenQty.toString());
         baseTokenQtyToReturn = baseTokenQtyToMatchRemQuoteTokenQty;
       }
     } else {
       // quoteToken decay is present
-      console.log('quoteToken Decay');
       const baseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely =
         calculateMaxBaseTokenQtyWhenQuoteDecayIsPresentForSingleAssetEntry(
           baseTokenReserveQty,
           internalBalances,
         );
-      console.log(
-        'baseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely',
-        baseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely.toString(),
-      );
 
       const baseTokenQtyToMatchQuoteTokenQty = calculateQty(
         quoteTokenQty,
         internalBalances.quoteTokenReserveQty,
         internalBalances.baseTokenReserveQty,
       );
-      console.log('baseTokenQtyToMatchQuoteTokenQty', baseTokenQtyToMatchQuoteTokenQty.toString());
       baseTokenQtyToReturn = baseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely.add(
         baseTokenQtyToMatchQuoteTokenQty,
       );
     }
   } else {
     // no decay
-    console.log('no decay');
     baseTokenQtyToReturn = calculateQty(
       quoteTokenQty,
       internalBalances.quoteTokenReserveQty,
@@ -99,10 +79,8 @@ export const getAddLiquidityQuoteTokenQtyFromBaseTokenQty = (
   let quoteTokenQtyToReturn = ZERO;
   // check if decay (base or quote) is present
   if (isSufficientDecayPresent(baseTokenReserveQty, internalBalances)) {
-    console.log('decay');
     // if base token decay is present
     if (baseTokenReserveQty.gt(internalBalances.baseTokenReserveQty)) {
-      console.log('base token decay');
       // quoteTokenQty =
       // quoteToken(baseTokenDecay)+amount to for baseTokenQty(assuming the decay got matched)
       const quoteTokenToRemoveBaseTokenDecayCompletely =
@@ -132,7 +110,6 @@ export const getAddLiquidityQuoteTokenQtyFromBaseTokenQty = (
         quoteTokenQtyToMatchBaseTokenQty,
       );
     } else {
-      console.log('quoteTokenDecay');
       // quote token decay is present
       const baseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely =
         calculateMaxBaseTokenQtyWhenQuoteDecayIsPresentForSingleAssetEntry(
@@ -143,7 +120,6 @@ export const getAddLiquidityQuoteTokenQtyFromBaseTokenQty = (
       //    quoteToken qty :: baseTokenQty - reqdBaseTokenToRemoveDecay
       // else quoteTokenQty = 0
       if (baseTokenQty.gt(baseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely)) {
-        console.log('quoteTokenDecay: baseTokenQty => reqdbaseToken');
         const remBaseTokenQty = baseTokenQty.sub(
           baseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely,
         );
@@ -157,7 +133,6 @@ export const getAddLiquidityQuoteTokenQtyFromBaseTokenQty = (
       }
     }
   } else {
-    console.log('math lib: no decay');
     // no decay - quoteTokenAmount such that the ratio is same (quoteTokenQty::baseTokenQty)
     const quoteTokenQtyToMatchBaseTokenQty = calculateQty(
       baseTokenQty,
