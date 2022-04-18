@@ -286,12 +286,12 @@ export default class Exchange extends ERC20 {
     });
 
     // save the user gas by confirming that the allowances and balance match the request
-    validate(this.toBigNumber(baseTokenQtyDesired).lt(baseTokenBalance), {
+    validate(this.toBigNumber(baseTokenQtyDesired).lte(baseTokenBalance), {
       message: `You don't have enough ${this.baseToken.symbol}`,
       prefix,
     });
 
-    validate(this.toBigNumber(quoteTokenQtyDesired).lt(quoteTokenBalance), {
+    validate(this.toBigNumber(quoteTokenQtyDesired).lte(quoteTokenBalance), {
       message: `You don't have enough ${this.quoteToken.symbol}`,
       prefix,
     });
