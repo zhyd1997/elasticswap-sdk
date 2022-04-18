@@ -11,6 +11,8 @@ import {
   validateIsNumber,
 } from '../utils/validations.mjs';
 import {
+  getAddLiquidityBaseTokenQtyFromQuoteTokenQty,
+  getAddLiquidityQuoteTokenQtyFromBaseTokenQty,
   getBaseTokenQtyFromQuoteTokenQty,
   getLPTokenQtyFromTokenQtys,
   getQuoteTokenQtyFromBaseTokenQty,
@@ -272,7 +274,6 @@ export default class Exchange extends ERC20 {
         this.baseToken.allowance(this.sdk.account, this.address, { multicall: true }),
         this.quoteToken.allowance(this.sdk.account, this.address, { multicall: true }),
       ]);
-
     // save the user gas by confirming that the minimum values are not greater than the maximum ones
     validate(this.toBigNumber(baseTokenQtyMin).lte(baseTokenQtyDesired), {
       message: `Minimum amount of ${this.baseToken.symbol} requested is greater than the maximum.`,
@@ -285,12 +286,12 @@ export default class Exchange extends ERC20 {
     });
 
     // save the user gas by confirming that the allowances and balance match the request
-    validate(this.toBigNumber(baseTokenQtyDesired).lt(baseTokenBalance), {
+    validate(this.toBigNumber(baseTokenQtyDesired).lte(baseTokenBalance), {
       message: `You don't have enough ${this.baseToken.symbol}`,
       prefix,
     });
 
-    validate(this.toBigNumber(quoteTokenQtyDesired).lt(quoteTokenBalance), {
+    validate(this.toBigNumber(quoteTokenQtyDesired).lte(quoteTokenBalance), {
       message: `You don't have enough ${this.quoteToken.symbol}`,
       prefix,
     });
@@ -550,6 +551,48 @@ export default class Exchange extends ERC20 {
     return this.swapQuoteTokenForBaseToken(quoteTokenQtyBN, minBaseTokenQty, expiration, overrides);
   }
   // CALCULATIONS
+
+  async getAddLiquidityBaseTokenQtyFromQuoteTokenQty(quoteTokenQty) {
+    const quoteTokenQtyBN = this.toBigNumber(quoteTokenQty);
+    validateIsBigNumber(quoteTokenQtyBN, { prefix });
+
+    const [baseTokenReserveQty, internalBalances] = await Promise.all([
+      this.sdk.multicall.enqueue(this.baseToken.abi, this.baseToken.address, 'balanceOf', [
+        this.address,
+      ]),
+      this.sdk.multicall.enqueue(this.abi, this.address, 'internalBalances'),
+    ]);
+
+    const rawBaseTokenQty = getAddLiquidityBaseTokenQtyFromQuoteTokenQty(
+      this.toEthersBigNumber(quoteTokenQty, this.quoteToken.decimals),
+      baseTokenReserveQty,
+      internalBalances,
+    );
+
+    const baseTokenQty = this.toBigNumber(rawBaseTokenQty, this.baseToken.decimals);
+    return baseTokenQty;
+  }
+
+  async getAddLiquidityQuoteTokenQtyFromBaseTokenQty(baseTokenQty) {
+    const baseTokenQtyBN = this.toBigNumber(baseTokenQty);
+    validateIsBigNumber(baseTokenQtyBN, { prefix });
+
+    const [baseTokenReserveQty, internalBalances] = await Promise.all([
+      this.sdk.multicall.enqueue(this.baseToken.abi, this.baseToken.address, 'balanceOf', [
+        this.address,
+      ]),
+      this.sdk.multicall.enqueue(this.abi, this.address, 'internalBalances'),
+    ]);
+
+    const rawQuoteTokenQty = getAddLiquidityQuoteTokenQtyFromBaseTokenQty(
+      this.toEthersBigNumber(baseTokenQty, this.baseToken.decimals),
+      baseTokenReserveQty,
+      internalBalances,
+    );
+
+    const quoteTokenQty = this.toBigNumber(rawQuoteTokenQty, this.quoteToken.decimals);
+    return quoteTokenQty;
+  }
 
   /**
    * gets the expected output amount of base tokens given the input

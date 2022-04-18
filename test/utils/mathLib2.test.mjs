@@ -4,6 +4,8 @@ import { ethers } from 'ethers';
 import {
   BASIS_POINTS,
   calculateQtyToReturnAfterFees,
+  getAddLiquidityBaseTokenQtyFromQuoteTokenQty,
+  getAddLiquidityQuoteTokenQtyFromBaseTokenQty,
   getBaseTokenQtyFromQuoteTokenQty,
   getLPTokenQtyFromTokenQtys,
 } from '../../src/utils/mathLib2.mjs';
@@ -144,7 +146,6 @@ describe('MathLib2', async () => {
         totalLPTokenSupply,
         internalBalances,
       );
-      console.log(calculatedLPTokenGenerated.toString());
       expect(calculatedLPTokenGenerated.toString()).to.equal('1000000000000000002400');
     });
 
@@ -176,7 +177,6 @@ describe('MathLib2', async () => {
         totalLPTokenSupply,
         internalBalances,
       );
-      console.log(calculatedLPTokenGenerated.toString());
       expect(calculatedLPTokenGenerated.toString()).to.equal('499999999999999999450');
     });
 
@@ -309,8 +309,147 @@ describe('MathLib2', async () => {
         totalLPTokenSupply,
         internalBalances,
       );
-      console.log(calculatedLPTokenGenerated.toString());
       expect(calculatedLPTokenGenerated.toString()).to.equal('16666666666666666666666');
+    });
+  });
+
+  describe('getAddLiquidityQuoteTokenQtyFromBaseTokenQty', () => {
+    it('should return correct amount of quoteToken qty, when baseDecay is present', () => {
+      // 1000, 5000 -> 1500, 5000 (a rebase up occurs)
+      // quotetokenReqd => alphaDecay * (iOmega) = 2500
+      // if 100 BaseTokenQty -> 2500 quoteTokenQty (for baseDecay) +
+      // with (1500,7500) DAE for 100 BaseTokens(100 *(7500/1500) = 500)
+      // Hence if 100 Base Token for 500 Basetokendecay, quoteToken reqd is 2500 + 500
+      const internalBalanceBaseTokenReserveQty = ethers.utils.parseUnits('1000', 18);
+      const internalBalancesQuoteTokenReserveQty = ethers.utils.parseUnits('5000', 18);
+      const internalBalancesKLast = internalBalanceBaseTokenReserveQty.mul(
+        internalBalancesQuoteTokenReserveQty,
+      );
+
+      const internalBalances = {
+        baseTokenReserveQty: internalBalanceBaseTokenReserveQty,
+        quoteTokenReserveQty: internalBalancesQuoteTokenReserveQty,
+        kLast: internalBalancesKLast,
+      };
+
+      const baseTokenReserveQty = ethers.utils.parseUnits('1500', 18);
+      const baseTokenQty = ethers.utils.parseUnits('100', 18);
+      const quoteTokenQty = getAddLiquidityQuoteTokenQtyFromBaseTokenQty(
+        baseTokenQty,
+        baseTokenReserveQty,
+        internalBalances,
+      );
+
+      expect(quoteTokenQty.toString()).to.equal('3000000000000000000000');
+    });
+
+    it('should return correct amount of quoteToken qty, when quoteTokenDecay is present', () => {
+      // 1000, 5000 -> 500, 5000 (a rebase down occurs)
+      // baseTokenReqd = 1000-500=500
+      // hence if baseTokenQty <= 500, quoteToken = 0
+      // if baseToken > 500, then DAE of baseTokenQty :: (1000,1000)
+      const internalBalanceBaseTokenReserveQty = ethers.utils.parseUnits('1000', 18);
+      const internalBalancesQuoteTokenReserveQty = ethers.utils.parseUnits('5000', 18);
+      const internalBalancesKLast = internalBalanceBaseTokenReserveQty.mul(
+        internalBalancesQuoteTokenReserveQty,
+      );
+
+      const internalBalances = {
+        baseTokenReserveQty: internalBalanceBaseTokenReserveQty,
+        quoteTokenReserveQty: internalBalancesQuoteTokenReserveQty,
+        kLast: internalBalancesKLast,
+      };
+
+      const baseTokenReserveQty = ethers.utils.parseUnits('500', 18);
+
+      const baseTokenQty1 = ethers.utils.parseUnits('100', 18);
+      const quoteTokenQty1 = getAddLiquidityQuoteTokenQtyFromBaseTokenQty(
+        baseTokenQty1,
+        baseTokenReserveQty,
+        internalBalances,
+      );
+      const baseTokenQty2 = ethers.utils.parseUnits('500', 18);
+      const quoteTokenQty2 = getAddLiquidityQuoteTokenQtyFromBaseTokenQty(
+        baseTokenQty2,
+        baseTokenReserveQty,
+        internalBalances,
+      );
+
+      const baseTokenQty3 = ethers.utils.parseUnits('600', 18);
+      const quoteTokenQty3 = getAddLiquidityQuoteTokenQtyFromBaseTokenQty(
+        baseTokenQty3,
+        baseTokenReserveQty,
+        internalBalances,
+      );
+
+      expect(quoteTokenQty1.toString()).to.equal('0');
+      expect(quoteTokenQty2.toString()).to.equal('0');
+      expect(quoteTokenQty3.toString()).to.equal('500000000000000000000');
+    });
+  });
+
+  describe('getAddLiquidityBaseTokenQtyFromQuoteTokenQty', () => {
+    it('should return correct amount of baseToken qty, when baseDecay is present', () => {
+      const internalBalanceBaseTokenReserveQty = ethers.utils.parseUnits('1000', 18);
+      const internalBalancesQuoteTokenReserveQty = ethers.utils.parseUnits('5000', 18);
+      const internalBalancesKLast = internalBalanceBaseTokenReserveQty.mul(
+        internalBalancesQuoteTokenReserveQty,
+      );
+
+      const internalBalances = {
+        baseTokenReserveQty: internalBalanceBaseTokenReserveQty,
+        quoteTokenReserveQty: internalBalancesQuoteTokenReserveQty,
+        kLast: internalBalancesKLast,
+      };
+
+      const baseTokenReserveQty = ethers.utils.parseUnits('1500', 18);
+      const quoteTokenQty1 = ethers.utils.parseUnits('2600', 18);
+      const baseTokenQty1 = getAddLiquidityBaseTokenQtyFromQuoteTokenQty(
+        quoteTokenQty1,
+        baseTokenReserveQty,
+        internalBalances,
+      );
+      expect(baseTokenQty1.toString()).to.equal('20000000000000000000');
+
+      const quoteTokenQty2 = ethers.utils.parseUnits('2500', 18);
+      const baseTokenQty2 = getAddLiquidityBaseTokenQtyFromQuoteTokenQty(
+        quoteTokenQty2,
+        baseTokenReserveQty,
+        internalBalances,
+      );
+      expect(baseTokenQty2.toString()).to.equal('0');
+
+      const quoteTokenQty3 = ethers.utils.parseUnits('100', 18);
+      const baseTokenQty3 = getAddLiquidityBaseTokenQtyFromQuoteTokenQty(
+        quoteTokenQty3,
+        baseTokenReserveQty,
+        internalBalances,
+      );
+      expect(baseTokenQty3.toString()).to.equal('0');
+    });
+
+    it('should return correct amount of baseToken qty, when quoteTokenDecay is present', () => {
+      const internalBalanceBaseTokenReserveQty = ethers.utils.parseUnits('1000', 18);
+      const internalBalancesQuoteTokenReserveQty = ethers.utils.parseUnits('5000', 18);
+      const internalBalancesKLast = internalBalanceBaseTokenReserveQty.mul(
+        internalBalancesQuoteTokenReserveQty,
+      );
+
+      const internalBalances = {
+        baseTokenReserveQty: internalBalanceBaseTokenReserveQty,
+        quoteTokenReserveQty: internalBalancesQuoteTokenReserveQty,
+        kLast: internalBalancesKLast,
+      };
+
+      const baseTokenReserveQty = ethers.utils.parseUnits('500', 18);
+
+      const quoteTokenQty1 = ethers.utils.parseUnits('100', 18);
+      const baseTokenQty1 = getAddLiquidityBaseTokenQtyFromQuoteTokenQty(
+        quoteTokenQty1,
+        baseTokenReserveQty,
+        internalBalances,
+      );
+      expect(baseTokenQty1.toString()).to.equal('520000000000000000000');
     });
   });
 });

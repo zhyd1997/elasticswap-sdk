@@ -6,6 +6,144 @@ const ONE = ethers.BigNumber.from(1);
 const TWO = ethers.BigNumber.from(2);
 const WAD = ethers.utils.parseUnits('1', 18);
 
+export const getAddLiquidityBaseTokenQtyFromQuoteTokenQty = (
+  quoteTokenQty,
+  baseTokenReserveQty,
+  internalBalances,
+) => {
+  let baseTokenQtyToReturn = ZERO;
+  // check if decay (base or quote) is present
+  if (isSufficientDecayPresent(baseTokenReserveQty, internalBalances)) {
+    // if base token Decay is present
+    if (baseTokenReserveQty.gt(internalBalances.baseTokenReserveQty)) {
+      const baseTokenDecay = baseTokenReserveQty.sub(internalBalances.baseTokenReserveQty);
+      const quoteTokenQtyRequiredToRemoveBaseTokenDecayCompletely =
+        calculateMaxQuoteTokenQtyWhenBaseDecayIsPresentForSingleAssetEntry(
+          baseTokenReserveQty,
+          internalBalances,
+        );
+
+      if (quoteTokenQty.gt(quoteTokenQtyRequiredToRemoveBaseTokenDecayCompletely)) {
+        const remQuoteTokenQty = quoteTokenQty.sub(
+          quoteTokenQtyRequiredToRemoveBaseTokenDecayCompletely,
+        );
+
+        const updatedInternalBalancesBaseTokenReserveQty =
+          internalBalances.baseTokenReserveQty.add(baseTokenDecay);
+
+        const updatedInternalBalancesQuoteTokenReserveQty =
+          internalBalances.quoteTokenReserveQty.add(
+            quoteTokenQtyRequiredToRemoveBaseTokenDecayCompletely,
+          );
+
+        const baseTokenQtyToMatchRemQuoteTokenQty = calculateQty(
+          remQuoteTokenQty,
+          updatedInternalBalancesQuoteTokenReserveQty,
+          updatedInternalBalancesBaseTokenReserveQty,
+        );
+        baseTokenQtyToReturn = baseTokenQtyToMatchRemQuoteTokenQty;
+      }
+    } else {
+      // quoteToken decay is present
+      const baseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely =
+        calculateMaxBaseTokenQtyWhenQuoteDecayIsPresentForSingleAssetEntry(
+          baseTokenReserveQty,
+          internalBalances,
+        );
+
+      const baseTokenQtyToMatchQuoteTokenQty = calculateQty(
+        quoteTokenQty,
+        internalBalances.quoteTokenReserveQty,
+        internalBalances.baseTokenReserveQty,
+      );
+      baseTokenQtyToReturn = baseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely.add(
+        baseTokenQtyToMatchQuoteTokenQty,
+      );
+    }
+  } else {
+    // no decay
+    baseTokenQtyToReturn = calculateQty(
+      quoteTokenQty,
+      internalBalances.quoteTokenReserveQty,
+      internalBalances.baseTokenReserveQty,
+    );
+  }
+  return baseTokenQtyToReturn;
+};
+
+export const getAddLiquidityQuoteTokenQtyFromBaseTokenQty = (
+  baseTokenQty,
+  baseTokenReserveQty,
+  internalBalances,
+) => {
+  let quoteTokenQtyToReturn = ZERO;
+  // check if decay (base or quote) is present
+  if (isSufficientDecayPresent(baseTokenReserveQty, internalBalances)) {
+    // if base token decay is present
+    if (baseTokenReserveQty.gt(internalBalances.baseTokenReserveQty)) {
+      // quoteTokenQty =
+      // quoteToken(baseTokenDecay)+amount to for baseTokenQty(assuming the decay got matched)
+      const quoteTokenToRemoveBaseTokenDecayCompletely =
+        calculateMaxQuoteTokenQtyWhenBaseDecayIsPresentForSingleAssetEntry(
+          baseTokenReserveQty,
+          internalBalances,
+        );
+
+      const baseTokenDecay = baseTokenReserveQty.sub(internalBalances.baseTokenReserveQty);
+
+      // to match baseTokenQty - assuming baseTokenDecay has been nullified
+      // internalBalances.baseTokenReserveQty = internalBalances.baseTokenReserveQty + alphaDecay
+      // internalBalances.quoteTokenReserveQty
+      // = internalBalances.quoteTokenReserveQty + quoteTokenToRemoveBaseTokenDecayCompletely
+      const updatedInternalBalancesBaseTokenReserveQty =
+        internalBalances.baseTokenReserveQty.add(baseTokenDecay);
+      const updatedInternalBalancesQuoteTokenReserveQty = internalBalances.quoteTokenReserveQty.add(
+        quoteTokenToRemoveBaseTokenDecayCompletely,
+      );
+
+      const quoteTokenQtyToMatchBaseTokenQty = calculateQty(
+        baseTokenQty,
+        updatedInternalBalancesBaseTokenReserveQty,
+        updatedInternalBalancesQuoteTokenReserveQty,
+      );
+      quoteTokenQtyToReturn = quoteTokenToRemoveBaseTokenDecayCompletely.add(
+        quoteTokenQtyToMatchBaseTokenQty,
+      );
+    } else {
+      // quote token decay is present
+      const baseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely =
+        calculateMaxBaseTokenQtyWhenQuoteDecayIsPresentForSingleAssetEntry(
+          baseTokenReserveQty,
+          internalBalances,
+        );
+      // if baseTokenQty => reqdbaseToken amnt:
+      //    quoteToken qty :: baseTokenQty - reqdBaseTokenToRemoveDecay
+      // else quoteTokenQty = 0
+      if (baseTokenQty.gt(baseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely)) {
+        const remBaseTokenQty = baseTokenQty.sub(
+          baseTokenQtyRequiredToRemoveQuoteTokenDecayCompletely,
+        );
+
+        const quoteTokenQtyToMatchRemBaseTokenQty = calculateQty(
+          remBaseTokenQty,
+          internalBalances.baseTokenReserveQty,
+          internalBalances.quoteTokenReserveQty,
+        );
+        quoteTokenQtyToReturn = quoteTokenQtyToMatchRemBaseTokenQty;
+      }
+    }
+  } else {
+    // no decay - quoteTokenAmount such that the ratio is same (quoteTokenQty::baseTokenQty)
+    const quoteTokenQtyToMatchBaseTokenQty = calculateQty(
+      baseTokenQty,
+      internalBalances.baseTokenReserveQty,
+      internalBalances.quoteTokenReserveQty,
+    );
+    quoteTokenQtyToReturn = quoteTokenQtyToMatchBaseTokenQty;
+  }
+  return quoteTokenQtyToReturn;
+};
+
 /**
  * get the base qty expected to output (assuming no slippage) based on the quoteTokenQty
  * passed in.
@@ -242,7 +380,7 @@ const calculateLiquidityTokenFees = (totalLPTokenSupply, internalBalances) => {
  * @param {*} internalBalances
  * @returns boolean
  */
-const isSufficientDecayPresent = (baseTokenReserveQty, internalBalances) => {
+export const isSufficientDecayPresent = (baseTokenReserveQty, internalBalances) => {
   const baseTokenReserveDifference = baseTokenReserveQty
     .sub(internalBalances.baseTokenReserveQty)
     .mul(WAD)
@@ -266,7 +404,10 @@ const calculateAddBaseTokenLiquidityQuantities = (
   totalSupplyOfLP,
   internalBalances,
 ) => {
-  const maxBaseTokenQty = internalBalances.baseTokenReserveQty.sub(baseTokenReserveQty);
+  const maxBaseTokenQty = calculateMaxBaseTokenQtyWhenQuoteDecayIsPresentForSingleAssetEntry(
+    baseTokenReserveQty,
+    internalBalances,
+  );
 
   let baseTokenQtyUsed;
   if (baseTokenQty.gt(maxBaseTokenQty)) {
@@ -305,7 +446,7 @@ const calculateAddQuoteTokenLiquidityQuantities = (
   totalSupplyOfLiquidityTokens,
   internalBalances,
 ) => {
-  const baseTokenDecay = baseTokenReserveQty.sub(internalBalances.baseTokenReserveQty);
+  // const baseTokenDecay = baseTokenReserveQty.sub(internalBalances.baseTokenReserveQty);
 
   // omega - X/Y
   const internalBaseTokenToQuoteTokenRatio = wDiv(
@@ -314,7 +455,11 @@ const calculateAddQuoteTokenLiquidityQuantities = (
   );
 
   // alphaDecay / omega (A/B)
-  const maxQuoteTokenQty = wDiv(baseTokenDecay, internalBaseTokenToQuoteTokenRatio);
+  // const maxQuoteTokenQty = wDiv(baseTokenDecay, internalBaseTokenToQuoteTokenRatio);
+  const maxQuoteTokenQty = calculateMaxQuoteTokenQtyWhenBaseDecayIsPresentForSingleAssetEntry(
+    baseTokenReserveQty,
+    internalBalances,
+  );
 
   // deltaBeta
   let quoteTokenQtyUsed;
@@ -359,6 +504,31 @@ const calculateLiquidityTokenQtyForSingleAssetEntryWithBaseTokenDecay = (
   const denominator = ratio.add(internalTokenAReserveQty);
   const gamma = wDiv(tokenAQty, denominator);
   return wDiv(wMul(totalLPTokenSupply.mul(WAD), gamma), WAD.sub(gamma)).div(WAD);
+};
+
+export const calculateMaxBaseTokenQtyWhenQuoteDecayIsPresentForSingleAssetEntry = (
+  baseTokenReserveQty,
+  internalBalances,
+) => {
+  const maxBaseTokenQty = internalBalances.baseTokenReserveQty.sub(baseTokenReserveQty);
+  return maxBaseTokenQty;
+};
+
+export const calculateMaxQuoteTokenQtyWhenBaseDecayIsPresentForSingleAssetEntry = (
+  baseTokenReserveQty,
+  internalBalances,
+) => {
+  const baseTokenDecay = baseTokenReserveQty.sub(internalBalances.baseTokenReserveQty);
+
+  // omega - X/Y
+  const internalBaseTokenToQuoteTokenRatio = wDiv(
+    internalBalances.baseTokenReserveQty,
+    internalBalances.quoteTokenReserveQty,
+  );
+
+  // alphaDecay / omega (A/B)
+  const maxQuoteTokenQty = wDiv(baseTokenDecay, internalBaseTokenToQuoteTokenRatio);
+  return maxQuoteTokenQty;
 };
 
 /**
