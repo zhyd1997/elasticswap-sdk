@@ -2,21 +2,25 @@
 
 import { ethers } from 'ethers';
 import Base from '../Base.mjs';
-import SLP from '../tokens/SLP.mjs';
 
-const ticLogo = './images/stake/tic.svg';
-const slpLogo = './images/stake/tic-usdc-sushi.svg';
+const ticLogo = 'https://raw.githubusercontent.com/ElasticSwap/brand/master/TIC/tic-circle.png';
+const elpLogo =
+  'https://raw.githubusercontent.com/ElasticSwap/brand/master/ELP/ELP-circle-400px.png';
+const amplUSDCLogo = './images/stake/ampl-usdc-elp.png';
+const ticUSDCLogo = './images/stake/tic-usdc-elp.png';
+const esLogo =
+  'https://raw.githubusercontent.com/ElasticSwap/brand/master/ElasticSwap/circle-400px.png';
 
-const TIC_USDC_SLP_ADDRESS = '0x4cf9dc05c715812fead782dc98de0168029e05c8';
+const TIC_USDC_ELP_ADDRESS = '0x4ae1da57f2d6b2e9a23d07e264aa2b3bbcaed19a';
 
 /**
  * Provides interface for compiled staking pool data.
  *
  * @export
- * @class StakingPool
+ * @class MerklePool
  * @extends {Base}
  */
-export default class StakingPool extends Base {
+export default class MerklePool extends Base {
   constructor(sdk, poolId) {
     super(sdk);
 
@@ -41,7 +45,7 @@ export default class StakingPool extends Base {
    * The most recent account noticed by the pool
    *
    * @readonly
-   * @memberof StakingPool
+   * @memberof MerklePool
    */
   get account() {
     return this._account;
@@ -51,7 +55,7 @@ export default class StakingPool extends Base {
    * A boolean indicating if the pool is currently active (providing rewards)
    *
    * @readonly
-   * @memberof StakingPool
+   * @memberof MerklePool
    */
   get active() {
     return this.rewardRate.isGreaterThan(0);
@@ -61,7 +65,7 @@ export default class StakingPool extends Base {
    * The apr of the pool
    *
    * @readonly
-   * @memberof StakingPool
+   * @memberof MerklePool
    */
   get apr() {
     return this._apr;
@@ -71,27 +75,57 @@ export default class StakingPool extends Base {
    * A promise which is resolved after the first data load
    *
    * @readonly
-   * @memberof StakingPool
+   * @memberof MerklePool
    */
   get awaitInitialized() {
     return this._promise;
   }
 
   /**
+   * The exchange for this pool, if any
+   *
+   * @readonly
+   * @memberof MerklePool
+   */
+  get exchange() {
+    return this._exchange;
+  }
+
+  /**
    * The url of an image to use with the pool
    *
    * @readonly
-   * @memberof StakingPool
+   * @memberof MerklePool
    */
   get image() {
-    return this.name.match(/SLP/) ? slpLogo : ticLogo;
+    if (this.token.address === this.sdk.contractAddress('TicToken')) {
+      return ticLogo;
+    }
+
+    if (this.token.address === this.sdk.contractAddress('TimeTokenTeam')) {
+      return esLogo;
+    }
+
+    if (this.token.address === this.sdk.contractAddress('TimeTokenPreSeed')) {
+      return esLogo;
+    }
+
+    if (this.token.address === '0xa0c5aa50ce3cc69b1c478d8235597bc0c51dfdab') {
+      return elpLogo;
+    }
+
+    if (this.token.address === '0x1b80e501e397dbf8b7d86d06bd42679d61cac756') {
+      return amplUSDCLogo;
+    }
+
+    return ticUSDCLogo;
   }
 
   /**
    * The id of the pool
    *
    * @readonly
-   * @memberof StakingPool
+   * @memberof MerklePool
    */
   get id() {
     return this._poolId;
@@ -101,33 +135,37 @@ export default class StakingPool extends Base {
    * The name of the pool
    *
    * @readonly
-   * @memberof StakingPool
+   * @memberof MerklePool
    */
   get name() {
     if (this.token.address === this.sdk.contractAddress('TicToken')) {
       return 'TIC';
     }
 
-    if (this.token.address === this.sdk.contractAddress('TimeTokenPreSeed')) {
-      return 'Pre-seed';
-    }
-
     if (this.token.address === this.sdk.contractAddress('TimeTokenTeam')) {
       return 'Team';
     }
 
-    if (this.token.address === this.sdk.contractAddress('TimeTokenDAO')) {
-      return 'DAO';
+    if (this.token.address === this.sdk.contractAddress('TimeTokenPreSeed')) {
+      return 'Pre-seed';
     }
 
-    return 'TIC/USDC.e SLP';
+    if (this.token.address === '0xa0c5aa50ce3cc69b1c478d8235597bc0c51dfdab') {
+      return 'AMPL/TIC ELP';
+    }
+
+    if (this.token.address === '0x1b80e501e397dbf8b7d86d06bd42679d61cac756') {
+      return 'AMPL/USDC.e ELP';
+    }
+
+    return 'TIC/USDC.e ELP';
   }
 
   /**
    * The reward rate of the pool
    *
    * @readonly
-   * @memberof StakingPool
+   * @memberof MerklePool
    */
   get rewardRate() {
     return this._rewardRate;
@@ -137,7 +175,7 @@ export default class StakingPool extends Base {
    * The staked balance of account
    *
    * @readonly
-   * @memberof StakingPool
+   * @memberof MerklePool
    */
   get staked() {
     return this._staked;
@@ -147,7 +185,7 @@ export default class StakingPool extends Base {
    * Active or Inactive based on the active boolean value
    *
    * @readonly
-   * @memberof StakingPool
+   * @memberof MerklePool
    */
   get status() {
     return this.active ? 'Active' : 'Inactive';
@@ -157,7 +195,7 @@ export default class StakingPool extends Base {
    * The ERC20 instance of the token which can be deposited
    *
    * @readonly
-   * @memberof StakingPool
+   * @memberof MerklePool
    */
   get token() {
     return this._token;
@@ -167,7 +205,7 @@ export default class StakingPool extends Base {
    * The amount of token the staking pool is allowed to pull from account
    *
    * @readonly
-   * @memberof StakingPool
+   * @memberof MerklePool
    */
   get tokenAllowance() {
     return this._tokenAllowance;
@@ -177,7 +215,7 @@ export default class StakingPool extends Base {
    * The current token balance of account
    *
    * @readonly
-   * @memberof StakingPool
+   * @memberof MerklePool
    */
   get tokenBalance() {
     return this._tokenBalance;
@@ -187,7 +225,7 @@ export default class StakingPool extends Base {
    * The current token balance of the pool
    *
    * @readonly
-   * @memberof StakingPool
+   * @memberof MerklePool
    */
   get totalDeposited() {
     return this._totalDeposited;
@@ -197,7 +235,7 @@ export default class StakingPool extends Base {
    * The total value locked in the pool
    *
    * @readonly
-   * @memberof StakingPool
+   * @memberof MerklePool
    */
   get tvl() {
     return this._tvl;
@@ -207,7 +245,7 @@ export default class StakingPool extends Base {
    * The amount of unclaimed rewards for account
    *
    * @readonly
-   * @memberof StakingPool
+   * @memberof MerklePool
    */
   get unclaimed() {
     return this._unclaimed;
@@ -217,7 +255,7 @@ export default class StakingPool extends Base {
    * The value of each token deposited in the pool
    *
    * @readonly
-   * @memberof StakingPool
+   * @memberof MerklePool
    */
   get valuePerToken() {
     return this._valuePerToken;
@@ -227,7 +265,7 @@ export default class StakingPool extends Base {
    * Boolean indicating if account can see the pool
    *
    * @readonly
-   * @memberof StakingPool
+   * @memberof MerklePool
    */
   get visible() {
     return this._visible;
@@ -237,12 +275,12 @@ export default class StakingPool extends Base {
    * Loads all of the pool data
    *
    * @return {bool}
-   * @memberof StakingPool
+   * @memberof MerklePool
    */
   async load() {
     this._lastUpdate = Date.now();
 
-    // Only valid on Avalanche. We'll never be deploying this contract elsewhere
+    // Only valid on Avalanche. We have not yet deployed this contract elsewhere
     if (this.sdk.networkHex !== '0xa86a') {
       this._account = ethers.constants.AddressZero;
       this._apr = this.toBigNumber(0);
@@ -260,34 +298,22 @@ export default class StakingPool extends Base {
       return true;
     }
 
-    const preSeedAddress = this.sdk.contractAddress('TimeTokenPreSeed');
-    const slp = new SLP(this.sdk, TIC_USDC_SLP_ADDRESS);
-    const ticAddress = this.sdk.contractAddress('TicToken');
-    const ticToken = this.sdk.erc20(ticAddress);
-
     this._account = this.sdk.account || ethers.constants.AddressZero;
 
-    const [
-      poolTotalDeposited,
-      poolRewardRate,
-      poolTokenAddress,
-      apr,
-      slpPrice,
-      staked,
-      unclaimed,
-      slpTotalSupply,
-      slpTicSupply,
-    ] = await Promise.all([
-      this.sdk.stakingPools.getPoolTotalDeposited(this.id),
-      this.sdk.stakingPools.getPoolRewardRate(this.id),
-      this.sdk.stakingPools.getPoolToken(this.id),
-      this.sdk.stakingPools.getAPR(this.id),
-      slp.priceOfSLPInToken1(this.id),
-      this.sdk.stakingPools.getStakeTotalDeposited(this.account, this.id),
-      this.sdk.stakingPools.getStakeTotalUnclaimed(this.account, this.id),
-      slp.totalSupply(),
-      ticToken.balanceOf(slp.address),
-    ]);
+    const [poolTotalDeposited, poolRewardRate, poolTokenAddress, apr, staked, unclaimed] =
+      await Promise.all([
+        this.sdk.merklePools.getPoolTotalDeposited(this.id),
+        this.sdk.merklePools.getPoolRewardRate(this.id),
+        this.sdk.merklePools.getPoolToken(this.id),
+        this.sdk.merklePools.getAPR(this.id),
+        this.sdk.merklePools.getStakeTotalDeposited(this.account, this.id),
+        this.sdk.merklePools.getStakeTotalUnclaimed(this.account, this.id),
+      ]);
+
+    const preSeedAddress = this.sdk.contractAddress('TimeTokenPreSeed');
+    this._exchange = this.sdk.exchangeFactory.exchangeByAddress(poolTokenAddress);
+    const ticAddress = this.sdk.contractAddress('TicToken');
+    const ticToken = this.sdk.erc20(ticAddress);
 
     this._apr = apr;
     this._rewardRate = poolRewardRate;
@@ -297,23 +323,22 @@ export default class StakingPool extends Base {
     this._unclaimed = unclaimed;
     this._valuePerToken = this.toBigNumber(0);
 
-    // if this is the TIC / USDC.e SLP we can know it's value
-    if (this.token.address === slp.address) {
-      this._valuePerToken = slpPrice;
+    // if this is the TIC token, we can use the spot value of the ELP pool
+    if (this.token.address === ticAddress) {
+      const ticExchange = this.sdk.exchangeFactory.exchangeByAddress(TIC_USDC_ELP_ADDRESS);
+      this._valuePerToken = ticExchange.quoteTokenBalance.dividedBy(ticExchange.baseTokenBalance);
     }
 
-    // if this is the TIC token, we can use the spot value of the SLP pool
-    if (this.token.address === ticAddress) {
-      this._valuePerToken = slpPrice
-        .multipliedBy(slpTotalSupply)
-        .dividedBy(slpTicSupply)
-        .dividedBy(2);
+    // if this is an ELP exchange, we express the value in quote tokens
+    if (this.exchange) {
+      const totalSupply = await this.exchange.totalSupply();
+      this._valuePerToken = this.exchange.quoteTokenBalance.dividedBy(totalSupply).multipliedBy(2);
     }
 
     const [tokenBalance, tokenAllowance, tvl] = await Promise.all([
       this.token.balanceOf(this.account, { multicall: true }),
-      this.token.allowance(this.account, this.sdk.stakingPools.address, { multicall: true }),
-      this.sdk.stakingPools.getTVL(this.id, this.valuePerToken),
+      this.token.allowance(this.account, this.sdk.merklePools.address, { multicall: true }),
+      this.sdk.merklePools.getTVL(this.id, this.valuePerToken),
     ]);
 
     this._tokenAllowance = tokenAllowance;
@@ -328,11 +353,11 @@ export default class StakingPool extends Base {
     // visibility check
     this._visible = !this.tokenBalance.plus(this.staked).isZero();
 
-    if (this.token.address === slp.address || this.token.address === ticToken.address) {
+    if (this.exchange || this.token.address === ticToken.address) {
       this._visible = true;
     }
 
-    console.log('staking pool', this.id, 'load took', Date.now() - this._lastUpdate, 'ms');
+    console.log('merkle pool', this.id, 'load took', Date.now() - this._lastUpdate, 'ms');
 
     this.touch();
     this.sdk.touch();

@@ -8,7 +8,10 @@ import ERC20Class from './tokens/ERC20.mjs';
 import ExchangeClass from './exchange/Exchange.mjs';
 import ExchangeFactoryClass from './exchange/ExchangeFactory.mjs';
 import LocalStorageAdapterClass from './adapters/LocalStorageAdapter.mjs';
+import MerklePoolClass from './staking/MerklePool.mjs';
+import MerklePoolsClass from './staking/MerklePools.mjs';
 import MulticallClass from './Multicall.mjs';
+import StakingPoolClass from './staking/StakingPool.mjs';
 import StakingPoolsClass from './staking/StakingPools.mjs';
 import StorageAdapterClass from './adapters/StorageAdapter.mjs';
 import SubscribableClass from './Subscribable.mjs';
@@ -112,7 +115,10 @@ export const ERC20 = ERC20Class;
 export const Exchange = ExchangeClass;
 export const ExchangeFactory = ExchangeFactoryClass;
 export const LocalStorageAdapter = LocalStorageAdapterClass;
+export const MerklePool = MerklePoolClass;
+export const MerklePools = MerklePoolsClass;
 export const Multicall = MulticallClass;
+export const StakingPool = StakingPoolClass;
 export const StakingPools = StakingPoolsClass;
 export const StorageAdapter = StorageAdapterClass;
 export const Subscribable = SubscribableClass;
@@ -305,6 +311,27 @@ export class SDK extends Subscribable {
    */
   get maxPriorityFeePerGas() {
     return this._maxPriorityFeePerGas || toBigNumber(0);
+  }
+
+  /**
+   * @readonly
+   * @returns {MerklePools} - An instance of {@link MerklePools} for the current EVM chain
+   * @memberof SDK
+   */
+  get merklePools() {
+    if (this._merklePools) {
+      return this._merklePools;
+    }
+
+    try {
+      const merklePoolsAddress = this.contractAddress('MerklePools');
+      this._merklePools = new MerklePools(this, merklePoolsAddress);
+      this.trackAddress(merklePoolsAddress);
+    } catch (e) {
+      console.error('Unable to load merklePools:', e);
+    }
+
+    return this._merklePools;
   }
 
   /**
