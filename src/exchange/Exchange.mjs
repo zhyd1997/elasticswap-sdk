@@ -550,6 +550,7 @@ export default class Exchange extends ERC20 {
     const expiration = Math.floor(Date.now() / 1000 + requestTimeoutSeconds);
     return this.swapQuoteTokenForBaseToken(quoteTokenQtyBN, minBaseTokenQty, expiration, overrides);
   }
+
   // CALCULATIONS
 
   async getAddLiquidityBaseTokenQtyFromQuoteTokenQty(quoteTokenQty) {
