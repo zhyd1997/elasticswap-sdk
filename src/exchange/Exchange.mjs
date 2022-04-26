@@ -413,7 +413,7 @@ export default class Exchange extends ERC20 {
       prefix,
     });
 
-    validate(this.toBigNumber(baseTokenQty).lt(baseTokenBalance), {
+    validate(this.toBigNumber(baseTokenQty).lte(baseTokenBalance), {
       message: `You don't have enough ${this.baseToken.symbol} token`,
       prefix,
     });
@@ -499,7 +499,7 @@ export default class Exchange extends ERC20 {
       prefix,
     });
 
-    validate(this.toBigNumber(quoteTokenQty).lt(quoteTokenBalance), {
+    validate(this.toBigNumber(quoteTokenQty).lte(quoteTokenBalance), {
       message: `You don't have enough ${this.quoteToken.symbol} token`,
       prefix,
     });
