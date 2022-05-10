@@ -185,7 +185,7 @@ export default class MerklePools extends Base {
 
     const lpToken = this.sdk.erc20(poolToken);
     const ticToken = this.sdk.erc20(this.sdk.contractAddress('TicToken'));
-    const usdcToken = this.sdk.erc20('0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664');
+    const usdcToken = this.sdk.erc20(this.sdk.contractAddress('USDC'));
     const ticUSDCExchange = await this.sdk.exchangeFactory.exchange(
       usdcToken.address,
       ticToken.address,

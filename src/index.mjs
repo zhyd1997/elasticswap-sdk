@@ -422,8 +422,10 @@ export class SDK extends Subscribable {
 
     try {
       const stakingPoolsAddress = this.contractAddress('StakingPools');
-      this._stakingPools = new StakingPools(this, stakingPoolsAddress);
-      this.trackAddress(stakingPoolsAddress);
+      if (isAddress(stakingPoolsAddress)) {
+        this._stakingPools = new StakingPools(this, stakingPoolsAddress);
+        this.trackAddress(stakingPoolsAddress);
+      }
     } catch (e) {
       console.error('Unable to load stakingPools:', e);
     }
@@ -638,6 +640,71 @@ export class SDK extends Subscribable {
    * @memberof SDK
    */
   contractAddress(contractName) {
+    // known defaults
+    if (this.networkHex === '0x1') {
+      if (contractName === 'TicToken') {
+        return '0x2163383c1f4e74fe36c50e6154c7f18d9fd06d6f';
+      }
+
+      if (contractName === 'USDC') {
+        return '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
+      }
+
+      if (contractName === 'AMPL/TIC') {
+        return ethers.constants.AddressZero;
+      }
+
+      if (contractName === 'AMPL/USDC') {
+        return '0xa0c5aa50ce3cc69b1c478d8235597bc0c51dfdab';
+      }
+
+      if (contractName === 'AMPL/USDC.e') {
+        return ethers.constants.AddressZero;
+      }
+
+      if (contractName === 'FOXy/FOX') {
+        return '0x1b80e501e397dbf8b7d86d06bd42679d61cac756';
+      }
+
+      if (contractName === 'TIC/USDC') {
+        return '0x79274bf95e05f0e858ab78411f3ebe85909e4f76';
+      }
+
+      if (contractName === 'TIC/USDC.e') {
+        return ethers.constants.AddressZero;
+      }
+    }
+
+    if (this.networkHex === '0xa86a') {
+      if (contractName === 'USDC') {
+        return '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664';
+      }
+
+      if (contractName === 'AMPL/TIC') {
+        return '0xa0c5aa50ce3cc69b1c478d8235597bc0c51dfdab';
+      }
+
+      if (contractName === 'AMPL/USDC') {
+        return ethers.constants.AddressZero;
+      }
+
+      if (contractName === 'AMPL/USDC.e') {
+        return '0x1b80e501e397dbf8b7d86d06bd42679d61cac756';
+      }
+
+      if (contractName === 'FOXy/FOX') {
+        return ethers.constants.AddressZero;
+      }
+
+      if (contractName === 'TIC/USDC') {
+        return ethers.constants.AddressZero;
+      }
+
+      if (contractName === 'TIC/USDC.e') {
+        return '0x4ae1da57f2d6b2e9a23d07e264aa2b3bbcaed19a';
+      }
+    }
+
     try {
       const deployedContract = this.env.contracts[this.networkHex][contractName];
 
@@ -647,7 +714,7 @@ export class SDK extends Subscribable {
     } catch (e) {
       console.error('MISSING ADDRESS, contract:', contractName, e.message);
       console.error('This was caused by a bad wallet network or bad configuration');
-      return [];
+      return '';
     }
   }
 

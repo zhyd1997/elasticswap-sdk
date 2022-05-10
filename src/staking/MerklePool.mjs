@@ -110,15 +110,23 @@ export default class MerklePool extends Base {
       return esLogo;
     }
 
-    if (this.token.address === '0xa0c5aa50ce3cc69b1c478d8235597bc0c51dfdab') {
-      return elpLogo;
-    }
-
-    if (this.token.address === '0x1b80e501e397dbf8b7d86d06bd42679d61cac756') {
+    if (this.token.address === this.sdk.contractAddress('AMPL/USDC')) {
       return amplUSDCLogo;
     }
 
-    return ticUSDCLogo;
+    if (this.token.address === this.sdk.contractAddress('AMPL/USDC.e')) {
+      return amplUSDCLogo;
+    }
+
+    if (this.token.address === this.sdk.contractAddress('TIC/USDC')) {
+      return ticUSDCLogo;
+    }
+
+    if (this.token.address === this.sdk.contractAddress('TIC/USDC.e')) {
+      return ticUSDCLogo;
+    }
+
+    return elpLogo;
   }
 
   /**
@@ -150,15 +158,31 @@ export default class MerklePool extends Base {
       return 'Pre-seed';
     }
 
-    if (this.token.address === '0xa0c5aa50ce3cc69b1c478d8235597bc0c51dfdab') {
+    if (this.token.address === this.sdk.contractAddress('AMPL/TIC')) {
       return 'AMPL/TIC ELP';
     }
 
-    if (this.token.address === '0x1b80e501e397dbf8b7d86d06bd42679d61cac756') {
+    if (this.token.address === this.sdk.contractAddress('AMPL/USDC')) {
+      return 'AMPL/USDC ELP';
+    }
+
+    if (this.token.address === this.sdk.contractAddress('AMPL/USDC.e')) {
       return 'AMPL/USDC.e ELP';
     }
 
-    return 'TIC/USDC.e ELP';
+    if (this.token.address === this.sdk.contractAddress('FOXy/FOX')) {
+      return 'FOXy/FOX ELP';
+    }
+
+    if (this.token.address === this.sdk.contractAddress('TIC/USDC')) {
+      return 'TIC/USDC ELP';
+    }
+
+    if (this.token.address === this.sdk.contractAddress('TIC/USDC.e')) {
+      return 'TIC/USDC.e ELP';
+    }
+
+    return 'ELP';
   }
 
   /**
@@ -281,7 +305,7 @@ export default class MerklePool extends Base {
     this._lastUpdate = Date.now();
 
     // Only valid on Avalanche. We have not yet deployed this contract elsewhere
-    if (this.sdk.networkHex !== '0xa86a') {
+    if (this.sdk.networkHex !== '0xa86a' && this.sdk.networkHex !== '0x1') {
       this._account = ethers.constants.AddressZero;
       this._apr = this.toBigNumber(0);
       this._rewardRate = this.toBigNumber(0);
