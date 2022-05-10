@@ -49,7 +49,7 @@ export default class MerklePools extends Base {
    * @memberof MerklePools
    */
   get abi() {
-    return this.sdk.contractAbi('MerklePools') || sdk.contractAbi('MerklePoolsForeign');
+    return this.sdk.contractAbi('MerklePools') || this.sdk.contractAbi('MerklePoolsForeign');
   }
 
   /**
