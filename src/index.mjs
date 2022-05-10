@@ -324,7 +324,8 @@ export class SDK extends Subscribable {
     }
 
     try {
-      const merklePoolsAddress = this.contractAddress('MerklePools') || this.contractAddress('MerklePoolsForeign');
+      const merklePoolsAddress =
+        this.contractAddress('MerklePools') || this.contractAddress('MerklePoolsForeign');
       this._merklePools = new MerklePools(this, merklePoolsAddress);
       this.trackAddress(merklePoolsAddress);
     } catch (e) {
