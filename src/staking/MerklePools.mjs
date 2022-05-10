@@ -38,7 +38,7 @@ export default class MerklePools extends Base {
    * @memberof MerklePools
    */
   static contract(sdk, address, readonly = false) {
-    const abi = sdk.contractAbi('MerklePools');
+    const abi = sdk.contractAbi('MerklePools') || sdk.contractAbi('MerklePoolsForeign');
     return sdk.contract({ abi, address, readonly });
   }
 
@@ -49,7 +49,7 @@ export default class MerklePools extends Base {
    * @memberof MerklePools
    */
   get abi() {
-    return this.sdk.contractAbi('MerklePools');
+    return this.sdk.contractAbi('MerklePools') || this.sdk.contractAbi('MerklePoolsForeign');
   }
 
   /**
