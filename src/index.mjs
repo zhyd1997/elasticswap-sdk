@@ -324,7 +324,7 @@ export class SDK extends Subscribable {
     }
 
     try {
-      const merklePoolsAddress = this.contractAddress('MerklePools');
+      const merklePoolsAddress = this.contractAddress('MerklePools') || this.contractAddress('MerklePoolsForeign');
       this._merklePools = new MerklePools(this, merklePoolsAddress);
       this.trackAddress(merklePoolsAddress);
     } catch (e) {
@@ -744,49 +744,46 @@ export class SDK extends Subscribable {
     }
 
     if (hash) {
-      if (this.networkId !== 1) {
-        const { update, dismiss } = this._notify.notification({
-          autoDismiss: 0,
-          eventCode: 'TransactionSubmitted',
-          type: 'pending',
-          message: `Transaction ${shortenHash(hash)} is processing...`,
-          onclick: () => dismiss(),
-        });
+      const { update, dismiss } = this._notify.notification({
+        autoDismiss: 0,
+        eventCode: 'TransactionSubmitted',
+        type: 'pending',
+        message: `Transaction ${shortenHash(hash)} is processing...`,
+        onclick: () => dismiss(),
+      });
 
-        const txSuccess = (finalHash) => {
+      const txSuccess = (finalHash) => {
+        update({
+          autoDismiss: 4000,
+          type: 'success',
+          message: `Transaction ${shortenHash(finalHash)} succeeded.`,
+        });
+      };
+
+      const handleError = ({ reason, replacement }) => {
+        if (reason && replacement && replacement.hash) {
+          update({
+            message: `Transaction ${shortenHash(replacement.hash)} is processing...`,
+          });
+
+          wait(1)
+            .then(() => txSuccess(replacement.hash))
+            .catch((err) => handleError(err));
+        } else {
           update({
             autoDismiss: 4000,
-            type: 'success',
-            message: `Transaction ${shortenHash(finalHash)} succeeded.`,
+            type: 'error',
+            message: `Transaction ${shortenHash(replacement.hash)} failed.`,
           });
-        };
+        }
+      };
 
-        const handleError = ({ reason, replacement }) => {
-          if (reason && replacement && replacement.hash) {
-            update({
-              message: `Transaction ${shortenHash(replacement.hash)} is processing...`,
-            });
+      // wait 2 blocks because some networks lag on read
+      wait(2)
+        .then(() => txSuccess(hash))
+        .catch((err) => handleError(err));
 
-            wait(1)
-              .then(() => txSuccess(replacement.hash))
-              .catch((err) => handleError(err));
-          } else {
-            update({
-              autoDismiss: 4000,
-              type: 'error',
-              message: `Transaction ${shortenHash(replacement.hash)} failed.`,
-            });
-          }
-        };
-
-        // wait 2 blocks because some networks lag on read
-        wait(2)
-          .then(() => txSuccess(hash))
-          .catch((err) => handleError(err));
-
-        return { update, dismiss };
-      }
-      return this._notify.hash(hash);
+      return { update, dismiss };
     }
 
     if (obj) {
