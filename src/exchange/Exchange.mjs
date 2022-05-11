@@ -106,6 +106,12 @@ export default class Exchange extends ERC20 {
     return this._baseTokenAddress;
   }
 
+  /**
+   * Tha cached base token balance of the exchange
+   *
+   * @readonly
+   * @memberof Exchange
+   */
   get baseTokenBalance() {
     return this.baseToken.balances[this.address] || toBigNumber(0);
   }
@@ -120,6 +126,12 @@ export default class Exchange extends ERC20 {
     return this._quoteTokenAddress;
   }
 
+  /**
+   * The cached quote token balance of the exchange
+   *
+   * @readonly
+   * @memberof Exchange
+   */
   get quoteTokenBalance() {
     return this.quoteToken.balances[this.address] || toBigNumber(0);
   }
@@ -145,6 +157,28 @@ export default class Exchange extends ERC20 {
   }
 
   /**
+   * The price of one quote token in base tokens.
+   *
+   * @return {Promise<BigNumber>}
+   * @memberof Exchange
+   */
+  async priceofQuoteInBase() {
+    const { baseTokenReserveQty, quoteTokenReserveQty } = await this.internalBalances();
+    return baseTokenReserveQty.dividedBy(quoteTokenReserveQty);
+  }
+
+  /**
+   * The price of one base token in quote tokens.
+   *
+   * @return {Promise<BigNumber>}
+   * @memberof Exchange
+   */
+   async priceOfBaseInQuote() {
+    const { baseTokenReserveQty, quoteTokenReserveQty } = await this.internalBalances();
+    return quoteTokenReserveQty.dividedBy(baseTokenReserveQty);
+  }
+
+  /**
    * Returns the internal balances of the exchange. This always has to be up to date, so no caching
    * is performed on the result.
    *
@@ -166,7 +200,7 @@ export default class Exchange extends ERC20 {
     // fetch the value from the network using multicall
     if (!internalBalances) {
       const results = await this.sdk.multicall.enqueue(this.abi, this.address, 'internalBalances');
-      internalBalances = results[0];
+      internalBalances = results;
     }
 
     const baseTokenReserveQty = this.toBigNumber(
