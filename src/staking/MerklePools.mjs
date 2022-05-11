@@ -199,6 +199,28 @@ export default class MerklePools extends Base {
       usdcToken.balanceOf(poolToken),
     ]);
 
+    if (lpTicBalance.isZero() && lpToken.address === this.sdk.contractAddress('FOXy/FOX')) {
+      // the LP is FOXy/FOX
+      // APR is calculated by looking at the TIC / USDC exchange, getting the price of TIC in
+      // USDC and using that to derive the price of the LP pair
+      // FOX = $0.20
+      const ticPrice = ticUSDCExchange.quoteTokenBalance.dividedBy(
+        ticUSDCExchange.baseTokenBalance,
+      );
+
+      const exchange = await this.sdk.exchangeFactory.exchangeByAddress(poolToken);
+      const percentOfLPStaked = lpTokenInStaking.div(lpTokenTotalSupply);
+      const ticStaked = exchange.quoteTokenBalance
+        .multipliedBy(0.2)
+        .multipliedBy(percentOfLPStaked)
+        .dividedBy(ticPrice);
+      console.log('FOXyFOX TIC Staked', ticStaked.toFixed());
+      const valueStaked = ticStaked.multipliedBy(2); // 1/2 tic and 1/2 USDC
+
+      // doubled because of paired fees
+      return poolRate.multipliedBy(SECONDS_PER_YEAR).dividedBy(valueStaked).multipliedBy(2);
+    }
+
     if (lpTicBalance.isZero()) {
       // the LP does not have any TIC
       // APR is calculated by looking at the TIC / USDC exchange, getting the price of TIC in
