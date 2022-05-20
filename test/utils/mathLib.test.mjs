@@ -457,8 +457,8 @@ describe('MathLib', async () => {
 
   describe('tokenImbalanceQtys', () => {
     it('calculates imbalance as zero when no decay is present', () => {
-      const baseTokenReserveQty = ethers.BigNumber.from('1000', 18);
-      const quoteTokenReserveQty = ethers.BigNumber.from('1000', 18);
+      const baseTokenReserveQty = ethers.BigNumber.from('1000');
+      const quoteTokenReserveQty = ethers.BigNumber.from('1000');
       const internalBalances = {
         baseTokenReserveQty,
         quoteTokenReserveQty,
@@ -471,9 +471,9 @@ describe('MathLib', async () => {
     });
 
     it('calculates quote token imbalance when base decay is present', () => {
-      const baseTokenReserveQty = ethers.BigNumber.from('1000', 18);
-      const internalBaseTokenReserveQty = ethers.BigNumber.from('900', 18);
-      const quoteTokenReserveQty = ethers.BigNumber.from('1000', 18);
+      const baseTokenReserveQty = ethers.BigNumber.from('1000');
+      const internalBaseTokenReserveQty = ethers.BigNumber.from('900');
+      const quoteTokenReserveQty = ethers.BigNumber.from('1000');
       const internalBalances = {
         baseTokenReserveQty: internalBaseTokenReserveQty,
         quoteTokenReserveQty,
@@ -490,9 +490,9 @@ describe('MathLib', async () => {
     });
 
     it('calculates base token imbalance when quote decay is present', () => {
-      const baseTokenReserveQty = ethers.BigNumber.from('1000', 18);
-      const internalBaseTokenReserveQty = ethers.BigNumber.from('1100', 18);
-      const quoteTokenReserveQty = ethers.BigNumber.from('1000', 18);
+      const baseTokenReserveQty = ethers.BigNumber.from('1000');
+      const internalBaseTokenReserveQty = ethers.BigNumber.from('1100');
+      const quoteTokenReserveQty = ethers.BigNumber.from('1000');
       const internalBalances = {
         baseTokenReserveQty: internalBaseTokenReserveQty,
         quoteTokenReserveQty,
