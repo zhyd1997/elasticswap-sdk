@@ -4,7 +4,7 @@ export const BASIS_POINTS = ethers.BigNumber.from('10000');
 const ZERO = ethers.BigNumber.from(0);
 const ONE = ethers.BigNumber.from(1);
 const TWO = ethers.BigNumber.from(2);
-const WAD = ethers.utils.parseUnits('1', 18);
+export const WAD = ethers.utils.parseUnits('1', 18);
 
 export const getAddLiquidityBaseTokenQtyFromQuoteTokenQty = (
   quoteTokenQty,
@@ -603,4 +603,6 @@ export default {
   getBaseTokenQtyFromQuoteTokenQty,
   getQuoteTokenQtyFromBaseTokenQty,
   getTokenQtysFromLPTokenQty,
+  tokenImbalanceQtys,
+  WAD
 };

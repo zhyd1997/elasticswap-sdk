@@ -8,9 +8,11 @@ import {
   getAddLiquidityQuoteTokenQtyFromBaseTokenQty,
   getBaseTokenQtyFromQuoteTokenQty,
   getLPTokenQtyFromTokenQtys,
+  tokenImbalanceQtys,
+  WAD,
 } from '../../src/utils/mathLib.mjs';
 
-describe('MathLib2', async () => {
+describe('MathLib', async () => {
   describe('calculateQtyToReturnAfterFees', () => {
     it('works with 2 - 18 decimal tokens', () => {
       const tokenASwapQty = ethers.utils.parseUnits('100', 18);
@@ -450,6 +452,58 @@ describe('MathLib2', async () => {
         internalBalances,
       );
       expect(baseTokenQty1.toString()).to.equal('520000000000000000000');
+    });
+  });
+
+  describe('tokenImbalanceQtys', () => {
+    it('calculates imbalance as zero when no decay is present', () => {
+      const baseTokenReserveQty = ethers.BigNumber.from('1000', 18);
+      const quoteTokenReserveQty = ethers.BigNumber.from('1000', 18);
+      const internalBalances = {
+        baseTokenReserveQty,
+        quoteTokenReserveQty,
+        kLast: baseTokenReserveQty.mul(quoteTokenReserveQty),
+      };
+
+      const tokenImbalanceQtysValues = tokenImbalanceQtys(baseTokenReserveQty, internalBalances);
+      expect(tokenImbalanceQtysValues.baseTokenImbalanceQty.eq(ethers.constants.Zero)).to.be.true;
+      expect(tokenImbalanceQtysValues.quoteTokenImbalanceQty.eq(ethers.constants.Zero)).to.be.true;
+    });
+
+    it('calculates quote token imbalance when base decay is present', () => {
+      const baseTokenReserveQty = ethers.BigNumber.from('1000', 18);
+      const internalBaseTokenReserveQty = ethers.BigNumber.from('900', 18);
+      const quoteTokenReserveQty = ethers.BigNumber.from('1000', 18);
+      const internalBalances = {
+        baseTokenReserveQty: internalBaseTokenReserveQty,
+        quoteTokenReserveQty,
+        kLast: baseTokenReserveQty.mul(quoteTokenReserveQty),
+      };
+
+      const tokenImbalanceQtysValues = tokenImbalanceQtys(baseTokenReserveQty, internalBalances);
+      const wRatio = internalBaseTokenReserveQty.mul(WAD).div(quoteTokenReserveQty);
+      const decay = baseTokenReserveQty.sub(internalBaseTokenReserveQty);
+      const quoteTokenQtyExpected = decay.mul(WAD).div(wRatio);
+      
+      expect(tokenImbalanceQtysValues.baseTokenImbalanceQty.eq(ethers.constants.Zero)).to.be.true;
+      expect(tokenImbalanceQtysValues.quoteTokenImbalanceQty.eq(quoteTokenQtyExpected)).to.be.true;
+    });
+
+    it('calculates base token imbalance when quote decay is present', () => {
+      const baseTokenReserveQty = ethers.BigNumber.from('1000', 18);
+      const internalBaseTokenReserveQty = ethers.BigNumber.from('1100', 18);
+      const quoteTokenReserveQty = ethers.BigNumber.from('1000', 18);
+      const internalBalances = {
+        baseTokenReserveQty: internalBaseTokenReserveQty,
+        quoteTokenReserveQty,
+        kLast: baseTokenReserveQty.mul(quoteTokenReserveQty),
+      };
+
+      const tokenImbalanceQtysValues = tokenImbalanceQtys(baseTokenReserveQty, internalBalances);
+      const decay = internalBaseTokenReserveQty.sub(baseTokenReserveQty);
+
+      expect(tokenImbalanceQtysValues.quoteTokenImbalanceQty.eq(ethers.constants.Zero)).to.be.true;
+      expect(tokenImbalanceQtysValues.baseTokenImbalanceQty.eq(decay)).to.be.true;
     });
   });
 });
