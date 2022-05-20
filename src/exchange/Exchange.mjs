@@ -173,7 +173,7 @@ export default class Exchange extends ERC20 {
    * @return {Promise<BigNumber>}
    * @memberof Exchange
    */
-   async priceOfBaseInQuote() {
+  async priceOfBaseInQuote() {
     const { baseTokenReserveQty, quoteTokenReserveQty } = await this.internalBalances();
     return quoteTokenReserveQty.dividedBy(baseTokenReserveQty);
   }
