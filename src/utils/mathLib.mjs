@@ -604,5 +604,5 @@ export default {
   getQuoteTokenQtyFromBaseTokenQty,
   getTokenQtysFromLPTokenQty,
   tokenImbalanceQtys,
-  WAD
+  WAD,
 };

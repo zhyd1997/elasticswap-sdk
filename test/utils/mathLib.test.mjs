@@ -484,7 +484,7 @@ describe('MathLib', async () => {
       const wRatio = internalBaseTokenReserveQty.mul(WAD).div(quoteTokenReserveQty);
       const decay = baseTokenReserveQty.sub(internalBaseTokenReserveQty);
       const quoteTokenQtyExpected = decay.mul(WAD).div(wRatio);
-      
+
       expect(tokenImbalanceQtysValues.baseTokenImbalanceQty.eq(ethers.constants.Zero)).to.be.true;
       expect(tokenImbalanceQtysValues.quoteTokenImbalanceQty.eq(quoteTokenQtyExpected)).to.be.true;
     });
