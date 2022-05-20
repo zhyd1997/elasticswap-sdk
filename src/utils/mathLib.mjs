@@ -564,6 +564,39 @@ const squareRoot = (x) => {
   return y;
 };
 
+export const tokenImbalanceQtys = (baseTokenReserveQty, internalBalances) => {
+  if (!isSufficientDecayPresent(baseTokenReserveQty, internalBalances)) {
+    return {
+      baseTokenImbalanceQty: ZERO,
+      quoteTokenImbalanceQty: ZERO,
+    };
+  }
+
+  if (baseTokenReserveQty.gt(internalBalances.baseTokenReserveQty)) {
+    // we need more quote tokens in the system (base token decay)
+    const quoteTokenImbalanceQty =
+      calculateMaxQuoteTokenQtyWhenBaseDecayIsPresentForSingleAssetEntry(
+        baseTokenReserveQty,
+        internalBalances,
+      );
+
+    return {
+      baseTokenImbalanceQty: ZERO,
+      quoteTokenImbalanceQty,
+    };
+  }
+  // we need more base tokens in the system (quote token decay)
+  const baseTokenImbalanceQty = calculateMaxBaseTokenQtyWhenQuoteDecayIsPresentForSingleAssetEntry(
+    baseTokenReserveQty,
+    internalBalances,
+  );
+
+  return {
+    baseTokenImbalanceQty,
+    quoteTokenImbalanceQty: ZERO,
+  };
+};
+
 export default {
   BASIS_POINTS,
   calculateQtyToReturnAfterFees,
