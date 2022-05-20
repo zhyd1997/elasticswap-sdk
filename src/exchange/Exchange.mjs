@@ -17,7 +17,7 @@ import {
   getLPTokenQtyFromTokenQtys,
   getQuoteTokenQtyFromBaseTokenQty,
   getTokenQtysFromLPTokenQty,
-} from '../utils/mathLib2.mjs';
+} from '../utils/mathLib.mjs';
 
 const prefix = 'Exchange';
 const BASIS_POINTS = 10000;
