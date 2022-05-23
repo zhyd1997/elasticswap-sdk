@@ -8,7 +8,7 @@ import {
   getAddLiquidityQuoteTokenQtyFromBaseTokenQty,
   getBaseTokenQtyFromQuoteTokenQty,
   getLPTokenQtyFromTokenQtys,
-  tokenImbalanceQtys,
+  getTokenImbalanceQtys,
   WAD,
 } from '../../src/utils/mathLib.mjs';
 
@@ -465,9 +465,9 @@ describe('MathLib', async () => {
         kLast: baseTokenReserveQty.mul(quoteTokenReserveQty),
       };
 
-      const tokenImbalanceQtysValues = tokenImbalanceQtys(baseTokenReserveQty, internalBalances);
-      expect(tokenImbalanceQtysValues.baseTokenImbalanceQty.eq(ethers.constants.Zero)).to.be.true;
-      expect(tokenImbalanceQtysValues.quoteTokenImbalanceQty.eq(ethers.constants.Zero)).to.be.true;
+      const tokenImbalanceQtys = getTokenImbalanceQtys(baseTokenReserveQty, internalBalances);
+      expect(tokenImbalanceQtys.baseTokenImbalanceQty.eq(ethers.constants.Zero)).to.be.true;
+      expect(tokenImbalanceQtys.quoteTokenImbalanceQty.eq(ethers.constants.Zero)).to.be.true;
     });
 
     it('calculates quote token imbalance when base decay is present', () => {
@@ -480,13 +480,13 @@ describe('MathLib', async () => {
         kLast: baseTokenReserveQty.mul(quoteTokenReserveQty),
       };
 
-      const tokenImbalanceQtysValues = tokenImbalanceQtys(baseTokenReserveQty, internalBalances);
+      const tokenImbalanceQtys = getTokenImbalanceQtys(baseTokenReserveQty, internalBalances);
       const wRatio = internalBaseTokenReserveQty.mul(WAD).div(quoteTokenReserveQty);
       const decay = baseTokenReserveQty.sub(internalBaseTokenReserveQty);
       const quoteTokenQtyExpected = decay.mul(WAD).div(wRatio);
 
-      expect(tokenImbalanceQtysValues.baseTokenImbalanceQty.eq(ethers.constants.Zero)).to.be.true;
-      expect(tokenImbalanceQtysValues.quoteTokenImbalanceQty.eq(quoteTokenQtyExpected)).to.be.true;
+      expect(tokenImbalanceQtys.baseTokenImbalanceQty.eq(ethers.constants.Zero)).to.be.true;
+      expect(tokenImbalanceQtys.quoteTokenImbalanceQty.eq(quoteTokenQtyExpected)).to.be.true;
     });
 
     it('calculates base token imbalance when quote decay is present', () => {
@@ -499,11 +499,11 @@ describe('MathLib', async () => {
         kLast: baseTokenReserveQty.mul(quoteTokenReserveQty),
       };
 
-      const tokenImbalanceQtysValues = tokenImbalanceQtys(baseTokenReserveQty, internalBalances);
+      const tokenImbalanceQtys = getTokenImbalanceQtys(baseTokenReserveQty, internalBalances);
       const decay = internalBaseTokenReserveQty.sub(baseTokenReserveQty);
 
-      expect(tokenImbalanceQtysValues.quoteTokenImbalanceQty.eq(ethers.constants.Zero)).to.be.true;
-      expect(tokenImbalanceQtysValues.baseTokenImbalanceQty.eq(decay)).to.be.true;
+      expect(tokenImbalanceQtys.quoteTokenImbalanceQty.eq(ethers.constants.Zero)).to.be.true;
+      expect(tokenImbalanceQtys.baseTokenImbalanceQty.eq(decay)).to.be.true;
     });
   });
 });
