@@ -564,7 +564,7 @@ const squareRoot = (x) => {
   return y;
 };
 
-export const tokenImbalanceQtys = (baseTokenReserveQty, internalBalances) => {
+export const getTokenImbalanceQtys = (baseTokenReserveQty, internalBalances) => {
   if (!isSufficientDecayPresent(baseTokenReserveQty, internalBalances)) {
     return {
       baseTokenImbalanceQty: ZERO,
@@ -603,6 +603,6 @@ export default {
   getBaseTokenQtyFromQuoteTokenQty,
   getQuoteTokenQtyFromBaseTokenQty,
   getTokenQtysFromLPTokenQty,
-  tokenImbalanceQtys,
+  getTokenImbalanceQtys,
   WAD,
 };

@@ -16,6 +16,7 @@ import {
   getBaseTokenQtyFromQuoteTokenQty,
   getLPTokenQtyFromTokenQtys,
   getQuoteTokenQtyFromBaseTokenQty,
+  getTokenImbalanceQtys,
   getTokenQtysFromLPTokenQty,
 } from '../utils/mathLib.mjs';
 
@@ -737,15 +738,15 @@ export default class Exchange extends ERC20 {
       this.sdk.multicall.enqueue(this.abi, this.address, 'internalBalances'),
     ]);
 
-    const tokenImbalanceQtys = tokenImbalanceQtys(baseTokenReserveQty, internalBalances);
+    const tokenImbalancesQtys = getTokenImbalanceQtys(baseTokenReserveQty, internalBalances);
 
     return {
       baseTokenImbalanceQty: this.toBigNumber(
-        tokenImbalanceQtys.baseTokenImbalanceQty,
+        tokenImbalancesQtys.baseTokenImbalanceQty,
         this.baseToken.decimals,
       ),
       quoteTokenImbalanceQty: this.toBigNumber(
-        tokenImbalanceQtys.quoteTokenImbalanceQty,
+        tokenImbalancesQtys.quoteTokenImbalanceQty,
         this.quoteToken.decimals,
       ),
     };

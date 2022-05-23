@@ -8,7 +8,7 @@ import {
   getAddLiquidityQuoteTokenQtyFromBaseTokenQty,
   getBaseTokenQtyFromQuoteTokenQty,
   getLPTokenQtyFromTokenQtys,
-  tokenImbalanceQtys,
+  getTokenImbalanceQtys,
   WAD,
 } from '../../src/utils/mathLib.mjs';
 
@@ -465,7 +465,7 @@ describe('MathLib', async () => {
         kLast: baseTokenReserveQty.mul(quoteTokenReserveQty),
       };
 
-      const tokenImbalanceQtysValues = tokenImbalanceQtys(baseTokenReserveQty, internalBalances);
+      const tokenImbalanceQtysValues = getTokenImbalanceQtys(baseTokenReserveQty, internalBalances);
       expect(tokenImbalanceQtysValues.baseTokenImbalanceQty.eq(ethers.constants.Zero)).to.be.true;
       expect(tokenImbalanceQtysValues.quoteTokenImbalanceQty.eq(ethers.constants.Zero)).to.be.true;
     });
@@ -480,7 +480,7 @@ describe('MathLib', async () => {
         kLast: baseTokenReserveQty.mul(quoteTokenReserveQty),
       };
 
-      const tokenImbalanceQtysValues = tokenImbalanceQtys(baseTokenReserveQty, internalBalances);
+      const tokenImbalanceQtysValues = getTokenImbalanceQtys(baseTokenReserveQty, internalBalances);
       const wRatio = internalBaseTokenReserveQty.mul(WAD).div(quoteTokenReserveQty);
       const decay = baseTokenReserveQty.sub(internalBaseTokenReserveQty);
       const quoteTokenQtyExpected = decay.mul(WAD).div(wRatio);
@@ -499,7 +499,7 @@ describe('MathLib', async () => {
         kLast: baseTokenReserveQty.mul(quoteTokenReserveQty),
       };
 
-      const tokenImbalanceQtysValues = tokenImbalanceQtys(baseTokenReserveQty, internalBalances);
+      const tokenImbalanceQtysValues = getTokenImbalanceQtys(baseTokenReserveQty, internalBalances);
       const decay = internalBaseTokenReserveQty.sub(baseTokenReserveQty);
 
       expect(tokenImbalanceQtysValues.quoteTokenImbalanceQty.eq(ethers.constants.Zero)).to.be.true;
