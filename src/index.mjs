@@ -142,7 +142,7 @@ export class SDK extends Subscribable {
    * @param {function} config.customFetch - should implement the Fetch API (optional)
    * @param {Object} config.env - environment configuration
    * @param {Object} config.env.blocknative - bnc-notify initialization options
-   * @param {Array<hardhat-deploy.MultiExport|Object{constractName: string, abi: []}>} config.env.contracts - deployed contract configuration by network
+   * @param {Array<hardhat-deploy.MultiExport|Object{contractName: string, abi: []}>} config.env.contracts - deployed contract configuration by network
    * @param {ethers.providers.Provider} config.provider - default provider (optional)
    * @param {ethers.Signer} config.signer - initial ethers signer (optional)
    * @param {StorageAdapter} config.storageAdapter - (optional)
