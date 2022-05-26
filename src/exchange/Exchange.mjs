@@ -198,8 +198,8 @@ export default class Exchange extends ERC20 {
     if (isPOJO(overrides)) {
       const [results, btDecimals, qtDecimals] = await Promise.all([
         this.readonlyContract.internalBalances(overrides),
-        this.erc20(this.baseTokenAddress).decimals(overrides),
-        this.erc20(this.quoteTokenAddress).decimals(overrides),
+        this.sdk.erc20(this.baseTokenAddress).decimals(overrides),
+        this.sdk.erc20(this.quoteTokenAddress).decimals(overrides),
       ]);
 
       baseTokenDecimals = btDecimals;
@@ -211,8 +211,8 @@ export default class Exchange extends ERC20 {
     if (!internalBalances) {
       const [results, btDecimals, qtDecimals] = await Promise.all([
         this.sdk.multicall.enqueue(this.abi, this.address, 'internalBalances'),
-        this.erc20(this.baseTokenAddress).decimals({ multicall: true }),
-        this.erc20(this.quoteTokenAddress).decimals({ multicall: true }),
+        this.sdk.erc20(this.baseTokenAddress).decimals({ multicall: true }),
+        this.sdk.erc20(this.quoteTokenAddress).decimals({ multicall: true }),
       ]);
 
       baseTokenDecimals = btDecimals;
