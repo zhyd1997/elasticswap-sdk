@@ -190,27 +190,43 @@ export default class Exchange extends ERC20 {
    * @memberof ERC20
    */
   async internalBalances(overrides) {
+    let baseTokenDecimals;
     let internalBalances;
+    let quoteTokenDecimals;
 
     // if there are overrides, fetch directly from the readonly contract
     if (isPOJO(overrides)) {
-      const results = await this.readonlyContract.internalBalances(overrides);
-      internalBalances = results[0];
+      const [results, btDecimals, qtDecimals] = await Promise.all([
+        this.readonlyContract.internalBalances(overrides),
+        this.erc20(this.baseTokenAddress).decimals(overrides),
+        this.erc20(this.quoteTokenAddress).decimals(overrides),
+      ]);
+
+      baseTokenDecimals = btDecimals;
+      internalBalances = results;
+      quoteTokenDecimals = qtDecimals;
     }
 
     // fetch the value from the network using multicall
     if (!internalBalances) {
-      const results = await this.sdk.multicall.enqueue(this.abi, this.address, 'internalBalances');
+      const [results, btDecimals, qtDecimals] = await Promise.all([
+        this.sdk.multicall.enqueue(this.abi, this.address, 'internalBalances'),
+        this.erc20(this.baseTokenAddress).decimals({ multicall: true }),
+        this.erc20(this.quoteTokenAddress).decimals({ multicall: true }),
+      ]);
+
+      baseTokenDecimals = btDecimals;
       internalBalances = results;
+      quoteTokenDecimals = qtDecimals;
     }
 
     const baseTokenReserveQty = this.toBigNumber(
       internalBalances.baseTokenReserveQty,
-      this.baseToken.decimals,
+      baseTokenDecimals,
     );
     const quoteTokenReserveQty = this.toBigNumber(
       internalBalances.quoteTokenReserveQty,
-      this.quoteToken.decimals,
+      quoteTokenDecimals,
     );
 
     return { baseTokenReserveQty, quoteTokenReserveQty };
