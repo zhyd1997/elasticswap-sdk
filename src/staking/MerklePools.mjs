@@ -2,6 +2,7 @@
 
 import Base from '../Base.mjs';
 import MerklePool from './MerklePool.mjs';
+import MerkleTree from './MerkleTree.mjs';
 
 // 365.25 * 24 * 60 * 60
 const SECONDS_PER_YEAR = 31557600;
@@ -25,6 +26,7 @@ export default class MerklePools extends Base {
   constructor(sdk, address) {
     super(sdk);
     this._address = address;
+    this._merklePools = {};
   }
 
   /**
@@ -120,6 +122,17 @@ export default class MerklePools extends Base {
         this.sanitizeOverrides(overrides),
       ),
     );
+  }
+
+  /**
+   * Returns the lowercase address of the elastic lp reward token
+   *
+   * @return {*} 
+   * @memberof MerklePools
+   */
+  async elasticLPToken() {
+    const elasticLPTokenAddress = await this.readonlyContract.elasticLPToken();
+    return elasticLPTokenAddress.toLowerCase();
   }
 
   /**
@@ -351,6 +364,20 @@ export default class MerklePools extends Base {
   }
 
   /**
+   * Returns the total claimable amount of reward lp tokens
+   *
+   * @param {string} account
+   * @param {number} poolId
+   * @return {BigNumber} 
+   * @memberof MerklePools
+   */
+  async getStakeTotalClaimable(account, poolId) {
+    const merkleTree = await this.merkleTree(poolId);
+    const merkleLPAmount = merkleTree.totalLPTokenAmount(account, poolId);
+    return merkleLPAmount;
+  }
+
+  /**
    * Gets the total amount of tokens deposited by a specific address into the pool.
    *
    * @param {string} account - An EVM address of the account to get the deposited token balance for
@@ -380,13 +407,18 @@ export default class MerklePools extends Base {
    * @memberof MerklePools
    */
   async getStakeTotalUnclaimed(account, poolId, overrides = {}) {
-    const amount = await this.contract.getStakeTotalUnclaimed(
-      account,
-      this.toNumber(poolId),
-      this.sanitizeOverrides(overrides, true),
+    // get amount unclaimed from chain
+    const amountUnclaimed = this.toBigNumber(
+      await this.contract.getStakeTotalUnclaimed(
+        account,
+        this.toNumber(poolId),
+        this.sanitizeOverrides(overrides, true),
+      ),
+      18,
     );
 
-    return this.toBigNumber(amount, 18);
+    // return amount unclaimed
+    return amountUnclaimed;
   }
 
   /**
@@ -404,16 +436,34 @@ export default class MerklePools extends Base {
   }
 
   /**
-   * Returns the total number of token emissions for all staking pools every second.
+   * returns an instance of the MerklePool class with all data loaded
    *
-   * @param {Object} [overrides={}] - @see {@link Base#sanitizeOverrides}
-   * @returns {Promise<BigNumber>}
+   * @param {number} poolId - The id of the pool
+   * @return {Promise<MerklePool>}
    * @memberof MerklePools
    */
-  async rewardRate(overrides = {}) {
-    const rate = await this.contract.rewardRate(this.sanitizeOverrides(overrides, true));
+  async merklePool(poolId) {
+    if (!this._merklePools[`${poolId}`]) {
+      this._merklePools[`${poolId}`] = new MerklePool(this.sdk, poolId);
+    }
 
-    return this.toBigNumber(rate, 18);
+    await this._merklePools[`${poolId}`].awaitInitialized;
+    return this._merklePools[`${poolId}`];
+  }
+
+  /**
+   * returns an instance of the MerkleTree class with all data loaded
+   *
+   * @return {Promise<MerkleTree>}
+   * @memberof MerklePools
+   */
+  async merkleTree() {
+    if (!this._merkleTree) {
+      this._merkleTree = new MerkleTree(this.sdk);
+    }
+
+    await this._merkleTree.promise;
+    return this._merkleTree;
   }
 
   /**
@@ -430,16 +480,16 @@ export default class MerklePools extends Base {
   }
 
   /**
-   * returns an instance of the MerklePool class with all data loaded
+   * Returns the total number of token emissions for all staking pools every second.
    *
-   * @param {number} poolId - The id of the pool
-   * @return {Promise<MerklePool>}
+   * @param {Object} [overrides={}] - @see {@link Base#sanitizeOverrides}
+   * @returns {Promise<BigNumber>}
    * @memberof MerklePools
    */
-  async merklePool(poolId) {
-    const stakingPool = new MerklePool(this.sdk, poolId);
-    await stakingPool.awaitInitialized;
-    return stakingPool;
+  async rewardRate(overrides = {}) {
+    const rate = await this.contract.rewardRate(this.sanitizeOverrides(overrides, true));
+
+    return this.toBigNumber(rate, 18);
   }
 
   /**

@@ -180,6 +180,27 @@ export default class Exchange extends ERC20 {
   }
 
   /**
+   * The price of 1 ELP represented in quote tokens
+   *
+   * @return {BigNumber}
+   * @memberof Exchange
+   */
+  async priceOfELPInQuote() {
+    const [baseTokenBalance, priceOfBaseInQuote, quoteTokenBalance, totalSupply] =
+      await Promise.all([
+        this.baseToken.balanceOf(this.address),
+        this.priceOfBaseInQuote(),
+        this.quoteToken.balanceOf(this.address),
+        this.totalSupply(),
+      ]);
+
+    return priceOfBaseInQuote
+      .multipliedBy(baseTokenBalance)
+      .dividedBy(totalSupply)
+      .plus(quoteTokenBalance.dividedBy(totalSupply));
+  }
+
+  /**
    * Returns the internal balances of the exchange. This always has to be up to date, so no caching
    * is performed on the result.
    *

@@ -7,6 +7,7 @@ import { ethers } from 'ethers';
 import ERC20Class from './tokens/ERC20.mjs';
 import ExchangeClass from './exchange/Exchange.mjs';
 import ExchangeFactoryClass from './exchange/ExchangeFactory.mjs';
+import Integrations from './Integrations.mjs';
 import LocalStorageAdapterClass from './adapters/LocalStorageAdapter.mjs';
 import MerklePoolClass from './staking/MerklePool.mjs';
 import MerklePoolsClass from './staking/MerklePools.mjs';
@@ -145,6 +146,8 @@ export class SDK extends Subscribable {
    * @param {Object} config.env - environment configuration
    * @param {Object} config.env.blocknative - bnc-notify initialization options
    * @param {Array<hardhat-deploy.MultiExport|Object{contractName: string, abi: []}>} config.env.contracts - deployed contract configuration by network
+   * @param {Array<string>} config.ipfsGateways - ordered array of gateways from which to fetch IPFS (optional)
+   * @param {Array<string>} config.merkleHash - IPFS hash of the latest staking merkle tree (optional)
    * @param {ethers.providers.Provider} config.provider - default provider (optional)
    * @param {ethers.Signer} config.signer - initial ethers signer (optional)
    * @param {StorageAdapter} config.storageAdapter - (optional)
@@ -157,7 +160,7 @@ export class SDK extends Subscribable {
    * @see {@link StorageAdapter}
    */
   /* eslint-enable */
-  constructor({ customFetch, env, provider, signer, storageAdapter }) {
+  constructor({ customFetch, env, ipfsGateways, merkleHash, provider, signer, storageAdapter }) {
     super();
 
     this._initialized = false;
@@ -165,6 +168,7 @@ export class SDK extends Subscribable {
     this._env = processContracts(env);
 
     this._contract = ({ address, abi }) => new ethers.Contract(address, abi);
+    this._merkleHash = merkleHash;
     this._storageAdapter = storageAdapter || new LocalStorageAdapter();
     this._tokenLists = {}; // TokenLists persist across network / provider changes
 
@@ -187,6 +191,17 @@ export class SDK extends Subscribable {
           "Please provide a compatible implementation via the 'customFetch' parameter.",
       );
     }
+
+    // IPFS Gateways
+    this._ipfsGateways = ipfsGateways || [
+      'https://gateway.pinata.cloud',
+      'https://cloudflare-ipfs.com',
+      'https://ipfs.fleek.co',
+      'https://ipfs.io',
+    ];
+
+    // Instantiate third party integrations
+    this._integrations = new Integrations(this);
 
     this.changeProvider(provider || ethers.getDefaultProvider()).then(() => {
       if (signer) {
@@ -297,6 +312,24 @@ export class SDK extends Subscribable {
 
   /**
    * @readonly
+   * @returns {Integrations} - An instance of the integrations class
+   * @memberof SDK
+   */
+  get integrations() {
+    return this._integrations;
+  }
+
+  /**
+   * @readonly
+   * @returns {Array<string>} - An ordered array of IPFS gateways
+   * @memberof SDK
+   */
+  get ipfsGateways() {
+    return this._ipfsGateways;
+  }
+
+  /**
+   * @readonly
    * @returns {BigNumber} - The current estimated max fee per gas
    * @see {@link https://docs.ethers.io/v5/api/providers/provider/#Provider-getFeeData}
    * @memberof SDK
@@ -313,6 +346,15 @@ export class SDK extends Subscribable {
    */
   get maxPriorityFeePerGas() {
     return this._maxPriorityFeePerGas || toBigNumber(0);
+  }
+
+  /**
+   * @readonly
+   * @returns {string|undefined} - The IPFS hash of the current staking merkle tree
+   * @memberof SDK
+   */
+  get merkleHash() {
+    return this._merkleHash;
   }
 
   /**

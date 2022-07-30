@@ -10,6 +10,15 @@ const prefix = '@elastic-swap/sdk';
 // Formatting and sanitization
 //
 
+export const addresses = (address) => {
+  validateIsAddress(address, { prefix });
+
+  const addressLower = address.toLowerCase();
+  const addressChecksum = ethers.utils.getAddress(address);
+
+  return { addressLower, addressChecksum };
+};
+
 export const amountFormatter = ({
   amount,
   approximatePrefix = '~',
