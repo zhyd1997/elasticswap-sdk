@@ -147,6 +147,7 @@ export class SDK extends Subscribable {
    * @param {Object} config.env.blocknative - bnc-notify initialization options
    * @param {Array<hardhat-deploy.MultiExport|Object{contractName: string, abi: []}>} config.env.contracts - deployed contract configuration by network
    * @param {Array<string>} config.ipfsGateways - ordered array of gateways from which to fetch IPFS (optional)
+   * @param {Array<string>} config.merkleHash - IPFS hash of the latest staking merkle tree (optional)
    * @param {ethers.providers.Provider} config.provider - default provider (optional)
    * @param {ethers.Signer} config.signer - initial ethers signer (optional)
    * @param {StorageAdapter} config.storageAdapter - (optional)
@@ -159,22 +160,15 @@ export class SDK extends Subscribable {
    * @see {@link StorageAdapter}
    */
   /* eslint-enable */
-  constructor({ customFetch, env, ipfsGateways, provider, signer, storageAdapter }) {
+  constructor({ customFetch, env, ipfsGateways, merkleHash, provider, signer, storageAdapter }) {
     super();
 
     this._initialized = false;
 
     this._env = processContracts(env);
 
-    // IPFS Gateway defaults
-    this._ipfsGateways = ipfsGateways || [
-      'https://gateway.pinata.cloud',
-      'https://cloudflare-ipfs.com',
-      'https://ipfs.fleek.co',
-      'https://ipfs.io',
-    ];
-
     this._contract = ({ address, abi }) => new ethers.Contract(address, abi);
+    this._merkleHash = merkleHash;
     this._storageAdapter = storageAdapter || new LocalStorageAdapter();
     this._tokenLists = {}; // TokenLists persist across network / provider changes
 
@@ -197,6 +191,14 @@ export class SDK extends Subscribable {
           "Please provide a compatible implementation via the 'customFetch' parameter.",
       );
     }
+
+    // IPFS Gateways
+    this._ipfsGateways = ipfsGateways || [
+      'https://gateway.pinata.cloud',
+      'https://cloudflare-ipfs.com',
+      'https://ipfs.fleek.co',
+      'https://ipfs.io',
+    ];
 
     // Instantiate third party integrations
     this._integrations = new Integrations(this);
@@ -344,6 +346,15 @@ export class SDK extends Subscribable {
    */
   get maxPriorityFeePerGas() {
     return this._maxPriorityFeePerGas || toBigNumber(0);
+  }
+
+  /**
+   * @readonly
+   * @returns {string|undefined} - The IPFS hash of the current staking merkle tree
+   * @memberof SDK
+   */
+  get merkleHash() {
+    return this._merkleHash;
   }
 
   /**

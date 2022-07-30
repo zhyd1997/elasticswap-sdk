@@ -1,4 +1,4 @@
-import Cachable from './Cachable';
+import Cachable from './Cachable.mjs';
 
 /**
  * An abstract class for fetching and caching JSON formatted IPFS records.
@@ -12,7 +12,7 @@ export default class IPFSJsonBase extends Cachable {
    * Creates an instance of IPFSJsonBase.
    *
    * @param {SDK} sdk - An instance of the SDK class
-   * @param {string} hash - The IPFS file hash
+   * @param {string} hash - The IPFS file cid hash
    * @param {Object} cacheData - An Object instance to use instead of fetching from IPFS (optional)
    * @memberof IPFSJsonBase
    */

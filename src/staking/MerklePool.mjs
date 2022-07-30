@@ -11,8 +11,6 @@ const ticUSDCLogo = './images/stake/tic-usdc-elp.png';
 const esLogo =
   'https://raw.githubusercontent.com/ElasticSwap/brand/master/ElasticSwap/circle-400px.png';
 
-const TIC_USDC_ELP_ADDRESS = '0x4ae1da57f2d6b2e9a23d07e264aa2b3bbcaed19a';
-
 /**
  * Provides interface for compiled staking pool data.
  *
@@ -79,6 +77,14 @@ export default class MerklePool extends Base {
    */
   get awaitInitialized() {
     return this._promise;
+  }
+
+  get claimable() {
+    return this._claimable;
+  }
+
+  get claimableValue() {
+    return this._claimableValue;
   }
 
   /**
@@ -304,10 +310,12 @@ export default class MerklePool extends Base {
   async load() {
     this._lastUpdate = Date.now();
 
-    // Only valid on Avalanche. We have not yet deployed this contract elsewhere
+    // Only valid on Avalanche or Mainnet. We have not yet deployed this contract elsewhere
     if (this.sdk.networkHex !== '0xa86a' && this.sdk.networkHex !== '0x1') {
       this._account = ethers.constants.AddressZero;
       this._apr = this.toBigNumber(0);
+      this._claimable = this.toBigNumber(0);
+      this._claimableValue = this.toBigNumber(0);
       this._rewardRate = this.toBigNumber(0);
       this._staked = this.toBigNumber(0);
       this._token = undefined;
@@ -324,15 +332,25 @@ export default class MerklePool extends Base {
 
     this._account = this.sdk.account || ethers.constants.AddressZero;
 
-    const [poolTotalDeposited, poolRewardRate, poolTokenAddress, apr, staked, unclaimed] =
-      await Promise.all([
-        this.sdk.merklePools.getPoolTotalDeposited(this.id),
-        this.sdk.merklePools.getPoolRewardRate(this.id),
-        this.sdk.merklePools.getPoolToken(this.id),
-        this.sdk.merklePools.getAPR(this.id),
-        this.sdk.merklePools.getStakeTotalDeposited(this.account, this.id),
-        this.sdk.merklePools.getStakeTotalUnclaimed(this.account, this.id),
-      ]);
+    const [
+      poolTotalDeposited,
+      poolRewardRate,
+      poolTokenAddress,
+      apr,
+      claimable,
+      staked,
+      unclaimed,
+      elasticLPToken,
+    ] = await Promise.all([
+      this.sdk.merklePools.getPoolTotalDeposited(this.id),
+      this.sdk.merklePools.getPoolRewardRate(this.id),
+      this.sdk.merklePools.getPoolToken(this.id),
+      this.sdk.merklePools.getAPR(this.id),
+      this.sdk.merklePools.getStakeTotalClaimable(this.account, this.id),
+      this.sdk.merklePools.getStakeTotalDeposited(this.account, this.id),
+      this.sdk.merklePools.getStakeTotalUnclaimed(this.account, this.id),
+      this.sdk.merklePools.elasticLPToken(),
+    ]);
 
     const preSeedAddress = this.sdk.contractAddress('TimeTokenPreSeed');
     this._exchange = this.sdk.exchangeFactory.exchangeByAddress(poolTokenAddress);
@@ -340,6 +358,7 @@ export default class MerklePool extends Base {
     const ticToken = this.sdk.erc20(ticAddress);
 
     this._apr = apr;
+    this._claimable = claimable;
     this._rewardRate = poolRewardRate;
     this._staked = staked;
     this._token = this.sdk.erc20(poolTokenAddress);
@@ -347,16 +366,12 @@ export default class MerklePool extends Base {
     this._unclaimed = unclaimed;
     this._valuePerToken = this.toBigNumber(0);
 
-    // if this is the TIC token, we can use the spot value of the ELP pool
-    if (this.token.address === ticAddress) {
-      const ticExchange = this.sdk.exchangeFactory.exchangeByAddress(TIC_USDC_ELP_ADDRESS);
-      this._valuePerToken = ticExchange.quoteTokenBalance.dividedBy(ticExchange.baseTokenBalance);
-    }
+    const rewardExchange = this.sdk.exchangeFactory.exchangeByAddress(elasticLPToken);
+    this._claimableValue = (await rewardExchange.priceOfELPInQuote()).multipliedBy(claimable);
 
     // if this is an ELP exchange, we express the value in quote tokens
     if (this.exchange) {
-      const totalSupply = await this.exchange.totalSupply();
-      this._valuePerToken = this.exchange.quoteTokenBalance.dividedBy(totalSupply).multipliedBy(2);
+      this._valuePerToken = await this.exchange.priceOfELPInQuote();
     }
 
     const [tokenBalance, tokenAllowance, tvl] = await Promise.all([
