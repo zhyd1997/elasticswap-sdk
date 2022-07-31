@@ -4,6 +4,7 @@ import Notify from 'bnc-notify';
 
 import { ethers } from 'ethers';
 
+import CacheClass from './Cache.mjs';
 import ERC20Class from './tokens/ERC20.mjs';
 import ExchangeClass from './exchange/Exchange.mjs';
 import ExchangeFactoryClass from './exchange/ExchangeFactory.mjs';
@@ -113,6 +114,7 @@ export const utils = {
   validateIsString,
 };
 
+export const Cache = CacheClass;
 export const ERC20 = ERC20Class;
 export const Exchange = ExchangeClass;
 export const ExchangeFactory = ExchangeFactoryClass;
