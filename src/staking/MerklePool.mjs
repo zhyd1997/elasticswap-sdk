@@ -11,6 +11,8 @@ const ticUSDCLogo = './images/stake/tic-usdc-elp.png';
 const esLogo =
   'https://raw.githubusercontent.com/ElasticSwap/brand/master/ElasticSwap/circle-400px.png';
 
+const TIC_USDC_ELP_ADDRESS = '0x4ae1da57f2d6b2e9a23d07e264aa2b3bbcaed19a';
+
 /**
  * Provides interface for compiled staking pool data.
  *
@@ -368,6 +370,13 @@ export default class MerklePool extends Base {
 
     const rewardExchange = this.sdk.exchangeFactory.exchangeByAddress(elasticLPToken);
     this._claimableValue = (await rewardExchange.priceOfELPInQuote()).multipliedBy(claimable);
+
+    // if this is the TIC token, we can use the spot value of the ELP pool
+    if (this.token.address === ticAddress) {
+      const ticExchange = this.sdk.exchangeFactory.exchangeByAddress(TIC_USDC_ELP_ADDRESS);
+      await ticExchange.promise;
+      this._valuePerToken = ticExchange.quoteTokenBalance.dividedBy(ticExchange.baseTokenBalance);
+    }
 
     // if this is an ELP exchange, we express the value in quote tokens
     if (this.exchange) {
