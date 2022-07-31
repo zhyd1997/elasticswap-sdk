@@ -127,7 +127,7 @@ export default class MerklePools extends Base {
   /**
    * Returns the lowercase address of the elastic lp reward token
    *
-   * @return {*} 
+   * @return {*}
    * @memberof MerklePools
    */
   async elasticLPToken() {
@@ -368,7 +368,7 @@ export default class MerklePools extends Base {
    *
    * @param {string} account
    * @param {number} poolId
-   * @return {BigNumber} 
+   * @return {BigNumber}
    * @memberof MerklePools
    */
   async getStakeTotalClaimable(account, poolId) {
