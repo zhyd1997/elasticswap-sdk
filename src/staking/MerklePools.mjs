@@ -86,7 +86,7 @@ export default class MerklePools extends Base {
   }
 
   /**
-   * Claims outstanding rewards from the specified pool. Temporarily Disabled.
+   * Claims outstanding rewards from the specified pool.
    *
    * @param {number} poolId - The id of the pool
    * @param {Object} [overrides={}] - @see {@link Base#sanitizeOverrides}
@@ -94,14 +94,23 @@ export default class MerklePools extends Base {
    * @see {@link https://docs.ethers.io/v5/api/providers/types/#providers-TransactionResponse}
    * @memberof MerklePools
    */
-  async claim(poolId) {
-    // , overrides = {}
-    throw new Error(`MerklePools: claim is not yet enabled for pool ${poolId}.`);
-    /*
+  async claim(poolId, overrides = {}) {
+    const merkleTree = await this.merkleTree();
+    const index = merkleTree.index(this.sdk.account, poolId);
+    const proof = merkleTree.proof(this.sdk.account, poolId);
+    const totalLPTokenAmount = merkleTree.totalLPTokenAmount(this.sdk.account, poolId);
+    const totalTICAmount = merkleTree.totalTICAmount(this.sdk.account, poolId);
+
     return this._handleTransaction(
-      await this.contract.claim(this.toNumber(poolId), this.sanitizeOverrides(overrides)),
+      await this.contract.claim(
+        this.toEthersBigNumber(index),
+        this.toNumber(poolId),
+        this.toEthersBigNumber(totalLPTokenAmount, 18),
+        this.toEthersBigNumber(totalTICAmount, 18),
+        proof,
+        this.sanitizeOverrides(overrides),
+      ),
     );
-    */
   }
 
   /**
@@ -374,7 +383,8 @@ export default class MerklePools extends Base {
   async getStakeTotalClaimable(account, poolId) {
     const merkleTree = await this.merkleTree(poolId);
     const merkleLPAmount = merkleTree.totalLPTokenAmount(account, poolId);
-    return merkleLPAmount;
+    const stakes = await this.stakes(account, poolId);
+    return merkleLPAmount.minus(stakes.totalRealizedLP);
   }
 
   /**
@@ -490,6 +500,32 @@ export default class MerklePools extends Base {
     const rate = await this.contract.rewardRate(this.sanitizeOverrides(overrides, true));
 
     return this.toBigNumber(rate, 18);
+  }
+
+  /**
+   * Returns the stakes data struct
+   *
+   * @param {*} account
+   * @param {*} poolId
+   * @return {*}
+   * @memberof MerklePools
+   */
+  async stakes(account, poolId, overrides = {}) {
+    const {
+      lastAccumulatedWeight, // x
+      totalDeposited,
+      totalRealizedLP,
+      totalRealizedTIC,
+      totalUnrealized,
+    } = await this.contract.stakes(account, poolId, this.sanitizeOverrides(overrides, true));
+
+    return {
+      lastAccumulatedWeight: this.toBigNumber(lastAccumulatedWeight.x, 18),
+      totalDeposited: this.toBigNumber(totalDeposited, 18),
+      totalRealizedLP: this.toBigNumber(totalRealizedLP, 18),
+      totalRealizedTIC: this.toBigNumber(totalRealizedTIC, 18),
+      totalUnrealized: this.toBigNumber(totalUnrealized, 18),
+    };
   }
 
   /**

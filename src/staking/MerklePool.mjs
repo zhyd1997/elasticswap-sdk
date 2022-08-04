@@ -343,6 +343,7 @@ export default class MerklePool extends Base {
       staked,
       unclaimed,
       elasticLPToken,
+      stake,
     ] = await Promise.all([
       this.sdk.merklePools.getPoolTotalDeposited(this.id),
       this.sdk.merklePools.getPoolRewardRate(this.id),
@@ -352,6 +353,7 @@ export default class MerklePool extends Base {
       this.sdk.merklePools.getStakeTotalDeposited(this.account, this.id),
       this.sdk.merklePools.getStakeTotalUnclaimed(this.account, this.id),
       this.sdk.merklePools.elasticLPToken(),
+      this.sdk.merklePools.stakes(this.account, this.id),
     ]);
 
     const preSeedAddress = this.sdk.contractAddress('TimeTokenPreSeed');
@@ -362,6 +364,7 @@ export default class MerklePool extends Base {
     this._apr = apr;
     this._claimable = claimable;
     this._rewardRate = poolRewardRate;
+    this._stake = stake;
     this._staked = staked;
     this._token = this.sdk.erc20(poolTokenAddress);
     this._totalDeposited = poolTotalDeposited;
