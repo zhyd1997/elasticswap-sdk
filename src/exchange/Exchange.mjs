@@ -78,23 +78,23 @@ export default class Exchange extends ERC20 {
   }
 
   /**
-   * Provides a promise that is resolved after the initial data load.
+   * @alias promise
    *
    * @readonly
    * @memberof Exchange
    */
   get awaitInitialized() {
-    return this._promise;
+    return this.promise;
   }
 
   /**
-   * @alias address
+   * The ERC20 instance for the base token
    *
    * @readonly
    * @memberof Exchange
    */
-  get exchangeAddress() {
-    return this.address;
+  get baseToken() {
+    return this.sdk.tokensByAddress.tokenByAddress(this.baseTokenAddress);
   }
 
   /**
@@ -118,6 +118,26 @@ export default class Exchange extends ERC20 {
   }
 
   /**
+   * @alias address
+   *
+   * @readonly
+   * @memberof Exchange
+   */
+  get exchangeAddress() {
+    return this.address;
+  }
+
+  /**
+   * The ERC20 instance for the quote token
+   *
+   * @readonly
+   * @memberof Exchange
+   */
+  get quoteToken() {
+    return this.sdk.tokensByAddress.tokenByAddress(this.quoteTokenAddress);
+  }
+
+  /**
    * The address of the quote token
    *
    * @readonly
@@ -138,171 +158,13 @@ export default class Exchange extends ERC20 {
   }
 
   /**
-   * The ERC20 instance for the base token
+   * Provides a promise that is resolved after the initial data load.
    *
    * @readonly
    * @memberof Exchange
    */
-  get baseToken() {
-    return this.sdk.tokensByAddress.tokenByAddress(this.baseTokenAddress);
-  }
-
-  /**
-   * The ERC20 instance for the quote token
-   *
-   * @readonly
-   * @memberof Exchange
-   */
-  get quoteToken() {
-    return this.sdk.tokensByAddress.tokenByAddress(this.quoteTokenAddress);
-  }
-
-  /**
-   * The price of one quote token in base tokens.
-   *
-   * @return {Promise<BigNumber>}
-   * @memberof Exchange
-   */
-  async priceofQuoteInBase() {
-    const { baseTokenReserveQty, quoteTokenReserveQty } = await this.internalBalances();
-    return baseTokenReserveQty.dividedBy(quoteTokenReserveQty);
-  }
-
-  /**
-   * The price of one base token in quote tokens.
-   *
-   * @return {Promise<BigNumber>}
-   * @memberof Exchange
-   */
-  async priceOfBaseInQuote() {
-    const { baseTokenReserveQty, quoteTokenReserveQty } = await this.internalBalances();
-    return quoteTokenReserveQty.dividedBy(baseTokenReserveQty);
-  }
-
-  /**
-   * The price of 1 ELP represented in quote tokens
-   *
-   * @return {BigNumber}
-   * @memberof Exchange
-   */
-  async priceOfELPInQuote() {
-    const [baseTokenBalance, priceOfBaseInQuote, quoteTokenBalance, totalSupply] =
-      await Promise.all([
-        this.baseToken.balanceOf(this.address),
-        this.priceOfBaseInQuote(),
-        this.quoteToken.balanceOf(this.address),
-        this.totalSupply(),
-      ]);
-
-    return priceOfBaseInQuote
-      .multipliedBy(baseTokenBalance)
-      .dividedBy(totalSupply)
-      .plus(quoteTokenBalance.dividedBy(totalSupply));
-  }
-
-  /**
-   * Returns the internal balances of the exchange. This always has to be up to date, so no caching
-   * is performed on the result.
-   *
-   * NOTE: kLast is not returned as part of this function
-   *
-   * @param {Object} [overrides] - @see {@link Base#sanitizeOverrides}
-   * @return {Object}
-   * @memberof ERC20
-   */
-  async internalBalances(overrides) {
-    let baseTokenDecimals;
-    let internalBalances;
-    let quoteTokenDecimals;
-
-    // if there are overrides, fetch directly from the readonly contract
-    if (isPOJO(overrides)) {
-      const [results, btDecimals, qtDecimals] = await Promise.all([
-        this.readonlyContract.internalBalances(overrides),
-        this.sdk.erc20(this.baseTokenAddress).decimals(overrides),
-        this.sdk.erc20(this.quoteTokenAddress).decimals(overrides),
-      ]);
-
-      baseTokenDecimals = btDecimals;
-      internalBalances = results;
-      quoteTokenDecimals = qtDecimals;
-    }
-
-    // fetch the value from the network using multicall
-    if (!internalBalances) {
-      const [results, btDecimals, qtDecimals] = await Promise.all([
-        this.sdk.multicall.enqueue(this.abi, this.address, 'internalBalances'),
-        this.sdk.erc20(this.baseTokenAddress).decimals({ multicall: true }),
-        this.sdk.erc20(this.quoteTokenAddress).decimals({ multicall: true }),
-      ]);
-
-      baseTokenDecimals = btDecimals;
-      internalBalances = results;
-      quoteTokenDecimals = qtDecimals;
-    }
-
-    const baseTokenReserveQty = this.toBigNumber(
-      internalBalances.baseTokenReserveQty,
-      baseTokenDecimals,
-    );
-    const quoteTokenReserveQty = this.toBigNumber(
-      internalBalances.quoteTokenReserveQty,
-      quoteTokenDecimals,
-    );
-
-    return { baseTokenReserveQty, quoteTokenReserveQty };
-  }
-
-  /**
-   * Returns the MINIMUM_LIQUIDITY constant from the contract. There is never any reason to check
-   * this at a previous block as it will always be the same, so no overrides are considered. Always
-   * fetches the value using multicall.
-   *
-   * @return {number}
-   * @memberof Exchange
-   */
-  async MINIMUM_LIQUIDITY() {
-    // if the value is cached, return it
-    if (this._totalLiquidityFee) {
-      return this._totalLiquidityFee;
-    }
-
-    // fetch the value from the network using multicall
-    this._minimumLiquidity = this.toNumber(
-      await this.sdk.multicall.enqueue(this.abi, this.address, 'MINIMUM_LIQUIDITY'),
-    );
-
-    // update subscribers
-    this.sdk.erc20(this.address).touch();
-
-    // return the cached value
-    return this._minimumLiquidity;
-  }
-
-  /**
-   * Returns the TOTAL_LIQUIDITY_FEE constant from the contract. There is never any reason to check
-   * this at a previous block as it will always be the same, so no overrides are considered. Always
-   * fetches the value using multicall.
-   *
-   * @return {number}
-   * @memberof Exchange
-   */
-  async TOTAL_LIQUIDITY_FEE() {
-    // if the value is cached, return it
-    if (this._totalLiquidityFee) {
-      return this._totalLiquidityFee;
-    }
-
-    // fetch the value from the network using multicall
-    this._totalLiquidityFee = this.toNumber(
-      await this.sdk.multicall.enqueue(this.abi, this.address, 'TOTAL_LIQUIDITY_FEE'),
-    );
-
-    // update subscribers
-    this.sdk.erc20(this.address).touch();
-
-    // return the cached value
-    return this._totalLiquidityFee;
+  get promise() {
+    return this._promise;
   }
 
   /**
@@ -409,6 +271,128 @@ export default class Exchange extends ERC20 {
     ]);
 
     return receipt;
+  }
+
+  /**
+   * Returns the internal balances of the exchange. This always has to be up to date, so no caching
+   * is performed on the result.
+   *
+   * NOTE: kLast is not returned as part of this function
+   *
+   * @param {Object} [overrides] - @see {@link Base#sanitizeOverrides}
+   * @return {Object}
+   * @memberof ERC20
+   */
+  async internalBalances(overrides) {
+    let baseTokenDecimals;
+    let internalBalances;
+    let quoteTokenDecimals;
+
+    // if there are overrides, fetch directly from the readonly contract
+    if (isPOJO(overrides)) {
+      const [results, btDecimals, qtDecimals] = await Promise.all([
+        this.readonlyContract.internalBalances(overrides),
+        this.sdk.erc20(this.baseTokenAddress).decimals(overrides),
+        this.sdk.erc20(this.quoteTokenAddress).decimals(overrides),
+      ]);
+
+      baseTokenDecimals = btDecimals;
+      internalBalances = results;
+      quoteTokenDecimals = qtDecimals;
+    }
+
+    // fetch the value from the network using multicall
+    if (!internalBalances) {
+      const [results, btDecimals, qtDecimals] = await Promise.all([
+        this.sdk.multicall.enqueue(this.abi, this.address, 'internalBalances'),
+        this.sdk.erc20(this.baseTokenAddress).decimals({ multicall: true }),
+        this.sdk.erc20(this.quoteTokenAddress).decimals({ multicall: true }),
+      ]);
+
+      baseTokenDecimals = btDecimals;
+      internalBalances = results;
+      quoteTokenDecimals = qtDecimals;
+    }
+
+    const baseTokenReserveQty = this.toBigNumber(
+      internalBalances.baseTokenReserveQty,
+      baseTokenDecimals,
+    );
+    const quoteTokenReserveQty = this.toBigNumber(
+      internalBalances.quoteTokenReserveQty,
+      quoteTokenDecimals,
+    );
+
+    return { baseTokenReserveQty, quoteTokenReserveQty };
+  }
+
+  /**
+   * Returns the MINIMUM_LIQUIDITY constant from the contract. There is never any reason to check
+   * this at a previous block as it will always be the same, so no overrides are considered. Always
+   * fetches the value using multicall.
+   *
+   * @return {number}
+   * @memberof Exchange
+   */
+  async MINIMUM_LIQUIDITY() {
+    // if the value is cached, return it
+    if (this._totalLiquidityFee) {
+      return this._totalLiquidityFee;
+    }
+
+    // fetch the value from the network using multicall
+    this._minimumLiquidity = this.toNumber(
+      await this.sdk.multicall.enqueue(this.abi, this.address, 'MINIMUM_LIQUIDITY'),
+    );
+
+    // update subscribers
+    this.sdk.erc20(this.address).touch();
+
+    // return the cached value
+    return this._minimumLiquidity;
+  }
+
+  /**
+   * The price of one base token in quote tokens.
+   *
+   * @return {Promise<BigNumber>}
+   * @memberof Exchange
+   */
+  async priceOfBaseInQuote() {
+    const { baseTokenReserveQty, quoteTokenReserveQty } = await this.internalBalances();
+    return quoteTokenReserveQty.dividedBy(baseTokenReserveQty);
+  }
+
+  /**
+   * The price of 1 ELP represented in quote tokens
+   *
+   * @return {BigNumber}
+   * @memberof Exchange
+   */
+  async priceOfELPInQuote() {
+    const [baseTokenBalance, priceOfBaseInQuote, quoteTokenBalance, totalSupply] =
+      await Promise.all([
+        this.baseToken.balanceOf(this.address),
+        this.priceOfBaseInQuote(),
+        this.quoteToken.balanceOf(this.address),
+        this.totalSupply(),
+      ]);
+
+    return priceOfBaseInQuote
+      .multipliedBy(baseTokenBalance)
+      .dividedBy(totalSupply)
+      .plus(quoteTokenBalance.dividedBy(totalSupply));
+  }
+
+  /**
+   * The price of one quote token in base tokens.
+   *
+   * @return {Promise<BigNumber>}
+   * @memberof Exchange
+   */
+  async priceOfQuoteInBase() {
+    const { baseTokenReserveQty, quoteTokenReserveQty } = await this.internalBalances();
+    return baseTokenReserveQty.dividedBy(quoteTokenReserveQty);
   }
 
   async removeLiquidity(
@@ -621,6 +605,32 @@ export default class Exchange extends ERC20 {
     const minBaseTokenQty = expectedBaseTokenQty.minus(slippageAmount);
     const expiration = Math.floor(Date.now() / 1000 + requestTimeoutSeconds);
     return this.swapQuoteTokenForBaseToken(quoteTokenQtyBN, minBaseTokenQty, expiration, overrides);
+  }
+
+  /**
+   * Returns the TOTAL_LIQUIDITY_FEE constant from the contract. There is never any reason to check
+   * this at a previous block as it will always be the same, so no overrides are considered. Always
+   * fetches the value using multicall.
+   *
+   * @return {number}
+   * @memberof Exchange
+   */
+  async TOTAL_LIQUIDITY_FEE() {
+    // if the value is cached, return it
+    if (this._totalLiquidityFee) {
+      return this._totalLiquidityFee;
+    }
+
+    // fetch the value from the network using multicall
+    this._totalLiquidityFee = this.toNumber(
+      await this.sdk.multicall.enqueue(this.abi, this.address, 'TOTAL_LIQUIDITY_FEE'),
+    );
+
+    // update subscribers
+    this.sdk.erc20(this.address).touch();
+
+    // return the cached value
+    return this._totalLiquidityFee;
   }
 
   // CALCULATIONS

@@ -97,6 +97,23 @@ export default class MerkleTree extends IPFSJsonBase {
   }
 
   /**
+   * Returns the index for a specific account and pool
+   *
+   * @param {string} account - thie address of the account
+   * @param {number} poolId - the id of the pool
+   * @returns {number} - the index of the claim
+   * @memberof MerkleTree
+   */
+  index(account, poolId) {
+    const { addressLower, addressChecksum } = addresses(account);
+
+    return this._value(
+      `${this.rootPath}.pools.${poolId}.claims.${addressLower}.index`,
+      this._value(`${this.rootPath}.pools.${poolId}.claims.${addressChecksum}.index`),
+    );
+  }
+
+  /**
    * Returns the proof array for a specific account and pool
    *
    * @param {string} account - the address of the account to get the proof for
@@ -107,7 +124,7 @@ export default class MerkleTree extends IPFSJsonBase {
   proof(account, poolId) {
     const { addressLower, addressChecksum } = addresses(account);
 
-    if (this.claimable.isZero()) {
+    if (this.totalLPTokenAmount(account, poolId).isZero()) {
       return [];
     }
 
@@ -128,16 +145,15 @@ export default class MerkleTree extends IPFSJsonBase {
   totalLPTokenAmount(account, poolId) {
     const { addressLower, addressChecksum } = addresses(account);
 
-    return this.toBigNumber(
+    const amount = this._value(
+      `${this.rootPath}.pools.${poolId}.claims.${addressLower}.totalLPTokenAmount`,
       this._value(
-        `${this.rootPath}.pools.${poolId}.claims.${addressLower}.totalLPTokenAmount`,
-        this._value(
-          `${this.rootPath}.pools.${poolId}.claims.${addressChecksum}.totalLPTokenAmount`,
-          '0',
-        ),
+        `${this.rootPath}.pools.${poolId}.claims.${addressChecksum}.totalLPTokenAmount`,
+        '0',
       ),
-      18,
     );
+
+    return this.toBigNumber(amount, 18);
   }
 
   /**
