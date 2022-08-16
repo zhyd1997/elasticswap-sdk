@@ -71,6 +71,7 @@ describe('Swap test', () => {
     const quoteTokenQtyToAdd = toBigNumber(internalBalances.quoteTokenReserveQty, 6);
     console.log(baseTokenQtyToAdd.toString(), quoteTokenQtyToAdd.toString());
 
+    // exchange has the same amount of liquidity as the mainnet pool at 15304423
     await exchangeInstance.addLiquidity(
       baseTokenQtyToAdd,
       quoteTokenQtyToAdd,
@@ -81,5 +82,13 @@ describe('Swap test', () => {
     );
 
     console.log((await exchangeInstance.internalBalances()).toString());
+
+    // now call swapQuoteTokenForBaseToken on the local exchange with the values passed into the failed tx
+    const tx = await exchangeInstance.swapQuoteTokenForBaseToken(
+      '1000',
+      '188.414252404592205063',
+      expiration,
+    );
+    console.log(JSON.stringify(tx));
   });
 });
