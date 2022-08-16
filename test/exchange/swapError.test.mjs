@@ -12,7 +12,7 @@ const { ethers, deployments } = hardhat;
 
 const alchemyProvider = new ethers.providers.AlchemyProvider(
   'homestead',
-  'API_KEY',
+  '-GwTHTJar_yTzhNX_Kns-fSBfAN5N3h8',
 );
 
 describe('Swap test', () => {
@@ -49,16 +49,17 @@ describe('Swap test', () => {
     //   exchangeInstance.abi,
     //   alchemyProvider,
     // );
-    /// console.log(await mainnetExchangeContract.internalBalances({ blockTag: '0x73656f32' }));
-    
+    // console.log(await mainnetExchangeContract.internalBalances({ blockTag: '0xE986E8' }));
+
     // using alchemy composer and docs
     const data = await alchemyProvider.call(
       {
         to: '0x79274bf95e05f0e858ab78411f3ebe85909e4f76',
         data: '0x4d67a0a3',
       },
-      '0x73656f32',
+      '0xE986E8',
     );
     console.log(data);
+
   });
 });
