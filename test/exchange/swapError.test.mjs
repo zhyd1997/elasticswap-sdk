@@ -40,26 +40,12 @@ describe('Swap test', () => {
 
     // to get the required internalbalances
     // need to use the provider to call the specific exchange at a specific block
-
-    // await sdk.changeProvider(alchemyProvider);
-    // console.log(sdk.networkName);
-
-    // const mainnetExchangeContract = new ethers.Contract(
-    //   '0x79274BF95e05f0e858ab78411f3eBe85909E4F76',
-    //   exchangeInstance.abi,
-    //   alchemyProvider,
-    // );
-    // console.log(await mainnetExchangeContract.internalBalances({ blockTag: '0xE986E8' }));
-
-    // using alchemy composer and docs
-    const data = await alchemyProvider.call(
-      {
-        to: '0x79274bf95e05f0e858ab78411f3ebe85909e4f76',
-        data: '0x4d67a0a3',
-      },
-      '0xE986E8',
+    const mainnetExchangeContract = new ethers.Contract(
+      '0x79274BF95e05f0e858ab78411f3eBe85909E4F76',
+      exchangeInstance.abi,
+      alchemyProvider,
     );
-    console.log(data);
+    console.log(await mainnetExchangeContract.internalBalances({ blockTag: '0xE986E8' }));
 
   });
 });
