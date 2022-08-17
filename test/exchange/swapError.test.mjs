@@ -1,12 +1,11 @@
 /* eslint import/extensions: 0 */
 /* eslint max-len: 0 */
 
-// import chai from 'chai';
+import { expect } from 'chai';
 import hardhat from 'hardhat';
 import { buildCoreObjects } from '../testHelpers.mjs';
 
 const { ethers, deployments } = hardhat;
-// const { expect, assert } = chai;
 
 const alchemyProvider = new ethers.providers.AlchemyProvider(
   'homestead',
@@ -20,8 +19,8 @@ describe('Swap test', () => {
 
     const accounts = await ethers.getSigners();
 
-    // set the signer to the moneybags account - this will seed the exchange
     await sdk.changeSigner(accounts[0]);
+
     const expiration = Math.round(new Date().getTime() / 1000 + 60 * 50);
     const liquidityProvider = accounts[1];
     const liquidityProviderInitialBalances = 1000000;
@@ -39,21 +38,6 @@ describe('Swap test', () => {
       quoteToken.address,
     );
 
-    // to get the required internalbalances at 15304423
-    const mainnetExchangeContract = new ethers.Contract(
-      '0x79274BF95e05f0e858ab78411f3eBe85909E4F76',
-      exchangeInstance.abi,
-      alchemyProvider,
-    );
-    const internalBalances = await mainnetExchangeContract.internalBalances({
-      blockTag: '0xE986E7',
-    });
-    // console.log(internalBalances.baseTokenReserveQty, internalBalances.quoteTokenReserveQty);
-
-    // send users (liquidity provider) base and quote tokens for easy accounting.
-    await baseToken.transfer(liquidityProvider.address, liquidityProviderInitialBalances);
-    await quoteToken.transfer(liquidityProvider.address, liquidityProviderInitialBalances);
-
     // add approvals
     await exchangeInstance.quoteToken.approve(
       exchangeInstance.address,
@@ -65,9 +49,22 @@ describe('Swap test', () => {
       liquidityProviderInitialBalances,
     );
 
+    // to get the required internalbalances at 15304423
+    const mainnetExchangeContract = new ethers.Contract(
+      '0x79274BF95e05f0e858ab78411f3eBe85909E4F76',
+      exchangeInstance.abi,
+      alchemyProvider,
+    );
+    const internalBalances = await mainnetExchangeContract.internalBalances({
+      blockTag: '0xE986E7',
+    });
+
+    // send users (liquidity provider) base and quote tokens for easy accounting.
+    await baseToken.transfer(liquidityProvider.address, liquidityProviderInitialBalances);
+    await quoteToken.transfer(liquidityProvider.address, liquidityProviderInitialBalances);
+
     const baseTokenQtyToAdd = toBigNumber(internalBalances.baseTokenReserveQty, 18);
     const quoteTokenQtyToAdd = toBigNumber(internalBalances.quoteTokenReserveQty, 6);
-    // console.log(baseTokenQtyToAdd.toString(), quoteTokenQtyToAdd.toString());
 
     // exchange has the same amount of liquidity as the mainnet pool at 15304423
     await exchangeInstance.addLiquidity(
@@ -79,15 +76,21 @@ describe('Swap test', () => {
       expiration,
     );
 
-    // now call swapQuoteTokenForBaseToken on the local exchange with the values passed into the failed tx
+    // these numbers are based on user input in https://etherscan.io/tx/0xfe104eb24f1a006217f3346a6d3f33b940ec1c82e54a6df7a754c1ea31f1ce05
     const quoteTokenQtyToSwap = toBigNumber('1000');
     const minBaseTokenQtyToSwap = toBigNumber('188.414252404592205063');
-    await exchangeInstance.swapQuoteTokenForBaseToken(
-      quoteTokenQtyToSwap,
-      minBaseTokenQtyToSwap,
-      expiration,
-    );
-    // console.log(await swapTx);
-    // await expectThrowsAsync(testMethod, 'MathLib: INSUFFICIENT_BASE_TOKEN_QTY');
+
+    // now call swapQuoteTokenForBaseToken on the local exchange with the values passed into the failed tx
+    try {
+      await exchangeInstance.swapQuoteTokenForBaseToken(
+        quoteTokenQtyToSwap,
+        minBaseTokenQtyToSwap,
+        expiration,
+      );
+    } catch (err) {
+      expect(err.message).to.equal(
+        "VM Exception while processing transaction: reverted with reason string 'MathLib: INSUFFICIENT_BASE_TOKEN_QTY'",
+      );
+    }
   });
 });
