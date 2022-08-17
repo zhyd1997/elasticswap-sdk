@@ -13,7 +13,7 @@ const alchemyProvider = new ethers.providers.AlchemyProvider(
 );
 
 describe('Swap test', () => {
-  it.only('checks if there is an error with the sdk', async () => {
+  it('checks if there is an error with the sdk', async () => {
     const coreObjects = await buildCoreObjects(deployments, ethers.provider);
     const { baseToken, quoteToken, elasticSwapSDK, sdk, toBigNumber } = coreObjects;
 
