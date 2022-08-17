@@ -1,11 +1,9 @@
 /* eslint import/extensions: 0 */
 /* eslint max-len: 0 */
 
-// import BigNumber from 'bignumber.js';
 // import chai from 'chai';
 import hardhat from 'hardhat';
 import { buildCoreObjects } from '../testHelpers.mjs';
-// ^ expectThrowsAsync
 
 const { ethers, deployments } = hardhat;
 // const { expect, assert } = chai;
@@ -50,7 +48,7 @@ describe('Swap test', () => {
     const internalBalances = await mainnetExchangeContract.internalBalances({
       blockTag: '0xE986E7',
     });
-    console.log(internalBalances.baseTokenReserveQty, internalBalances.quoteTokenReserveQty);
+    // console.log(internalBalances.baseTokenReserveQty, internalBalances.quoteTokenReserveQty);
 
     // send users (liquidity provider) base and quote tokens for easy accounting.
     await baseToken.transfer(liquidityProvider.address, liquidityProviderInitialBalances);
@@ -69,7 +67,7 @@ describe('Swap test', () => {
 
     const baseTokenQtyToAdd = toBigNumber(internalBalances.baseTokenReserveQty, 18);
     const quoteTokenQtyToAdd = toBigNumber(internalBalances.quoteTokenReserveQty, 6);
-    console.log(baseTokenQtyToAdd.toString(), quoteTokenQtyToAdd.toString());
+    // console.log(baseTokenQtyToAdd.toString(), quoteTokenQtyToAdd.toString());
 
     // exchange has the same amount of liquidity as the mainnet pool at 15304423
     await exchangeInstance.addLiquidity(
@@ -81,14 +79,15 @@ describe('Swap test', () => {
       expiration,
     );
 
-    console.log((await exchangeInstance.internalBalances()).toString());
-
     // now call swapQuoteTokenForBaseToken on the local exchange with the values passed into the failed tx
-    const tx = await exchangeInstance.swapQuoteTokenForBaseToken(
-      '1000',
-      '188.414252404592205063',
+    const quoteTokenQtyToSwap = toBigNumber('1000');
+    const minBaseTokenQtyToSwap = toBigNumber('188.414252404592205063');
+    await exchangeInstance.swapQuoteTokenForBaseToken(
+      quoteTokenQtyToSwap,
+      minBaseTokenQtyToSwap,
       expiration,
     );
-    console.log(JSON.stringify(tx));
+    // console.log(await swapTx);
+    // await expectThrowsAsync(testMethod, 'MathLib: INSUFFICIENT_BASE_TOKEN_QTY');
   });
 });
