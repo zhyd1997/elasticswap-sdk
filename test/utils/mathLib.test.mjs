@@ -510,7 +510,7 @@ describe('MathLib', async () => {
   });
 
   describe('calculateUSDCValueOfLPClaim', () => {
-    it.only('calculates the USDC value of claimmable LP correctly', () => {
+    it('calculates the USDC value of claimmable LP correctly', () => {
       const totalLPTokenAmountToBeClaimed = ethers.BigNumber.from('10');
       const totalSupplyOfLiquidityTokens = ethers.BigNumber.from('1000');
       const usdcTokenQty = ethers.BigNumber.from('10000');
