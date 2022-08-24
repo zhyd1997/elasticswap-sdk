@@ -533,6 +533,8 @@ export const calculateMaxQuoteTokenQtyWhenBaseDecayIsPresentForSingleAssetEntry 
 
 /**
  * Calculates the USDC value of the "totalLPTokenAmount" LP tokens from the merkle tree
+ * USDCValue = (totalLPTokenAmountToBeClaimed / totalSupplyOfLiquidityTokens)
+ *             * quoteTokenQty * 2
  * @param {ethers.BigNumber} totalLPTokenAmountToBeClaimed
  * @param {ethers.BigNumber} totalSupplyOfLiquidityTokens total Supply of LP tokens in TIC/USDC pool
  * @param {ethers.BigNumber} quoteTokenQty The total amount of USDC in the TIC/USDC pool
