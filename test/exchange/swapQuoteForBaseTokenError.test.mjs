@@ -38,7 +38,7 @@ describe('Swap test', () => {
     await sdk.provider.send('evm_revert', [snapshotId]);
   });
 
-  it.only('checks if there is an error with the sdk', async () => {
+  it('checks if there is an error with the sdk', async () => {
     const {
       baseToken,
       quoteToken,
