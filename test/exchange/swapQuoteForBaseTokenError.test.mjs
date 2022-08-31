@@ -1,7 +1,7 @@
 /* eslint import/extensions: 0 */
 /* eslint max-len: 0 */
 
-import { expect, assert } from 'chai';
+import { expect } from 'chai';
 import hardhat from 'hardhat';
 import { buildCoreObjects } from '../testHelpers.mjs';
 
@@ -39,14 +39,7 @@ describe('Swap test', () => {
   });
 
   it('checks if there is an error with the sdk', async () => {
-    const {
-      baseToken,
-      quoteToken,
-      elasticSwapSDK,
-      sdk,
-      toBigNumber,
-    } = coreObjects;
-
+    const { baseToken, quoteToken, elasticSwapSDK, sdk, toBigNumber } = coreObjects;
 
     const expiration = Math.round(new Date().getTime() / 1000 + 60 * 50);
     const liquidityProvider = accounts[1];

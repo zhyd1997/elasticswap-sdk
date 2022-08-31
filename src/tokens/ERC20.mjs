@@ -440,6 +440,11 @@ export default class ERC20 extends Base {
     );
   }
 
+  // clears the cache, stop gap solution for polluted tests
+  clearCache() {
+    balancesByContract[this.address] = {};
+  }
+
   // update the approval cache if we care about the owner or spender
   async _handleApprovalEvent(log) {
     try {
