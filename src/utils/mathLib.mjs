@@ -3,7 +3,7 @@ import { ethers } from 'ethers';
 export const BASIS_POINTS = ethers.BigNumber.from('10000');
 const ZERO = ethers.BigNumber.from(0);
 const ONE = ethers.BigNumber.from(1);
-const TWO = ethers.BigNumber.from(2);
+export const TWO = ethers.BigNumber.from(2);
 export const WAD = ethers.utils.parseUnits('1', 18);
 
 export const getAddLiquidityBaseTokenQtyFromQuoteTokenQty = (
@@ -529,6 +529,27 @@ export const calculateMaxQuoteTokenQtyWhenBaseDecayIsPresentForSingleAssetEntry 
   // alphaDecay / omega (A/B)
   const maxQuoteTokenQty = wDiv(baseTokenDecay, internalBaseTokenToQuoteTokenRatio);
   return maxQuoteTokenQty;
+};
+
+/**
+ * Calculates the USDC value of the "totalLPTokenAmount" LP tokens from the merkle tree
+ * USDCValue = (totalLPTokenAmountToBeClaimed / totalSupplyOfLiquidityTokens)
+ *             * quoteTokenQty * 2
+ * @param {ethers.BigNumber} totalLPTokenAmountToBeClaimed
+ * @param {ethers.BigNumber} totalSupplyOfLiquidityTokens total Supply of LP tokens in TIC/USDC pool
+ * @param {ethers.BigNumber} quoteTokenQty The total amount of USDC in the TIC/USDC pool
+ * @returns lpTokenQty to be minted to the fee address on the next liquidity event.
+ */
+export const calculateUSDCValueOfLPClaim = (
+  totalLPTokenAmountToBeClaimed,
+  totalSupplyOfLiquidityTokens,
+  quoteTokenQty,
+) => {
+  const usdvValueOfLPClaim = totalLPTokenAmountToBeClaimed
+    .div(totalSupplyOfLiquidityTokens)
+    .mul(quoteTokenQty)
+    .mul(TWO);
+  return usdvValueOfLPClaim;
 };
 
 /**

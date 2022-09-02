@@ -4,11 +4,13 @@ import { ethers } from 'ethers';
 import {
   BASIS_POINTS,
   calculateQtyToReturnAfterFees,
+  calculateUSDCValueOfLPClaim,
   getAddLiquidityBaseTokenQtyFromQuoteTokenQty,
   getAddLiquidityQuoteTokenQtyFromBaseTokenQty,
   getBaseTokenQtyFromQuoteTokenQty,
   getLPTokenQtyFromTokenQtys,
   getTokenImbalanceQtys,
+  TWO,
   WAD,
 } from '../../src/utils/mathLib.mjs';
 
@@ -504,6 +506,24 @@ describe('MathLib', async () => {
 
       expect(tokenImbalanceQtys.quoteTokenImbalanceQty.eq(ethers.constants.Zero)).to.be.true;
       expect(tokenImbalanceQtys.baseTokenImbalanceQty.eq(decay)).to.be.true;
+    });
+  });
+
+  describe('calculateUSDCValueOfLPClaim', () => {
+    it('calculates the USDC value of claimmable LP correctly', () => {
+      const totalLPTokenAmountToBeClaimed = ethers.BigNumber.from('10');
+      const totalSupplyOfLiquidityTokens = ethers.BigNumber.from('1000');
+      const usdcTokenQty = ethers.BigNumber.from('10000');
+      const usdcValueOfLPClaimExpected = totalLPTokenAmountToBeClaimed
+        .div(totalSupplyOfLiquidityTokens)
+        .mul(usdcTokenQty)
+        .mul(TWO);
+      const usdcValueOfLPClaimCalculated = calculateUSDCValueOfLPClaim(
+        totalLPTokenAmountToBeClaimed,
+        totalSupplyOfLiquidityTokens,
+        usdcTokenQty,
+      );
+      expect(usdcValueOfLPClaimExpected.eq(usdcValueOfLPClaimCalculated)).to.be.true;
     });
   });
 });
