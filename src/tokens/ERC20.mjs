@@ -440,6 +440,14 @@ export default class ERC20 extends Base {
     );
   }
 
+  /**
+   * @dev clears the cache of all instances of the token at the address(since it's a static mapping)
+   * Currently a stop gap solution for polluted tests
+   */
+  clearCache() {
+    balancesByContract[this.address] = {};
+  }
+
   // update the approval cache if we care about the owner or spender
   async _handleApprovalEvent(log) {
     try {

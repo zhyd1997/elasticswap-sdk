@@ -52,6 +52,7 @@ describe('ERC20', () => {
 
       assert.isTrue(!expectedBalance.isZero());
 
+      quoteToken.clearCache();
       // get the balance from the erc20 class instance
       const balance = await quoteToken.balanceOf(accounts[0].address);
 
