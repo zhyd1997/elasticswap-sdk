@@ -440,7 +440,10 @@ export default class ERC20 extends Base {
     );
   }
 
-  // clears the cache, stop gap solution for polluted tests
+  /**
+   * @dev clears the cache of all instances of the token at the address(since it's a static mapping)
+   * Currently a stop gap solution for polluted tests
+   */
   clearCache() {
     balancesByContract[this.address] = {};
   }
